@@ -13,11 +13,15 @@
  * site, even pages that have nothing to do with events. This restricts those
  * assets to URLs that start with /events (or contain tribe/calendar routes).
  *
+ * HOW IT WORKS: Events Calendar registers all its own scripts with handles
+ * starting with 'tribe-' or 'tribe_'. Matching by handle prefix is safe
+ * because it avoids vendor scripts (swiper, selectWoo, tooltipster, etc.)
+ * that Events Calendar bundles but other plugins may also depend on.
+ *
  * ESTIMATED SAVINGS: ~349 KiB unused JavaScript removed from non-events pages
  */
 
-add_action( 'wp_print_scripts', 'hfxnow_dequeue_tribe_on_non_events_pages', 100 );
-add_action( 'wp_print_styles',  'hfxnow_dequeue_tribe_on_non_events_pages', 100 );
+add_action( 'wp_enqueue_scripts', 'hfxnow_dequeue_tribe_on_non_events_pages', 9999 );
 
 function hfxnow_dequeue_tribe_on_non_events_pages() {
 
@@ -39,44 +43,17 @@ function hfxnow_dequeue_tribe_on_non_events_pages() {
 		return;
 	}
 
-	// Match any script/style whose src URL contains one of these strings.
-	// Events Calendar scripts live in plugin directories named 'tribe',
-	// 'the-events-calendar', or 'events-calendar-pro'.
-	$patterns = [
-		'tribe',
-		'the-events-calendar',
-		'events-calendar-pro',
-	];
-
 	global $wp_scripts, $wp_styles;
 
 	foreach ( $wp_scripts->queue as $handle ) {
-		$src = isset( $wp_scripts->registered[ $handle ] )
-			? $wp_scripts->registered[ $handle ]->src
-			: '';
-		if ( ! $src ) {
-			continue;
-		}
-		foreach ( $patterns as $pattern ) {
-			if ( strpos( $src, $pattern ) !== false ) {
-				wp_dequeue_script( $handle );
-				break;
-			}
+		if ( strpos( $handle, 'tribe-' ) === 0 || strpos( $handle, 'tribe_' ) === 0 ) {
+			wp_dequeue_script( $handle );
 		}
 	}
 
 	foreach ( $wp_styles->queue as $handle ) {
-		$src = isset( $wp_styles->registered[ $handle ] )
-			? $wp_styles->registered[ $handle ]->src
-			: '';
-		if ( ! $src ) {
-			continue;
-		}
-		foreach ( $patterns as $pattern ) {
-			if ( strpos( $src, $pattern ) !== false ) {
-				wp_dequeue_style( $handle );
-				break;
-			}
+		if ( strpos( $handle, 'tribe-' ) === 0 || strpos( $handle, 'tribe_' ) === 0 ) {
+			wp_dequeue_style( $handle );
 		}
 	}
 }
