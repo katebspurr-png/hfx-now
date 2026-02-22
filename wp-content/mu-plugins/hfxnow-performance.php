@@ -53,7 +53,11 @@ function hfxnow_dequeue_tribe_on_non_events_pages() {
 
 // =============================================================================
 // 2. Add font-display: swap to Google Fonts URLs
-//    Saves ~80 ms by preventing render-blocking font requests.
+//    Only applies when fonts are loaded directly from fonts.googleapis.com
+//    (i.e. not self-hosted by a caching plugin like W3 Total Cache).
+//    NOTE: Do NOT add preconnect hints here — if a caching plugin self-hosts
+//    Google Fonts, preconnecting to fonts.googleapis.com wastes connection
+//    slots and hurts mobile performance.
 // =============================================================================
 
 add_filter( 'style_loader_src', 'hfxnow_add_font_display_swap', 10, 2 );
@@ -66,22 +70,4 @@ function hfxnow_add_font_display_swap( $src, $handle ) {
 		$src = add_query_arg( 'display', 'swap', $src );
 	}
 	return $src;
-}
-
-add_action( 'wp_head', 'hfxnow_preconnect_google_fonts', 1 );
-
-function hfxnow_preconnect_google_fonts() {
-	echo '<link rel="preconnect" href="https://fonts.googleapis.com">' . "\n";
-	echo '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' . "\n";
-}
-
-// =============================================================================
-// 3. Add font-display: swap to self-hosted Manrope font
-//    Saves ~50 ms FCP by showing fallback text while the font loads.
-// =============================================================================
-
-add_action( 'wp_head', 'hfxnow_font_display_swap_self_hosted', 1 );
-
-function hfxnow_font_display_swap_self_hosted() {
-	echo '<style>@font-face { font-family: "Manrope"; font-display: swap; }</style>' . "\n";
 }
