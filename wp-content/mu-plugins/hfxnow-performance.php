@@ -2,7 +2,7 @@
 /**
  * Plugin Name: HFX Now — Performance Optimizations
  * Description: Must-use plugin for mobile page speed improvements. Deployed via git.
- * Version: 1.0
+ * Version: 1.1
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -10,45 +10,48 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // =============================================================================
-// 1. Dequeue Events Calendar scripts/styles on non-events pages
-//    Saves ~349 KiB of unused JS/CSS on every non-events page.
+// 1. Add defer to Events Calendar JS — removes them from the render-blocking
+//    critical path while keeping the calendar fully functional.
+//
+//    WHY defer instead of dequeue:
+//    The Events Calendar uses a custom asset system (StellarWP/tec_asset) that
+//    force-enqueues scripts from its shortcode callback, bypassing standard
+//    wp_dequeue_script. Dequeuing at wp_enqueue_scripts priority 9999 sets
+//    the internal is_enqueued flag to true but removes the script from the WP
+//    queue, so the shortcode's force-enqueue sees is_enqueued=true and skips
+//    re-adding it — leaving the calendar with no JS at all (broken).
+//
+//    defer keeps scripts loading for interactivity but moves them off the
+//    critical render path. Tribe's V2 views render HTML server-side so their
+//    JS is pure progressive enhancement — safe to defer.
+//
+//    jQuery is intentionally left synchronous (many themes/plugins rely on
+//    inline jQuery calls that would break if jQuery were deferred).
 // =============================================================================
 
-add_action( 'wp_enqueue_scripts', 'hfxnow_dequeue_tribe_on_non_events_pages', 9999 );
+add_filter( 'script_loader_tag', 'hfxnow_defer_tribe_scripts', 10, 2 );
 
-function hfxnow_dequeue_tribe_on_non_events_pages() {
-
+function hfxnow_defer_tribe_scripts( $tag, $handle ) {
 	if ( is_admin() ) {
-		return;
+		return $tag;
 	}
 
-	if (
-		is_singular( 'tribe_events' )
-		|| is_post_type_archive( 'tribe_events' )
-		|| is_tax( 'tribe_events_cat' )
-		|| is_tax( 'tribe_events_tag' )
-		|| ( function_exists( 'tribe_is_event' )       && tribe_is_event() )
-		|| ( function_exists( 'tribe_is_events_home' ) && tribe_is_events_home() )
-		|| ( function_exists( 'tribe_is_month' )       && tribe_is_month() )
-		|| ( function_exists( 'tribe_is_day' )         && tribe_is_day() )
-		|| ( function_exists( 'tribe_is_week' )        && tribe_is_week() )
-	) {
-		return;
+	// Only defer tribe scripts.
+	if ( strpos( $handle, 'tribe-' ) !== 0 && strpos( $handle, 'tribe_' ) !== 0 ) {
+		return $tag;
 	}
 
-	global $wp_scripts, $wp_styles;
-
-	foreach ( $wp_scripts->queue as $handle ) {
-		if ( strpos( $handle, 'tribe-' ) === 0 || strpos( $handle, 'tribe_' ) === 0 ) {
-			wp_dequeue_script( $handle );
-		}
+	// Skip if already has defer or async.
+	if ( strpos( $tag, ' defer' ) !== false || strpos( $tag, ' async' ) !== false ) {
+		return $tag;
 	}
 
-	foreach ( $wp_styles->queue as $handle ) {
-		if ( strpos( $handle, 'tribe-' ) === 0 || strpos( $handle, 'tribe_' ) === 0 ) {
-			wp_dequeue_style( $handle );
-		}
+	// Skip inline scripts (no src attribute).
+	if ( strpos( $tag, ' src=' ) === false ) {
+		return $tag;
 	}
+
+	return str_replace( '<script ', '<script defer ', $tag );
 }
 
 // NOTE: font-display: swap via style_loader_src filter is intentionally
