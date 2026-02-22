@@ -51,23 +51,9 @@ function hfxnow_dequeue_tribe_on_non_events_pages() {
 	}
 }
 
-// =============================================================================
-// 2. Add font-display: swap to Google Fonts URLs
-//    Only applies when fonts are loaded directly from fonts.googleapis.com
-//    (i.e. not self-hosted by a caching plugin like W3 Total Cache).
-//    NOTE: Do NOT add preconnect hints here — if a caching plugin self-hosts
-//    Google Fonts, preconnecting to fonts.googleapis.com wastes connection
-//    slots and hurts mobile performance.
-// =============================================================================
-
-add_filter( 'style_loader_src', 'hfxnow_add_font_display_swap', 10, 2 );
-
-function hfxnow_add_font_display_swap( $src, $handle ) {
-	if ( strpos( $src, 'fonts.googleapis.com' ) === false ) {
-		return $src;
-	}
-	if ( strpos( $src, 'display=' ) === false ) {
-		$src = add_query_arg( 'display', 'swap', $src );
-	}
-	return $src;
-}
+// NOTE: font-display: swap via style_loader_src filter is intentionally
+// omitted. W3 Total Cache self-hosts Google Fonts under the original URL
+// (display=auto). Changing the URL via filter causes W3TC to treat it as an
+// uncached resource and make a live blocking HTTP request on every page load,
+// which hurts performance. font-display must be fixed in the W3TC-generated
+// font CSS file directly instead.
