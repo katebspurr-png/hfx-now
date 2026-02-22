@@ -1,0 +1,9 @@
+wp-config.php
+wp-content/uploads/
+*.log
+.htaccess
+.htaccess
+*.zip
+dup-installer/
+dup-installer-bootlog*
+.DS_Store

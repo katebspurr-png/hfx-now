@@ -1,0 +1,593 @@
+# Changelog
+
+### [5.6.2] 2025-09-16
+
+* Fix - Added new class to handle special character parsing. [FBAR-247]
+* Tweak - * Tweak - Added filters: `tec_events_filterbar_encoding_helper_encode_for_url`, `tec_events_filterbar_encoding_helper_decode_from_url`, `tec_events_filterbar_encoding_helper_encode_for_form`, `tec_events_filterbar_encoding_helper_decode_from_form`
+* Tweak - Leverage WP's new "requires plugin" header https://make.wordpress.org/core/2024/03/05/introducing-plugin-dependencies-in-wordpress-6-5/ to prevent activating FBAR if TEC is not active.
+* Compatibility - PHP 8.3 compatibility improvements. [FBAR-352]
+* Language - 1 new strings added, 10 updated, 0 fuzzied, and 1 obsoleted.
+
+### [5.6.1] 2025-08-26
+
+* Tweak - Migrated build system from gulp to wp-scripts with Tyson for modern asset compilation
+* Tweak - Removed filters: `tribe_events_filters_css_version
+* Language - 0 new strings added, 27 updated, 0 fuzzied, and 0 obsoleted.
+
+### [5.6.0] 2025-07-22
+
+* Feature - Add admin control to select which categories are displayed in the frontend filter. [FBAR-350]
+* Feature - Added Date From filter to show events starting from a selected date [FBAR-348]
+* Feature - Added Date To filter to show events ending by a selected date. [FBAR-349]
+* Language - 7 new strings added, 13 updated, 0 fuzzied, and 0 obsoleted.
+
+### [5.5.10] 2025-05-13
+
+* Fix - Make sure that filtering by venue or organizer works on WPML-translated pages. [FBAR-313]
+* Tweak - Add the `tec_events_filter_additional_field_intersect` filter to allow showing all used values of additional field in Filter Bar.
+* Tweak - Ensure that Additional Field options that are removed don't show up in Filter Bar any longer. [FBAR-307]
+* Tweak - Added filters: `tec_events_filter_additional_field_intersect`, `tribe_filterbar_organizer_ids`, `tribe_filterbar_venue_ids`, `wpml_default_language`, `wpml_object_id`
+* Tweak - Changed views: `v2_1/components/events-bar/filter-button`, `v2_1/components/filter`, `v2_1/components/pill-button`, `v2_1/components/pill`, `v2_1/components/range`
+* Accessibility - Add header tags around accordion buttons to maintain semantic meaning. [FBAR-334]
+* Accessibility - Add `aria-hidden="true"` to filterbar icon for better screen reader accessibility. [FBAR-319]
+* Accessibility - Improve accessibility labels for range slider. [FBAR-331]
+* Accessibility - Improved accessibility of Filter Bar buttons. [FBAR-337]
+* Accessibility - Move focus to filterbar options when accordion is opened for better accessibility. [FBAR-335]
+* Accessibility - Tweaked the filter for Featured events for better accessibility. [FBAR-338]
+* Language - 1 new strings added, 27 updated, 0 fuzzied, and 0 obsoleted.
+
+### [5.5.9] 2025-04-07
+
+* Fix - Avoid slow queries by not adding Category filter tax query multiple times. [ECP-1898]
+* Performance - Avoid too long queries by deactivating filters stack with Custom Tables v1. [ECP-1898]
+* Language - 0 new strings added, 0 updated, 0 fuzzied, and 0 obsoleted.
+
+### [5.5.8] 2024-12-17
+
+* Feature - Added the filter `tec_events_filter_filters_category_get_terms_args` to allow adjusting the parameters of categories available when searching. [FBAR-340]
+* Language - 0 new strings added, 4 updated, 0 fuzzied, and 0 obsoleted.
+
+### [5.5.7] 2024-09-26
+
+* Version - Events Filterbar 5.5.7 is only compatible with The Events Calendar 6.7.0 and higher.
+* Feature - New and improved settings layout and styles. [TEC-5124]
+* Language - 5 new strings added, 19 updated, 0 fuzzied, and 2 obsoleted
+
+### [5.5.6] 2024-09-11
+
+* Fix - Subscribing to a filtered calendar should not include all events. [FBAR-316]
+* Fix - Show only the tags associated with Events in the Filter Bar. [FBAR-268]
+* Language - 0 new strings added, 13 updated, 0 fuzzied, and 0 obsoleted
+
+### [5.5.5] 2024-07-18
+
+* Fix - Show only the tags associated with Events in the Filter Bar. [FBAR-268]
+* Language - 0 new strings added, 0 updated, 0 fuzzied, and 0 obsoleted
+
+### [5.5.4] 2024-03-20
+
+* Tweak - Correct some PHP 8.2 deprecation notices. [FBAR-323]
+* Language - 0 new strings added, 11 updated, 0 fuzzied, and 0 obsoleted
+
+### [5.5.3] 2023-10-03
+
+* Fix - Filter Bar dropdowns were being automatically selected on page load. Now they should load in a default unselected state. [FBAR-291]
+* Tweak - Updated focus state for relevant elements to have default outline ensuring improved accessibility and consistent browser behavior. [TEC-4888]
+
+### [5.5.2] 2023-08-10
+
+* Version - Filter Bar 5.5.0 is only compatible with The Events Calendar 6.1.4 and higher.
+* Version - The minimum supported version of WordPress is now 6.1.0
+* Fix - In some scenarios our pagination and various view actions would fail due to 403 errors on the REST endpoints, because of failing nonce checks, likely due to cache. Updating the way we handle nonces to avoid some scenarios the wrong nonce could be cached. [TEC-4814]
+* Fix - Correct next upcoming events link when filters are applied. [FBAR-292]
+* Tweak - Correct some PHP 8.1 deprecation notices. [FBAR-309]
+
+### [5.5.1] 2023-07-13
+
+* Fix - Harden some of our CSS to prevent unintended overrides by Elementor global styles. [FBAR-301]
+* Language - 0 new strings added, 3 updated, 0 fuzzied, and 0 obsoleted
+
+### [5.5.0] 2023-06-14
+
+* Version - Filter Bar 5.5.0 is only compatible with The Events Calendar 6.1.0 and higher
+* Fix - There was an issue with checkbox custom fields that had spaces in their name, which would fail to be removed from the search filter when attempting to unselect them. [FBAR-246]
+* Language - 0 new strings added, 2 updated, 0 fuzzied, and 0 obsoleted
+
+### [5.4.4] 2023-03-20
+
+* Fix - Some themes caused conflicts in the order of asset loading for the events widget, resulting in javascript errors, rendering issues with the filter bar, and breaking the events list functionality. [FBAR-293]
+
+### [5.4.3] 2023-02-22
+
+* Version - Filter Bar 5.4.3 is only compatible with The Events Calendar 6.0.10 and higher
+* Tweak - PHP version compatibility bumped to PHP 7.4
+* Tweak - Version Composer updated to 2
+* Tweak - Version Node updated to 18.13.0
+* Tweak - Version NPM update to 8.19.3
+
+### [5.4.2] 2023-02-09
+
+* Fix - Updating some button styles to be more compatible with global button styles, such as Elementor global styling. [TEC-4653]
+
+### [5.4.1] 2022-12-14
+
+* Fix - Don't load assets on event single. [FBAR-279]
+* Fix - Correct some styles that broke with the settings updates. [FBAR-290]
+* Language - 0 new strings added, 25 updated, 0 fuzzied, and 0 obsoleted
+
+### [5.4.0] 2022-09-06
+
+* Version - Filter Bar 5.4.0 is only compatible with The Events Calendar 6.0.0 and higher
+* Language - 2 new strings added, 31 updated, 0 fuzzied, and 0 obsoleted
+* Tweak - Files Removed: `src/views/filter-bar/filter-view-horizontal.php`, `src/views/filter-bar/filter-view-vertical.php`
+* Tweak - Methods marked as deprecated: `Tribe__Events__Filterbar__View::enqueueStylesAndScripts`, `Tribe__Events__Filterbar__View::template_paths`, `Tribe__Events__Filterbar__View::displaySidebar`, `Tribe__Events__Filterbar__View::is_tribe_query`, `Tribe__Events__Filterbar__View::maybe_initialize_filters_for_query`,  `Tribe__Events__Filterbar__View::plugin_url`
+
+### [5.3.2] 2022-08-09
+
+* Tweak - Update the calendar print design. [TEC-4425]
+* Language - 0 new strings added, 31 updated, 0 fuzzied, and 2 obsoleted.
+
+### [5.3.1] 2022-05-31
+
+* Tweak - Disable Divi jQuery Body on Single Events to prevent javascript errors. [FBAR-264]
+* Language - 0 new strings added, 13 updated, 0 fuzzied, and 0 obsoleted
+
+### [5.3.0] 2022-05-19
+
+* Version - Filter Bar 5.3.0 is only compatible with The Events Calendar 5.15.0 and higher
+* Feature - Add compatibility to the new TEC admin menu system. [ET-1335]
+* Language - 0 new strings added, 25 updated, 0 fuzzied, and 0 obsoleted
+
+### [5.2.1] 2021-09-14
+
+* Fix - Don't urldecode the filter labels - it breaks special characters. [FBAR-238]
+* Language - 0 new strings added, 1 updated, 0 fuzzied, and 0 obsoleted
+
+### [5.2.0] 2021-08-24
+
+* Version - Filter Bar 5.2.0 is only compatible with The Events Calendar 5.9.0 and higher
+* Feature - Stop compiling CSS custom props and leave them exposed and accessible to the Customizer and third parties. [TEC-3011]
+* Feature - Update hooked Customizer styles to account for surfaced CSS custom properties and for new TEC Customizer font controls. [TEC-3897]
+* Language - 0 new strings added, 1 updated, 0 fuzzied, and 0 obsoleted
+
+### [5.1.4] 2021-07-01
+
+* Feature - Add new Events bar section to the Customizer for control of the Events Bar styles. [TEC-3672]
+* Language - 0 new strings added, 0 updated, 0 fuzzied, and 0 obsoleted
+
+### [5.1.3] 2021-06-23
+
+* Fix - Resolved issue where special characters of field values were not rendering appropriately. [FBAR-245]
+* Fix - Ensure checkbox-based custom fields properly filter values when used as a multiselect. [FBAR-95]
+* Language - 0 new strings added, 4 updated, 0 fuzzied, and 0 obsoleted
+
+### [5.1.2] 2021-05-27
+
+* Fix - Styles with the default theme `twenty twenty one` in `<buttons>` in the calendar. [FBAR-244]
+* Tweak - Adjust logic to apply breakpoints to make sure the correct breakpoint is applied to the calendar [FBAR-241]
+* Tweak - Added filters: `tribe_events_filter_bar_views_v2_assets_should_enqueue_frontend`
+* Tweak - Removed filters: `tribe_events_pro_views_v2_assets_should_enqueue_frontend`
+* Tweak - Changed views: `v2_1/filter-bar/breakpoints`, `v2_1/filter-bar/filters-slider`
+* Language - 0 new strings added, 1 updated, 0 fuzzied, and 0 obsoleted
+
+### [5.1.1] 2021-04-29
+
+* Fix - Correct calling of localize() in assets to ensure properly translated text. [FBAR-223]
+* Tweak - Added filters: `tribe_events_filter_bar_views_v2_assets_should_enqueue_frontend`
+* Tweak - Removed filters: `tribe_events_pro_views_v2_assets_should_enqueue_frontend`
+* Tweak - Changed views: `v2_1/filter-bar/filters-slider`
+* Language - 0 new strings added, 1 updated, 0 fuzzied, and 0 obsoleted
+
+### [5.1.0] 2021-03-29
+
+* Feature - Add Filterbar support to updated Events Calendar PRO view shortcodes. [FBAR-36]
+* Fix - Invert quotes to protect against issue with MySQL in `ANSI_QUOTES` mode. [FBAR-225]
+* Fix - "Brand" swiper to avoid conflicts. [TEC-3624]
+* Language - 0 new strings added, 1 updated, 0 fuzzied, and 0 obsoleted
+
+### [5.0.5] 2021-02-24
+
+* Fix - Compatibility with WordPress 5.7 and jQuery 3.5.X
+* Language - 0 new strings added, 1 updated, 0 fuzzied, and 1 obsoleted
+
+### [5.0.4] 2021-01-28
+
+* Tweak - Adjust spacing between checkbox/radio controls and labels. [FBAR-209]
+* Tweak - Adjust opacity of selected options in multi-select/dropdown filters. [FBAR-209]
+* Tweak - Make selections pills consistent. [FBAR-209]
+* Tweak - Align "Your selections" label with "Clear" element text. [FBAR-209]
+* Tweak - Enfold Theme - Display search icon in multi-select/dropdown filters. [FBAR-209]
+* Fix - Correctly handle Additional Fields filters in Month and Week Views. [FBAR-204]
+* Language - 1 new strings added, 10 updated, 0 fuzzied, and 1 obsoleted
+
+### [5.0.3.1] 2020-12-21
+
+* Fix - Update The Events Calendar minimum required version to avoid activation issues.
+
+### [5.0.3] 2020-12-15
+
+* Feature - V2 Customizer - Add background color css overrides. [FBAR-206]
+* Fix - Correctly handle pagination requests on Views v2 when Filter Bar is active to paginate on first click of Previous or Next links. [FBAR-208]
+* Fix - Avoid errors when using Views v2 and setting the `TRIBE_EVENTS_FILTERBAR_V1_VIEWS` constant to `true`. [FBAR-212]
+
+### [5.0.2] 2020-12-02
+
+* Tweak - Add a filter to allow views to "turn off" Filter Bar classes on their container. [TEC-3614]
+* Language - 0 new strings added, 3 updated, 0 fuzzied, and 0 obsoleted
+
+### [5.0.1] 2020-10-22
+
+* Fix - Prevent page from scrolling down to open dropdown/multiselect filters after ajax request. [FBAR-193]
+* Fix - Prevent tribe-events shortcode pagination from triggering a Notice on the filter-button due to a missing param. [ECP-492]
+* Language - 0 new strings added, 32 updated, 0 fuzzied, and 1 obsoleted
+
+### [5.0.0.1] 2020-10-05
+
+* Fix - Prevent filter bar from closing when swiping on mobile. [FBAR-192]
+* Fix - Prevent some timeouts and SQL errors when multiple filters were applied and views were switched. [FBAR-191]
+* Fix - Vertical filter titles now are displayed in bold as originally intended. [FBAR-194]
+* Fix - Vertical bar title has proper font size for better visibility. [FBAR-194]
+* Fix - Spacing for Select/Multiselect, Checkbox and Radio now match to the correct height. [FBAR-194]
+
+### [5.0.0] 2020-09-28
+
+* Fix - Prevent Filter bar from adding body classes where inappropriate. [FBAR-107]
+* Feature - Disable new Filter Bar design by defining this constant: `define( 'TRIBE_EVENTS_FILTERBAR_V1_VIEWS', TRUE );` in your site's wp-config.php. [FBAR-148]
+* Feature - Add customizer framework for Filter Bar styling. [FBAR-118]
+* Feature - Add filters to determine if filters individually and as a group should be open or closed. [FBAR-117]
+* Language - 8 new strings added, 32 updated, 0 fuzzied, and 2 obsoleted
+
+### [4.10.2] 2020-08-24
+
+* Tweak - Add a link to the Filter Bar settings on the plugin admin listing. [FBAR-114]
+* Tweak - Added the `tribe_events_filter_bar_option_key_map` and `tribe_events_filter_bar_default_filter_names_map` filters to allow adding, removing, or otherwise modifying, Filter Bar filters in the context of Views v2. [VE-147]
+* Fix - Add proper "applied" labelling for filters using radio buttons. [VE-147]
+* Fix - Prevent Horizontal Filters using select to jump when using the search field for V1 [BTRIA-452]
+* Language - 4 new strings added, 31 updated, 0 fuzzied, and 0 obsoleted
+
+### [4.10.1] 2020-07-27
+
+* Fix - Prevent Horizontal Filters using select to jump when using the search field for V2 [FBAR-112]
+
+### [4.10.0] 2020-04-23
+
+* Tweak - Deprecate Select2 3.5.4 in favor of SelectWoo
+* Tweak - Load plugin text domain on the new `tribe_load_text_domains` action hook, which fires on `init` instead of on the `plugins_loaded` hook. [FBAR-94]
+* Fix - Prevent PHP errors from happening during bulk activation or deactivation of the plugin [TCMN-53]
+* Fix - Update events, venues, and organizers to use dynamic labels. [FBAR-82]
+* Fix - Additional Fields filter so that it only shows the individual values and not a combination of values chosen. [FBAR-88]
+* Language - 2 new strings added, 34 updated, 3 fuzzied, and 6 obsoleted
+
+### [4.9.3] 2020-03-23
+
+* Fix - Prevent warning from popping when using Additional Fields (PRO) with Filterbar on PHP 5.6 [FBAR-81]
+* Fix - Resolve Checkbox behavior for additional fields on filter bar [FBAR-84]
+* Fix - Allow links to be clicked when filter bar is open on mobile. [FBAR-66]
+* Fix - Default vertical filter bar to start closed, fix JS around filter bar for V2. [FBAR-72]
+* Fix - Allow reset button to reset filters and update view even when live refresh is disabled. [FBAR-75]
+* Fix - Prevent Filter Bar template from loading when navigating in a shortcode view. [FBAR-76]
+* Tweak - Modify the Live Update labels for Automatic and Manual for better clarification of the behavior for customers. [FBAR-79]
+* Language - 2 new strings added, 18 updated, 0 fuzzied, and 1 obsoleted
+
+### [4.9.2] 2020-02-19
+
+* Version - Filter Bar 4.9.2 is only compatible with The Events Calendar 5.0.2 and higher
+* Tweak - Update the conditional checks for the new live refresh radio controls. [TEC-3072]
+* Fix - Stop force-enqueuing tribe styles when Filter Bar is loaded. [FBAR-69]
+* Language - 0 new strings added, 12 updated, 0 fuzzied, and 0 obsoleted
+
+### [4.9.1] 2020-02-12
+
+* Version - Filter Bar 4.9.1 is only compatible with The Events Calendar 5.0.1 and higher
+* Fix - Do not display filter bar on venue and organizer pages for new views. [FBAR-60]
+* Fix - Set margin for filter bar for new views so the filter bar doesn't overlap with the header. [FBAR-61]
+* Fix - Dependency checker now correctly identifies when The Events Calendar is missing on activation of Filter Bar or deactivation of The Events Calendar with Event Tickets active. [FBAR-15]
+* Language - 0 new strings added, 2 updated, 0 fuzzied, and 0 obsoleted
+
+### [4.9.0] 2020-01-27
+
+* Feature - Major compatibility changes required to work with Versions 5.0.0 of The Events Calendar and Events Pro.
+* Tweak - Reduce HTML cache time-to-live for views when Filter Bar is active. [TEC-3130]
+* Tweak - Reduced file size by removing .po files and directing anyone creating or editing local translations to translations.theeventscalendar.com
+* Tweak - Resolve issue where some filters for the redesigned views were not parsed correctly during AJAX requests [138665]
+* Language - 5 new strings added, 42 updated, 1 fuzzied, and 0 obsoleted
+
+### [4.8.1] 2019-05-02
+
+* Fix - The active filters from not showing text with the checkbox type [126126]
+
+### [4.8] 2019-04-17
+
+* Feature - Refactor the Database Connection to start using an Object Relational Mapping tool for a better tested codebase
+* Feature - Add the `tribe_events()` function as entry-point to the Events ORM and the supporting filter code [116356, 115579]
+* Feature - Add the `tribe_venues()` function as entry-point to the Venues ORM and the supporting filter code [116356, 115579]
+* Feature - Add the `tribe_organizers()` function as entry-point to the Organizers ORM and the supporting filter code [116356, 115579]
+* Fix - Confirm the "Collapse filters" function works in mobile view [124034]
+* Fix - Add the `active` class to filters that have values only [124034]
+* Fix - Prevent horizontal filters from taking the whole screen on mobile [124034]
+* Language - 0 new strings added, 29 updated, 0 fuzzied, and 0 obsoleted
+
+### [4.7.0.1] 2019-04-08
+
+* Security - Ensure filter values are properly escaped before use in queries [125513]
+
+### [4.7] 2019-03-04
+
+* Tweak - General improvements to the plugin code in order to make it more accessible [120758]
+* Tweak - Improved accessibility by removing duplicate IDs [120758]
+* Tweak - Grouped checkboxes together with a common aria label [120758]
+* Tweak - Added descriptive text to anchor tags [120758]
+* Tweak - Removed empty anchor tag from checkboxes markup [120758]
+* Tweak - Changed Filter Sections to be tabbed and open/closed with the keyboard [120758]
+* Tweak - Changing focus states of elements that did not have them [120758]
+* Tweak - Improved the design for the horizontal view bar [120758]
+* Tweak - Improved dropdown arrows positioning to their correct place [120758]
+* Tweak - Made the submit button visible in order to make it accessible [120758]
+* Tweak - Added a notice on the "Enable live refresh" setting, letting people know that if they use it it will affect accessibility [120758]
+* Tweak - Improved the JS for Filter Reset button that had an ID change [120758]
+* Language - 4 new strings added, 34 updated, 0 fuzzied, and 0 obsoleted
+
+### [4.6] 2019-02-05
+
+* Feature - Add check and enforce PHP 5.6 as the minimum version [116282]
+* Feature - Add system to check plugin versions to inform you to update and prevent site breaking errors [116841]
+* Tweak - Added filters: `tribe_not_php_version_names`
+* Deprecated - The function `TribeEventsFilterViewsLoad()` and constant `REQUIRED_TEC_VERSION` along with `initAddon()` method has been deprecated in `Tribe__Events__Filterbar__View` in favor of Plugin Dependency Checking system
+* Language - 7 new strings added, 20 updated, 0 fuzzied, and 1 obsoleted
+
+### [4.5.9] 2018-12-05
+
+* Fix - Ensure that translations are loaded before admin error messages are shown [104748]
+
+### [4.5.8] 2018-09-12
+
+* Fix - Improved WPML compatibility to avoid mixed languages in the additional fields dropdown. Thanks to the WPML team! [111986]
+* Tweak - Add `tribe_events_filter_additional_fields_query` to make the additional field values query filterable. Thanks to David and the WPML team! [111984]
+
+### [4.5.7] 2018-08-01
+
+* Tweak - Manage plugin assets via `tribe_assets()` [40267]
+
+### [4.5.6] 2018-05-29
+
+* Tweak - Added missing license.txt file [104893]
+
+### [4.5.5] 2018-04-18
+
+* Fix - Fixed an issue where cost ranges with numbers in decimal format would sometimes break filter URLs [75177]
+
+### [4.5.4] 2018-03-08
+
+* Fix - Added safety checks to avoid notice-level errors when Event Tickets and/or Event Tickets plus are also active [99266]
+* Fix - Added checks to avoid loading Filter Bar assets when not needed, to prevent issues with event views generated via the `[tribe_events]` shortcode (thanks @gssiweb for making us aware of this!) [98569]
+* Language - 3 new strings added, 19 updated, 0 fuzzied, and 3 obsoleted
+
+### [4.5.3] 2017-12-23
+
+* Fix - Make sure Filter Bar's responsive breakpoint is the same as The Events Calendar's, and is filterable via the same `tribe_events_mobile_breakpoint` filter (thanks @myrunningresource for reporting the discrepancy!) [43094]
+* Fix - the category filter so it has the current archive's category selected on the initial load (props to @simonoetang-be for reporting this!) [94028]
+* Fix - Modified the behavior of filters (so they update to reflect any changes that were made) when live ajax is disabled (our thanks to Karly on the forums for flagging this) [97555]
+* Tweak - Address some layout issues with the "Featured Events" filter so the label text doesn't get cut off [91662]
+* Tweak - Tweaked the "Day" filter so it more consistently returns accurate results regardless of site options (props @trevellyan for originally reporting the issue) [92948]
+* Tweak - Update labeling to avoid confusion on the default state for all the Filter Bar module [82424]
+* Tweak - Address some layout issues with the "Featured Events" filter so the label text doesn't get cut off [91662]
+* Tweak - Tweaked the "Day" filter so it more consistently returns accurate results regardless of site options (props @trevellyan for originally reporting the issue) [92948]
+
+### [4.5.2] 2017-12-18
+
+* Fix - Fix PHP notice "Trying to get property of non-object" when checking category depth, thanks Simon! [93709]
+* Compatibility - Minimum supported version of WordPress in now 4.5
+
+### [4.5.1] 2017-10-04
+
+* Fix - Fixed some layout issues with the "Show Filters"/"Collapse Filters" toggle button in mobile views (props to @ergosom for reporting this!) [75373]
+* Tweak - Improved performance by swapping out LEFT JOINs for INNER JOINs in SQL queries [88588]
+* Language - 2 new strings added, 17 updated, 0 fuzzied, and 2 obsoleted
+
+### [4.5] 2017-08-01
+
+* Feature - added class to checkbox items to better show parent, child, and grandparent relationship [70060]
+* Feature - display active filters selected in the Filter Bar [38131,70061]
+* Feature - automatically check categories under parent when checked and in dropdown display all events under a parent category [70059]
+* Feature - added an upgrade script to change from autocomplete to Multi-Select [82651]
+* Fix - issue where only the first event would show when using State/Province, City, or Country filters in checkbox mode [82927]
+* Tweak - Select2 to replace Chosen script for dropdowns and autocomplete [75546]
+* Tweak - improve horizontal filter icon styles by moving to the right of the filter names [82533]
+* Tweak - reverse color scheme on vertical filter bar to make header and footer darker [82529]
+* Tweak - add autocomplete to dropdowns and rename Autocomplete to Multi-Select to clarify the different selection options [75546]
+* Tweak - set Events Calendar PRO's Additional Fields filter to use alphabetical order [77483]
+* Tweak - Added filters: 'tribe_events_filter_event_category_display_class'
+* Tweak - Changed views: 'filter-bar/filter-view-horizontal', 'filter-bar/filter-view-vertical'
+
+### [4.4.3] 2017-06-28
+
+* Tweak - add back markers for sorting and dropdown of the active filters in the admin [80509]
+
+### [4.4.2] 2017-05-17
+
+* Tweak - further adjustments made to our plugin licensing system [78506]
+
+### [4.4.1] 2017-05-04
+
+* Tweak - adjustments made to our plugin licensing system
+
+### [4.4] 2017-01-09
+
+* Feature - a filter to filter events by their featured state [65899]
+* Fix - Filter labels that were previously not translatable are now translatable [62457]
+* Fix - Auto Complete filters fixed to behave correctly when multiple filters active [70057]
+
+### [4.3.4] 2016-12-20
+
+* Tweak - Updated the template override instructions in a number of templates [68229]
+* Tweak - Removes checks for legacy custom field data which are no longer required in most cases, providing a moderate performance boost [63580]
+
+### [4.3.3] 2016-11-16
+
+* Fix - Vertical Layout for filters is working as expected, not expanding to 100% width anymore [68431]
+* Fix - Prevents private mode on OSX and iOS Safari to throw JavaScript Fatal errors [40196]
+
+### [4.3.2] 2016-11-02
+
+* Fix - Prevent encoding problems for input fields when using browser actions (Nice report from @Zé in the forums, thanks!)[61742]
+* Fix - Fixes a bug where the filter bar content obscured text in mobile view (thanks to @jesse for reporting this one)  [44702]
+
+### [4.3.1] 2016-10-20
+
+* Fix - Filter popup on mobile needed better scroll behaviors (Props to Jesse for reporting) [44702]
+* Tweak - Unify CSS and template paths on 'filterbar' (Props to Paula for reporting)
+* Tweak - Added plugin dir and file path constant.
+* Tweak - Registered plugin as active with Tribe Common. [66657]
+
+### [4.3] 2016-10-13
+
+* Tweak - Updated to be 4.3 compatible
+
+### [4.2.2] 2016-07-20
+
+* Fix - Events imported via the CSV import function would not show up in start time based filtering (Thanks to @Stephan for the original post on our support forums here.)
+* Fix - Incorrect start time based filtering of events in some edge cases
+
+### [4.2.1] 2016-06-22
+
+* Fix - Add back filters to modify limit for organizer and venue in Filter Bar
+
+### [4.2] 2016-06-08
+
+* Feature - Allows users to filter using venue geolocation information: City, State and Country (Cheers to Don Hollen for suggesting this on UserVoice!)
+* Tweak - Language files in the `wp-content/languages/plugins` path will be loaded before attempting to load internal language files (Thank you to user @aafhhl for bringing this to our attention!)
+* Tweak - Move plugin CSS to PostCSS
+
+### [4.1] 2016-03-15
+
+* Feature - Allow users to change the limit of Venues and Organizers on front-end filters (our sincere gratitude to @mauitime for this and so many other countless contributions!)
+* Tweak - Allow default Title for Filter Bar sections to be translated
+* Fix - Fixed an issue where filters were overriding set query arguments rather than combining them
+
+### [4.0.4] 2016-03-02
+
+* Fix - Filters are kept when changing calendar views
+
+### [4.0.3] 2016-02-17
+
+* Fix - Prevent warning for Database Meta table on Weekdays Queries
+
+### [4.0.2] 2015-12-16
+
+* Tweak - Includes a new "Others" option for the cost field filter (Thank you Mirja for the help!)
+
+### [4.0.1] 2015-12-10
+
+* Fix - Resolved bug where the mobile filter bar did not stay open in certain themes
+
+### [4.0] 2015-12-02
+
+* Feature - Additional fields created with Events Calendar PRO can now be used as filters (Thank you Lars for originally suggesting this on UserVoice!)
+* Tweak - Revise the way category filters work to improve compatibility with custom filter implementations etc (Props to Nancy Barraza for this one!)
+* Tweak - Update JS event names to match the changes in the-events-calendar
+* Fix - Fixed bug where the FilterBar did not remain open in mobile view when it should have
+
+### [3.12.1] 2015-10-01
+
+* Fix - Ensure Filter Bar renders as expected, including when translations are in effect (thanks to @flamencoagenda on the forums for highlighting this)
+
+### [3.12] 2015-09-08
+
+* Security - Resolved JS vulnerability in minified JS by upgrading to uglifyjs 2.4.24
+* Fix - Resolved issue where using the filterbar inappropriately filtered events beyond the main event loop (i.e. events rendered within widgets)
+
+### [3.11] 2015-07-22
+
+* Security - Added escaping to a number of previously un-escaped values
+* Tweak - Conformed code to updated coding standards
+* Fix - Ensure minified versions of the plugin's scripts and stylesheets are available and used as appropriate
+
+### [3.10.1] 2015-07-01
+
+* Tweak - Updated the code in the day of week filter to be compatible with new month view code
+
+### [3.10] 2015-06-16
+
+* Fix - Fixed a problem that could lead to errors being triggered following a change to a filter's display type
+* Fix - Fixed an issue where the start of week setting in WordPress core was not being respected
+* Fix - Fixed an issue where autocomplete filters were not getting cleared out when 'Reset filters' was clicked
+* Tweak - Plugin code has been refactored to new standards: that did result in a new file structure and many renamed classes. Old class names will be deprecated in future releases and, while still working as expected, you can keep track of any deprecated classes yours or third party plugins are calling using the Log Deprecated Notices plugin (https://wordpress.org/plugins/log-deprecated-notices/)
+* Tweak - Added some changelog formatting enhancements after seeing keepachangelog.com :)
+* Tweak - Now the week filter respects the start day of the week set in WordPress (thanks to xrossglobalgroup on the forums for the idea!)
+* Feature - Incorporated updated German translation files, courtesy of Oliver Heinrich
+* Feature - Incorporated updated French translation files, courtesy of Sylvain Delisle
+* Feature - Incorporated new Swedish translation files, courtesy of Johan Falk
+
+### [3.9] 2014-12-08
+
+* Feature - Enabled auto-complete for remaining fields within Filter Bar! We’ve added new field options for Category, Venue and Organizer filters; you can now select between dropdown, checkbox, or autocomplete filter types
+* Feature - Implemented true support for default permalinks when running Filter Bar
+* Fix - Addressed a bug where Filter Bar cost says “0” (or free) when tickets with prices are created within WooCommerce Tickets (thanks to brandonpence on the forums for the first report!)
+* Fix - Fixed a bug where the dropdown selector failed or caused fatal errors in certain circumstances
+* Language - Incorporated updated German translation files, courtesy of Oliver Heinrich
+* Language - Incorporated new Catalan translation files, courtesy of Oriol Carol
+* Language - Incorporated updated Greek translation files, courtesy of Yannis Troullinos
+* Language - Incorporated new Polish translation files, courtesy of Marcin Lacki
+* Language - Incorporated new Russian translation files, courtesy of Evgenii Rybak
+
+### [3.8] 2014-09-29
+
+* Feature - Added a new auto-complete option for the Tag filter
+* Fix - Fixed a bug allowing day filter to malfunction slightly under a limited set of circumstances (thanks to templesinai on the forums for bringing this up!)
+* Fix - Fixed a bug causing child categories within category filter to be listed in reverse order
+* Feature - Enhanced the category filter to include category-slug CSS classes in its output (thanks to Lars and Andy Fragen on the forum for their request…should make the plugin integrate even better with the free The Events Calendar Category Colors plugin!)
+* Language - Incorporated updated Danish translation files, courtesy of Hans Christian Andersen
+* Language - Incorporated updated German translation files, courtesy of Oliver Heinrich
+* Language - Incorporated new Finnish translation files, courtesy of Elias Okkonen
+* Language - Incorporated new Norwegian Bokmal translation files, courtesy of Dennis Askeland
+
+### [3.7] 2014-06-28
+
+* Language - Incorporated new Chinese translation files, courtesy of Massound Huang
+* Language - Incorporated new Portuguese translation files, courtesy of Joao Roma
+* Language - Incorporated new Indonesian translation files, courtesy of Didik Priyanto
+* Tweak - Improved support for kilometers within distance filter (thanks to pnegyesi for highlighting this issue!)
+* Fix - Fixed an issue where the <title> was inconsistent when filters were applied
+* Feature - Added an admin toolbar item linking to the plugin settings screen
+* Fix - Fixed an issue where filters were not preserved when clicking the 'View all # Events' link in grid view (thanks to kosovichmedia on the forums for reporting this!)
+* Feature - Added the ability for users to override the CSS file
+* Fix - Fixed a Z-index issue that caused filters to overlap strangely with Week View (Thank you to Lars for bringing this to our attention!)
+* Fix - Fixed a conflict between the vertical Filter Bar and our classic header
+* Fix - Fixed an issue where vertical filter bars were not displaying nicely in Map View with the classic search bar
+
+### [3.6.1] 2014-05-30
+
+* Fix - Fix minification bugs
+* Language - Incorporated new Greek translation files, courtesy of Yannis Troullinos
+
+### [3.6] 2014-05-29
+
+* Feature - Added ability to make filters show on hover instead of click (filter override)
+* Feature - Added a feature where mobile filters will close after ajax success and get out of the way
+* Fix - Improved horizontal filter show/hide performance (items will now hide on body click)
+* Fix - Improved cost filter functionality
+* Fix - Improved javascript performance
+* Fix - Revised behavior of the "all day" time filter to relate specifically to events marked as "all day"
+* Fix - Fixed an issue where the Venue and Organizer filters could disappear when the category filter was set
+* Feature - Added a WordPress filter so that available values in the filters could be modified ('tribe_events_filter_values')
+* Fix - Fixed an issue where the "Day" filter was not respecting the end of day cutoff setting
+* Language - Incorporated new French translation files courtesy of Bastien Bournet-Charrier
+* Language - Incorporated new Ukrainian translation files, courtesy of Vasily Vishnyakov
+* Language - Incorporated updated German translation files, courtesy of Dennis Gruebner
+* Language - Incorporated new Czech translation files, courtesy of Petr Basan
+
+### [3.5] 2014-03-27
+
+* Fix - Corrected text domains for front end Filter Bar strings
+* Fix - Updated Filter Bar queries to work without tribe_event_duration, as part of our PRO recurrence refactor
+* Tweak - Namespaced the front-end templates by moving them into the views/filter-bar directory
+* Language - Incorporated new Spanish translation files, courtesy of Elias Garcia Fernandez
+* Language - Incorporated new Romanian translation files, courtesy of Cosmin Vaman
+* Language - Incorporated new German translation files, courtesy of Patrick Lemke and Oliver Heinrich
+* Language - Incorporated new Dutch translation files, courtesy of J.F.M. Cornelissen
+* Language - Incorporated new Italian translation files, courtesy of Radu Costinean
+* Language - Incorporated new Danish translation files, courtesy of Soren Jensen
+
+### [3.4] 2013-01-15
+
+* Feature - Initial release

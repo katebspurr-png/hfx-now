@@ -1,0 +1,1091 @@
+********************************************************************************
+* DUPLICATOR-PRO: Install-Log
+* STEP-0 START @ 08:24:14
+* NOTICE: Do NOT post to public sites or forums!!
+********************************************************************************
+PACKAGE INFO________ ORIGINAL SERVER                        |CURRENT SERVER
+OS__________________: Linux                                 |Linux
+PHP VERSION_________: 8.1.33                                |8.4.16
+********************************************************************************
+CURRENT SERVER INFO
+PHP_________________: 8.4.16 | SAPI: fpm-fcgi
+PHP MEMORY__________: 4294967296 | SUHOSIN: disabled
+ARCHITECTURE________: 64-bit
+SERVER______________: Apache
+DOC ROOT____________: "/var/www/vhosts/halifax-now.ca/httpdocs"
+REQUEST URL_________: "https://halifax-now.ca"
+********************************************************************************
+OVERWRITE PARAMS
+ *** FROM PACKAGE
+PARAM SET KEY[cpnl-dbaction]
+********************************************************************************
+MAINTENANCE MODE DISABLE
+INSTALLER INFO
+
+INSTALL MODES_______: CLASSIC
+TEMPLATE____________: "base"
+VALIDATE ON START___: "normal"
+PATH_NEW____________: "/var/www/vhosts/halifax-now.ca/httpdocs"
+URL_NEW_____________: "https://halifax-now.ca"
+********************************************************************************
+ARCHIVE INFO
+
+ARCHIVE NAME________: "/var/www/vhosts/halifax-now.ca/httpdocs/20260112_halifaxnow_[HASH]_20260112200800_archive.zip"
+ARCHIVE SIZE________: 531.03MB
+CREATED_____________: 2026-01-12 20:08:00
+WP VERSION__________: 6.9
+DUP VERSION_________: 4.5.22.4
+LICENSE_____________: Elite
+PACKAGE COMPONENTS__: Database, Core, Plugins, Themes, Media, Other
+DB VERSION__________: 11.4.9
+DB FILE SIZE________: 89.22MB
+DB TABLES___________: 48
+DB ROWS_____________: 83203
+URL HOME____________: https://halifax-now.ca
+URL CORE____________: https://halifax-now.ca
+URL CONTENT_________: https://halifax-now.ca/wp-content
+URL UPLOAD__________: http://halifax-now.ca/wp-content/uploads
+URL PLUGINS_________: https://halifax-now.ca/wp-content/plugins
+URL MU PLUGINS______: http://halifax-now.ca/wp-content/mu-plugins
+URL THEMES__________: https://halifax-now.ca/wp-content/themes
+PATH HOME___________: /home/halifoof/public_html
+PATH ABS____________: /home/halifoof/public_html
+PATH WPCONFIG_______: /home/halifoof/public_html
+PATH WPCONTENT______: /home/halifoof/public_html/wp-content
+PATH UPLOADS________: /home/halifoof/public_html/wp-content/uploads
+PATH PLUGINS________: /home/halifoof/public_html/wp-content/plugins
+PATH MUPLUGINS______: /home/halifoof/public_html/wp-content/mu-plugins
+PATH THEMES_________: /home/halifoof/public_html/wp-content/themes
+
+SUBSITES
+SUBSITE [ID:   1] "halifax-now.ca/"
+
+PLUGINS
+PLUGIN [SLUG:code-snippets/code-snippets.php                   ][ON:false]  Code Snippets
+PLUGIN [SLUG:duplicator-pro/duplicator-pro.php                 ][ON:true ]  Duplicator Pro
+PLUGIN [SLUG:elementor/elementor.php                           ][ON:true ]  Elementor
+PLUGIN [SLUG:event-tickets/event-tickets.php                   ][ON:false]  Event Tickets
+PLUGIN [SLUG:hello-plus/hello-plus.php                         ][ON:false]  Hello Plus
+PLUGIN [SLUG:image-optimization/image-optimization.php         ][ON:false]  Image Optimizer - Compress, Resize and Optimize Images
+PLUGIN [SLUG:litespeed-cache/litespeed-cache.php               ][ON:true ]  LiteSpeed Cache
+PLUGIN [SLUG:query-monitor/query-monitor.php                   ][ON:true ]  Query Monitor
+PLUGIN [SLUG:google-site-kit/google-site-kit.php               ][ON:true ]  Site Kit by Google
+PLUGIN [SLUG:wp-smushit/wp-smush.php                           ][ON:true ]  Smush
+PLUGIN [SLUG:the-events-calendar/the-events-calendar.php       ][ON:true ]  The Events Calendar
+PLUGIN [SLUG:the-events-calendar-filterbar/the-events-calendar-filter-view.php][ON:true ]  The Events Calendar: Filter Bar
+PLUGIN [SLUG:events-calendar-pro/events-calendar-pro.php       ][ON:true ]  The Events Calendar Pro
+PLUGIN [SLUG:w3-total-cache/w3-total-cache.php                 ][ON:false]  W3 Total Cache
+PLUGIN [SLUG:insert-headers-and-footers/ihaf.php               ][ON:true ]  WPCode Lite
+PLUGIN [SLUG:wpforms-lite/wpforms.php                          ][ON:true ]  WPForms Lite
+PLUGIN [SLUG:wordpress-seo/wp-seo.php                          ][ON:true ]  Yoast SEO
+PLUGIN [SLUG:db.php                                            ][ON:false]  Query Monitor Database Class (Drop-in)
+
+********************************************************************************
+LOG-TIME[/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/ctrls/ctrl.base.php:191][DELTA:   0.04680]  MESSAGE:END RENDER PAGE
+LOG-TIME[/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/src/Core/Bootstrap.php:76] RESET TIME
+
+-------------------------
+AJAX ACTION [sparam_s1] START
+AJAX ACTION [sparam_s1] SUCCESS
+-------------------------
+
+LOG-TIME[/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/src/Core/Bootstrap.php:76] RESET TIME
+STEP ACTION: "on-validate"
+LOG-TIME[/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/ctrls/ctrl.base.php:191][DELTA:   0.04295]  MESSAGE:END RENDER PAGE
+LOG-TIME[/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/src/Core/Bootstrap.php:76] RESET TIME
+
+-------------------------
+AJAX ACTION [validate] START
+START TEST "Archive Check" [CLASS: DUPX_Validation_test_archive_check]
+LOG-TIME[DELTA:   0.00003]  MESSAGE:TEST "Archive Check" RESULT: passed
+
+START TEST "Duplicator importer version" [CLASS: DUPX_Validation_test_importer_version]
+LOG-TIME[DELTA:   0.00002]  MESSAGE:TEST "Duplicator importer version" RESULT: skip
+
+START TEST "Overwrite Install" [CLASS: DUPX_Validation_test_owrinstall]
+LOG-TIME[DELTA:   0.00002]  MESSAGE:TEST "Overwrite Install" RESULT: good
+
+START TEST "Disaster Recovery" [CLASS: DUPX_Validation_test_recovery]
+LOG-TIME[DELTA:   0.00001]  MESSAGE:TEST "Disaster Recovery" RESULT: skip
+
+START TEST "Partial Backup Check" [CLASS: DUPX_Validation_test_importable]
+LOG-TIME[DELTA:   0.00034]  MESSAGE:TEST "Partial Backup Check" RESULT: passed
+
+START TEST "REST API test" [CLASS: DUPX_Validation_test_rest_api]
+LOG-TIME[DELTA:   0.00002]  MESSAGE:TEST "REST API test" RESULT: skip
+
+START TEST "Manual extraction detected" [CLASS: DUPX_Validation_test_manual_extraction]
+LOG-TIME[DELTA:   0.00004]  MESSAGE:TEST "Manual extraction detected" RESULT: good
+
+START TEST "Database Only" [CLASS: DUPX_Validation_test_dbonly_iswordpress]
+LOG-TIME[DELTA:   0.00001]  MESSAGE:TEST "Database Only" RESULT: skip
+
+START TEST "Package Age" [CLASS: DUPX_Validation_test_package_age]
+LOG-TIME[DELTA:   0.00009]  MESSAGE:TEST "Package Age" RESULT: good
+
+START TEST "Replace PATHs in database" [CLASS: DUPX_Validation_test_replace_paths]
+LOG-TIME[DELTA:   0.00002]  MESSAGE:TEST "Replace PATHs in database" RESULT: skip
+
+START TEST "Managed hosting supported" [CLASS: DUPX_Validation_test_managed_supported]
+LOG-TIME[DELTA:   0.00005]  MESSAGE:TEST "Managed hosting supported" RESULT: skip
+
+START TEST "Siteground" [CLASS: DUPX_Validation_test_siteground]
+LOG-TIME[DELTA:   0.00009]  MESSAGE:TEST "Siteground" RESULT: skip
+
+START TEST "Subomain multisite installation in subfolder" [CLASS: DUPX_Validation_test_multisite_subfolder]
+LOG-TIME[DELTA:   0.00002]  MESSAGE:TEST "Subomain multisite installation in subfolder" RESULT: skip
+
+START TEST "Addon Sites" [CLASS: DUPX_Validation_test_addon_sites]
+--------------------------------------
+PATHS MAPPING : "/var/www/vhosts/halifax-now.ca/httpdocs"
+--------------------------------------
+LOG-TIME[DELTA:   0.00908]  MESSAGE:TEST "Addon Sites" RESULT: good
+
+START TEST "Wordfence" [CLASS: DUPX_Validation_test_wordfence]
+LOG-TIME[DELTA:   0.00033]  MESSAGE:TEST "Wordfence" RESULT: good
+
+START TEST "Table prefix of managed hosting" [CLASS: DUPX_Validation_test_managed_tprefix]
+LOG-TIME[DELTA:   0.00007]  MESSAGE:TEST "Table prefix of managed hosting" RESULT: skip
+
+START TEST "Wordpress Configuration" [CLASS: DUPX_Validation_test_wp_config]
+LOG-TIME[DELTA:   0.00219]  MESSAGE:TEST "Wordpress Configuration" RESULT: passed
+
+START TEST "PHP Version Mismatch" [CLASS: DUPX_Validation_test_php_version]
+LOG-TIME[DELTA:   0.00003]  MESSAGE:TEST "PHP Version Mismatch" RESULT: good
+
+START TEST "PHP Open Base" [CLASS: DUPX_Validation_test_open_basedir]
+LOG-TIME[DELTA:   0.00002]  MESSAGE:TEST "PHP Open Base" RESULT: good
+
+START TEST "PHP Memory Limit" [CLASS: DUPX_Validation_test_memory_limit]
+LOG-TIME[DELTA:   0.00002]  MESSAGE:TEST "PHP Memory Limit" RESULT: good
+
+START TEST "PHP Extensions" [CLASS: DUPX_Validation_test_extensions]
+LOG-TIME[DELTA:   0.00002]  MESSAGE:TEST "PHP Extensions" RESULT: good
+
+START TEST "PHP Mysqli" [CLASS: DUPX_Validation_test_mysql_connect]
+LOG-TIME[DELTA:   0.00001]  MESSAGE:TEST "PHP Mysqli" RESULT: passed
+
+START TEST "PHP Functions and Classes" [CLASS: DUPX_Validation_test_php_functionalities]
+LOG-TIME[DELTA:   0.00002]  MESSAGE:TEST "PHP Functions and Classes" RESULT: passed
+
+START TEST "PHP Timeout" [CLASS: DUPX_Validation_test_timeout]
+LOG-TIME[DELTA:   0.00002]  MESSAGE:TEST "PHP Timeout" RESULT: good
+
+START TEST "Disk Space" [CLASS: DUPX_Validation_test_disk_space]
+LOG-TIME[DELTA:   0.00001]  MESSAGE:TEST "Disk Space" RESULT: skip
+
+START TEST "Permissions: General" [CLASS: DUPX_Validation_test_iswritable]
+LOG-TIME[DELTA:   0.06335]  MESSAGE:TEST "Permissions: General" RESULT: passed
+
+START TEST "Permissions: Configs Files " [CLASS: DUPX_Validation_test_iswritable_configs]
+LOG-TIME[DELTA:   0.00006]  MESSAGE:TEST "Permissions: Configs Files " RESULT: passed
+
+START TEST "Extract only files" [CLASS: DUPX_Validation_test_db_excluded]
+LOG-TIME[DELTA:   0.00002]  MESSAGE:TEST "Extract only files" RESULT: passed
+
+START TEST "Cpanel connection" [CLASS: DUPX_Validation_test_cpnl_connection]
+LOG-TIME[DELTA:   0.00002]  MESSAGE:TEST "Cpanel connection" RESULT: skip
+
+START TEST "Create Database User" [CLASS: DUPX_Validation_test_cpnl_new_user]
+LOG-TIME[DELTA:   0.00001]  MESSAGE:TEST "Create Database User" RESULT: skip
+
+START TEST "Host Name" [CLASS: DUPX_Validation_test_db_host_name]
+LOG-TIME[DELTA:   0.00003]  MESSAGE:TEST "Host Name" RESULT: passed
+
+START TEST "Host Connection" [CLASS: DUPX_Validation_test_db_connection]
+LOG-TIME[DELTA:   0.00031]  MESSAGE:TEST "Host Connection" RESULT: passed
+
+START TEST "Database Version" [CLASS: DUPX_Validation_test_db_version]
+LOG-TIME[DELTA:   0.00094]  MESSAGE:TEST "Database Version" RESULT: soft warning
+
+START TEST "Create New Database" [CLASS: DUPX_Validation_test_db_create]
+LOG-TIME[DELTA:   0.00002]  MESSAGE:TEST "Create New Database" RESULT: skip
+
+START TEST "Database Engine Support" [CLASS: DUPX_Validation_test_db_supported_engine]
+LOG-TIME[DELTA:   0.00048]  MESSAGE:TEST "Database Engine Support" RESULT: passed
+
+START TEST "Database GTID Mode" [CLASS: DUPX_Validation_test_db_gtid_mode]
+LOG-TIME[DELTA:   0.00036]  MESSAGE:TEST "Database GTID Mode" RESULT: passed
+
+START TEST "Privileges: User Visibility" [CLASS: DUPX_Validation_test_db_visibility]
+LOG-TIME[DELTA:   0.00007]  MESSAGE:TEST "Privileges: User Visibility" RESULT: passed
+
+START TEST "Manual Table Check" [CLASS: DUPX_Validation_test_db_manual_tables_count]
+LOG-TIME[DELTA:   0.00002]  MESSAGE:TEST "Manual Table Check" RESULT: skip
+
+START TEST "Multiple WP Installs" [CLASS: DUPX_Validation_test_db_multiple_wp_installs]
+LOG-TIME[DELTA:   0.00029]  MESSAGE:TEST "Multiple WP Installs" RESULT: passed
+
+START TEST "Privileges: User Resources" [CLASS: DUPX_Validation_test_db_user_resources]
+DB QUERY [ERROR][/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/classes/database/class.db.php:689] MSG: SELECT command denied to user 'fifwvkap_fldg1'@'localhost' for table `mysql`.`user`
+	SQL: SELECT max_questions, max_updates, max_connections FROM mysql.user WHERE user = 'fifwvkap_fldg1' AND host = 'localhost'
+TRACE[1] CLASS___: DUPX_DB::mysqli_query      FILE: /var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/classes/validation/class.validation.database.service.php[1069]
+TRACE[2] CLASS___: DUPX_Validation_database_service->getUserResources FILE: /var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/classes/validation/database-tests/class.validation.test.db.user.resources.php[30]
+TRACE[3] CLASS___: DUPX_Validation_test_db_user_resources->runTest FILE: /var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/classes/validation/class.validation.abstract.item.php[56]
+TRACE[4] CLASS___: DUPX_Validation_abstract_item->test FILE: /var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/classes/validation/class.validation.manager.php[246]
+TRACE[5] CLASS___: DUPX_Validation_manager->runTests FILE: /var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/classes/validation/class.validation.manager.php[214]
+TRACE[6] CLASS___: DUPX_Validation_manager->getValidateData FILE: /var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/ctrls/classes/class.ctrl.ajax.php[186]
+TRACE[7] CLASS___: DUPX_Ctrl_ajax::actions    FILE: /var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/ctrls/classes/class.ctrl.ajax.php[110]
+TRACE[8] CLASS___: DUPX_Ctrl_ajax::controller FILE: /var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/main.installer.php[47]
+
+LOG-TIME[DELTA:   0.00026]  MESSAGE:TEST "Privileges: User Resources" RESULT: passed
+
+START TEST "Privileges: User Table Access" [CLASS: DUPX_Validation_test_db_user_perms]
+LOG-TIME[DELTA:   0.00970]  MESSAGE:TEST "Privileges: User Table Access" RESULT: passed
+
+START TEST "Privileges: 'Show Variables' Query" [CLASS: DUPX_Validation_test_db_custom_queries]
+LOG-TIME[DELTA:   0.00048]  MESSAGE:TEST "Privileges: 'Show Variables' Query" RESULT: passed
+
+START TEST "Source Database Triggers" [CLASS: DUPX_Validation_test_db_triggers]
+LOG-TIME[DELTA:   0.00003]  MESSAGE:TEST "Source Database Triggers" RESULT: passed
+
+START TEST "Character Set and Collation Support" [CLASS: DUPX_Validation_test_db_supported_default_charset]
+LOG-TIME[DELTA:   0.00117]  MESSAGE:TEST "Character Set and Collation Support" RESULT: soft warning
+
+START TEST "Character Set and  Collation Capability" [CLASS: DUPX_Validation_test_db_supported_charset]
+LOG-TIME[DELTA:   0.00018]  MESSAGE:TEST "Character Set and  Collation Capability" RESULT: passed
+
+START TEST "Tables Case Sensitivity" [CLASS: DUPX_Validation_test_db_case_sensitive_tables]
+LOG-TIME[DELTA:   0.00002]  MESSAGE:TEST "Tables Case Sensitivity" RESULT: skip
+
+START TEST "Tables Flagged for Removal or Backup" [CLASS: DUPX_Validation_test_db_affected_tables]
+LOG-TIME[DELTA:   0.00016]  MESSAGE:TEST "Tables Flagged for Removal or Backup" RESULT: passed
+
+START TEST "Prefix too long" [CLASS: DUPX_Validation_test_db_prefix_too_long]
+LOG-TIME[DELTA:   0.00029]  MESSAGE:TEST "Prefix too long" RESULT: passed
+
+START TEST "Database cleanup" [CLASS: DUPX_Validation_test_db_cleanup]
+LOG-TIME[DELTA:   0.00002]  MESSAGE:TEST "Database cleanup" RESULT: skip
+
+START TEST "User created cleanup" [CLASS: DUPX_Validation_test_db_user_cleanup]
+LOG-TIME[DELTA:   0.00001]  MESSAGE:TEST "User created cleanup" RESULT: skip
+
+
+CTRL PARAMS AFTER VALIDATION
+DEFAULT DB_CHARSET [utf8] isn't valid, update DB_CHARSET to utf8mb3 and DB_COLLATE set empty
+AJAX ACTION [validate] SUCCESS
+-------------------------
+
+LOG-TIME[/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/src/Core/Bootstrap.php:76] RESET TIME
+
+-------------------------
+AJAX ACTION [proceed_confirm_dialog] START
+AJAX ACTION [proceed_confirm_dialog] SUCCESS
+-------------------------
+
+LOG-TIME[/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/src/Core/Bootstrap.php:76] RESET TIME
+
+-------------------------
+AJAX ACTION [sparam_s1] START
+AJAX ACTION [sparam_s1] SUCCESS
+-------------------------
+
+LOG-TIME[/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/src/Core/Bootstrap.php:76] RESET TIME
+
+-------------------------
+AJAX ACTION [extract] START
+findDupInstallerFolder error; set no subfolder
+INITIALIZE FILTERS
+--------------------------------------
+PATHS MAPPING : "/var/www/vhosts/halifax-now.ca/httpdocs"
+--------------------------------------
+********************************************************************************
+* DUPLICATOR-PRO: Install-Log
+* STEP-1 START @ 08:25:29
+* NOTICE: Do NOT post to public sites or forums!!
+********************************************************************************
+USER INPUTS
+INSTALL TYPE________: single site
+BLOG NAME___________: "Halifax Now"
+HOME URL NEW________: "https://halifax-now.ca"
+SITE URL NEW________: "https://halifax-now.ca"
+CONTENT URL NEW_____: "https://halifax-now.ca/wp-content"
+UPLOAD URL NEW______: "https://halifax-now.ca/wp-content/uploads"
+PLUGINS URL NEW_____: "https://halifax-now.ca/wp-content/plugins"
+MUPLUGINS URL NEW___: "https://halifax-now.ca/wp-content/mu-plugins"
+HOME PATH NEW_______: "/var/www/vhosts/halifax-now.ca/httpdocs"
+SITE PATH NEW_______: "/var/www/vhosts/halifax-now.ca/httpdocs"
+CONTENT PATH NEW____: "/var/www/vhosts/halifax-now.ca/httpdocs/wp-content"
+UPLOAD PATH NEW_____: "/var/www/vhosts/halifax-now.ca/httpdocs/wp-content/uploads"
+PLUGINS PATH NEW____: "/var/www/vhosts/halifax-now.ca/httpdocs/wp-content/plugins"
+MUPLUGINS PATH NEW__: "/var/www/vhosts/halifax-now.ca/httpdocs/wp-content/mu-plugins"
+ARCHIVE ACTION______: "donothing"
+SKIP WP FILES_______: "none"
+ARCHIVE ENGINE______: "ziparchivechunking"
+SET DIR PERMS_______: true
+DIR PERMS VALUE_____: 0755
+SET FILE PERMS______: true
+FILE PERMS VALUE____: 0644
+SAFE MODE___________: 0
+LOGGING_____________: 1
+ZIP THROTTLING______: false
+WP CONFIG___________: "modify"
+HTACCESS CONFIG_____: "new"
+OTHER CONFIG________: "new"
+FILE TIME___________: "current"
+REMOVE RENDUNDANT___: false
+********************************************************************************
+
+REMOVE FILTERS
+	DIR : "/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer"
+	FILE: "/var/www/vhosts/halifax-now.ca/httpdocs/20260112_halifaxnow_[HASH]_20260112200800_installer-backup.php"
+	FILE: "/var/www/vhosts/halifax-now.ca/httpdocs/20260112_halifaxnow_[HASH]_20260112200800_archive.zip"
+	FILE: "/var/www/vhosts/halifax-now.ca/httpdocs/installer.php"
+	FILE: "/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer-bootlog__29a12fc-12200800.txt"
+EXTRACTION FILTERS
+	DIR : "dup-installer"
+	FILE: "20260112_halifaxnow_[HASH]_20260112200800_installer-backup.php"
+--------------------------------------
+
+
+EXTRACTION: ZIP CHUNKING >>> START
+BEFORE EXTRACION ACTIONS
+
+*** RESET CONFIG FILES IN CURRENT HOSTING
+*** RESET CONFIG FILES END
+REMOVE DONOTHING FILES
+LOG-TIME RESET TIME
+REMOVE FILES
+LOG-TIME[DELTA:   0.00117]  MESSAGE:FOLDERS REMOVED
+MAINTENANCE MODE ENABLE
+
+*** CREATE FOLDER AND PERMISSION PREPARE
+FOLDER PREPARE DONE
+ARCHIVE OFFSET 0
+CHUNK COMPLETE - RUNTIME: 5.0283 sec. - Files processed: 5,811 of 42,012
+AJAX ACTION [extract] SUCCESS
+-------------------------
+
+LOG-TIME[/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/src/Core/Bootstrap.php:76] RESET TIME
+
+-------------------------
+AJAX ACTION [extract] START
+ARCHIVE OFFSET 5811
+--------------------------------------
+PATHS MAPPING : "/var/www/vhosts/halifax-now.ca/httpdocs"
+--------------------------------------
+CHUNK COMPLETE - RUNTIME: 5.0147 sec. - Files processed: 31,793 of 42,012
+AJAX ACTION [extract] SUCCESS
+-------------------------
+
+LOG-TIME[/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/src/Core/Bootstrap.php:76] RESET TIME
+
+-------------------------
+AJAX ACTION [extract] START
+ARCHIVE OFFSET 31793
+--------------------------------------
+PATHS MAPPING : "/var/www/vhosts/halifax-now.ca/httpdocs"
+--------------------------------------
+FILE EXTRACTION: done processing last file in list of 42981
+
+EXTRACTION: ZIP CHUNKING >>> DONE
+
+EXTRACTION COMPLETE @ 08:25:41 - RUNTIME: 12.5955 sec. - Files processed: 42,012 of 42,012
+AJAX ACTION [extract] SUCCESS
+-------------------------
+
+LOG-TIME[/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/src/Core/Bootstrap.php:76] RESET TIME
+
+-------------------------
+AJAX ACTION [dbinstall] START
+ADD PREFIX META MAP ID 0 wpuj_
+
+
+
+********************************************************************************
+* DUPLICATOR PRO INSTALL-LOG
+* STEP-2 START @ 08:25:42
+* NOTICE: Do NOT post to public sites or forums!!
+********************************************************************************
+USER INPUTS
+DB ENGINE___________: "chunk"
+VIEW MODE___________: "basic"
+DB ACTION___________: "empty"
+DB HOST_____________: "**OBSCURED**"
+DB NAME_____________: "**OBSCURED**"
+DB PASS_____________: "**OBSCURED**"
+DB PORT_____________: "**OBSCURED**"
+USER MODE___________: "overwrite"
+TABLE PREFIX________: "wpuj_"
+MYSQL MODE__________: "DEFAULT"
+MYSQL MODE OPTS_____: ""
+CHARSET_____________: "utf8mb3"
+COLLATE_____________: ""
+CUNKING_____________: true
+VIEW CREATION_______: true
+STORED PROCEDURE____: true
+FUNCTIONS___________: true
+REMOVE DEFINER______: false
+SPLIT CREATES_______: true
+SQL FILES___________: 1 (31.37MB)
+	1)20260112200800-dump.sql (31.37MB)
+--------------------------------------
+TABLES
+--------------------------------------
+TABLE "wpuj_actionscheduler_actions"____________________[ROWS:    7067] [EXTRACT|REPLACE] [INST NAME: wpuj_actionscheduler_actions]
+TABLE "wpuj_actionscheduler_claims"_____________________[ROWS:      19] [EXTRACT|REPLACE] [INST NAME: wpuj_actionscheduler_claims]
+TABLE "wpuj_actionscheduler_groups"_____________________[ROWS:       9] [EXTRACT|REPLACE] [INST NAME: wpuj_actionscheduler_groups]
+TABLE "wpuj_actionscheduler_logs"_______________________[ROWS:   21202] [EXTRACT|REPLACE] [INST NAME: wpuj_actionscheduler_logs]
+TABLE "wpuj_commentmeta"________________________________[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_commentmeta]
+TABLE "wpuj_comments"___________________________________[ROWS:       8] [EXTRACT|REPLACE] [INST NAME: wpuj_comments]
+TABLE "wpuj_duplicator_activity_logs"___________________[ROWS:       4] [EXTRACT|REPLACE] [INST NAME: wpuj_duplicator_activity_logs]
+TABLE "wpuj_duplicator_backups"_________________________[ROWS:       2] [EXTRACT|REPLACE] [INST NAME: wpuj_duplicator_backups]
+TABLE "wpuj_duplicator_entities"________________________[ROWS:       8] [EXTRACT|REPLACE] [INST NAME: wpuj_duplicator_entities]
+TABLE "wpuj_ea11y_global_remediation_relationship"______[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_ea11y_global_remediation_relationship]
+TABLE "wpuj_ea11y_pages_remediation"____________________[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_ea11y_pages_remediation]
+TABLE "wpuj_ea11y_page_scanned"_________________________[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_ea11y_page_scanned]
+TABLE "wpuj_ea11y_scanner_results"______________________[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_ea11y_scanner_results]
+TABLE "wpuj_e_events"___________________________________[ROWS:      13] [EXTRACT|REPLACE] [INST NAME: wpuj_e_events]
+TABLE "wpuj_links"______________________________________[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_links]
+TABLE "wpuj_litespeed_url"______________________________[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_litespeed_url]
+TABLE "wpuj_litespeed_url_file"_________________________[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_litespeed_url_file]
+TABLE "wpuj_options"____________________________________[ROWS:     855] [EXTRACT|REPLACE] [INST NAME: wpuj_options]
+TABLE "wpuj_postmeta"___________________________________[ROWS:   29792] [EXTRACT|REPLACE] [INST NAME: wpuj_postmeta]
+TABLE "wpuj_posts"______________________________________[ROWS:    2827] [EXTRACT|REPLACE] [INST NAME: wpuj_posts]
+TABLE "wpuj_shepherd_tec_tasks"_________________________[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_shepherd_tec_tasks]
+TABLE "wpuj_smush_dir_images"___________________________[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_smush_dir_images]
+TABLE "wpuj_snippets"___________________________________[ROWS:       6] [EXTRACT|REPLACE] [INST NAME: wpuj_snippets]
+TABLE "wpuj_tec_events"_________________________________[ROWS:     899] [EXTRACT|REPLACE] [INST NAME: wpuj_tec_events]
+TABLE "wpuj_tec_kv_cache"_______________________________[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_tec_kv_cache]
+TABLE "wpuj_tec_occurrences"____________________________[ROWS:    1182] [EXTRACT|REPLACE] [INST NAME: wpuj_tec_occurrences]
+TABLE "wpuj_tec_posts_and_ticket_groups"________________[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_tec_posts_and_ticket_groups]
+TABLE "wpuj_tec_series_relationships"___________________[ROWS:      11] [EXTRACT|REPLACE] [INST NAME: wpuj_tec_series_relationships]
+TABLE "wpuj_tec_slr_layouts"____________________________[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_tec_slr_layouts]
+TABLE "wpuj_tec_slr_maps"_______________________________[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_tec_slr_maps]
+TABLE "wpuj_tec_slr_seat_types"_________________________[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_tec_slr_seat_types]
+TABLE "wpuj_tec_slr_sessions"___________________________[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_tec_slr_sessions]
+TABLE "wpuj_tec_ticket_groups"__________________________[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_tec_ticket_groups]
+TABLE "wpuj_termmeta"___________________________________[ROWS:      30] [EXTRACT|REPLACE] [INST NAME: wpuj_termmeta]
+TABLE "wpuj_terms"______________________________________[ROWS:     249] [EXTRACT|REPLACE] [INST NAME: wpuj_terms]
+TABLE "wpuj_term_relationships"_________________________[ROWS:    3194] [EXTRACT|REPLACE] [INST NAME: wpuj_term_relationships]
+TABLE "wpuj_term_taxonomy"______________________________[ROWS:     249] [EXTRACT|REPLACE] [INST NAME: wpuj_term_taxonomy]
+TABLE "wpuj_usermeta"___________________________________[ROWS:      96] [EXTRACT|REPLACE] [INST NAME: wpuj_usermeta]
+TABLE "wpuj_users"______________________________________[ROWS:       2] [EXTRACT|REPLACE] [INST NAME: wpuj_users]
+TABLE "wpuj_wpforms_logs"_______________________________[ROWS:       3] [EXTRACT|REPLACE] [INST NAME: wpuj_wpforms_logs]
+TABLE "wpuj_wpforms_payments"___________________________[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_wpforms_payments]
+TABLE "wpuj_wpforms_payment_meta"_______________________[ROWS:       0] [EXTRACT|REPLACE] [INST NAME: wpuj_wpforms_payment_meta]
+TABLE "wpuj_wpforms_tasks_meta"_________________________[ROWS:       9] [EXTRACT|REPLACE] [INST NAME: wpuj_wpforms_tasks_meta]
+TABLE "wpuj_yoast_indexable"____________________________[ROWS:    7442] [EXTRACT|REPLACE] [INST NAME: wpuj_yoast_indexable]
+TABLE "wpuj_yoast_indexable_hierarchy"__________________[ROWS:    7438] [EXTRACT|REPLACE] [INST NAME: wpuj_yoast_indexable_hierarchy]
+TABLE "wpuj_yoast_migrations"___________________________[ROWS:      24] [EXTRACT|REPLACE] [INST NAME: wpuj_yoast_migrations]
+TABLE "wpuj_yoast_primary_term"_________________________[ROWS:     297] [EXTRACT|REPLACE] [INST NAME: wpuj_yoast_primary_term]
+TABLE "wpuj_yoast_seo_links"____________________________[ROWS:     271] [EXTRACT|REPLACE] [INST NAME: wpuj_yoast_seo_links]
+********************************************************************************
+
+DATABASE ERROR: mysqli_set_charset "utf8mb3" MSG: Invalid character set was provided
+DATABASE ERROR: mysqli_set_charset "utf8mb3" MSG: Invalid character set was provided
+--------------------------------------
+DATABASE-ENVIRONMENT
+--------------------------------------
+MYSQL VERSION:	This Server: 10.11.15 -- Build Server: 11.4.9
+TIMEOUT:	5000
+MAXPACK:	536870912
+SQLMODE-GLOBAL:	ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+SQLMODE-SESSION:NO_AUTO_VALUE_ON_ZERO
+DROP ALL TABLES
+--------------------------------------
+DATABASE RESULTS
+--------------------------------------
+QUERY FIXES
+GLOBAL RULES ADDED: PROC AND VIEWS
+
+QUERY FIXES GLOBAL RULES
+	SEARCH  => /^(\s*(?:\/\*!\d+\s)?\s*(?:CREATE.+)?DEFINER\s*=)([^\*\s]+)(.*)$/m
+	REPLACE => $1`fifwvkap_fldg1`@`localhost`$3
+
+	SEARCH  => /^(\s*CREATE.+(?:PROCEDURE|FUNCTION)[\s\S]*)(BEGIN)([\s\S]*)$/
+	REPLACE => $1SQL SECURITY INVOKER
+$2$3
+
+--------------------------------------
+** DATABASE CHUNK install start
+--------------------------------------
+PROCESSING SQL FILE 20260112200800-dump.sql (1 of 1)
+OFFSET 0 OF 32897901
+DATABASE ERROR: mysqli_set_charset "utf8mb3" MSG: Invalid character set was provided
+Auto Commit set to false successfully
+NO TABLE TO SKIP
+DATABASE CHUNK: CREATION TABLE MARKER FOUND
+Auto Commit set to true successfully
+ALL SQL FILES PROCESSED
+--------------------------------------
+** DATABASE CHUNK install end
+--------------------------------------
+ERRORS FOUND:	0
+DROPPED TABLES:	0
+RENAMED TABLES:	0
+QUERIES RAN:	266
+
+TABLES ROWS IN DATABASE AFTER EXTRACTION
+
+TABLE "wpuj_actionscheduler_actions"____________________[ROWS:  7067]
+TABLE "wpuj_actionscheduler_claims"_____________________[ROWS:    19]
+TABLE "wpuj_actionscheduler_groups"_____________________[ROWS:     9]
+TABLE "wpuj_actionscheduler_logs"_______________________[ROWS: 21202]
+TABLE "wpuj_commentmeta"________________________________[ROWS:     0]
+TABLE "wpuj_comments"___________________________________[ROWS:     8]
+TABLE "wpuj_duplicator_activity_logs"___________________[ROWS:     4]
+TABLE "wpuj_duplicator_backups"_________________________[ROWS:     2]
+TABLE "wpuj_duplicator_entities"________________________[ROWS:     8]
+TABLE "wpuj_e_events"___________________________________[ROWS:    13]
+TABLE "wpuj_ea11y_global_remediation_relationship"______[ROWS:     0]
+TABLE "wpuj_ea11y_page_scanned"_________________________[ROWS:     0]
+TABLE "wpuj_ea11y_pages_remediation"____________________[ROWS:     0]
+TABLE "wpuj_ea11y_scanner_results"______________________[ROWS:     0]
+TABLE "wpuj_links"______________________________________[ROWS:     0]
+TABLE "wpuj_litespeed_url"______________________________[ROWS:     0]
+TABLE "wpuj_litespeed_url_file"_________________________[ROWS:     0]
+TABLE "wpuj_options"____________________________________[ROWS:   855]
+TABLE "wpuj_postmeta"___________________________________[ROWS: 29792]
+TABLE "wpuj_posts"______________________________________[ROWS:  2827]
+TABLE "wpuj_shepherd_tec_tasks"_________________________[ROWS:     0]
+TABLE "wpuj_smush_dir_images"___________________________[ROWS:     0]
+TABLE "wpuj_snippets"___________________________________[ROWS:     6]
+TABLE "wpuj_tec_events"_________________________________[ROWS:   899]
+TABLE "wpuj_tec_kv_cache"_______________________________[ROWS:     0]
+TABLE "wpuj_tec_occurrences"____________________________[ROWS:  1182]
+TABLE "wpuj_tec_posts_and_ticket_groups"________________[ROWS:     0]
+TABLE "wpuj_tec_series_relationships"___________________[ROWS:    11]
+TABLE "wpuj_tec_slr_layouts"____________________________[ROWS:     0]
+TABLE "wpuj_tec_slr_maps"_______________________________[ROWS:     0]
+TABLE "wpuj_tec_slr_seat_types"_________________________[ROWS:     0]
+TABLE "wpuj_tec_slr_sessions"___________________________[ROWS:     0]
+TABLE "wpuj_tec_ticket_groups"__________________________[ROWS:     0]
+TABLE "wpuj_term_relationships"_________________________[ROWS:  3194]
+TABLE "wpuj_term_taxonomy"______________________________[ROWS:   249]
+TABLE "wpuj_termmeta"___________________________________[ROWS:    30]
+TABLE "wpuj_terms"______________________________________[ROWS:   249]
+TABLE "wpuj_usermeta"___________________________________[ROWS:    96]
+TABLE "wpuj_users"______________________________________[ROWS:     2]
+TABLE "wpuj_wpforms_logs"_______________________________[ROWS:     3]
+TABLE "wpuj_wpforms_payment_meta"_______________________[ROWS:     0]
+TABLE "wpuj_wpforms_payments"___________________________[ROWS:     0]
+TABLE "wpuj_wpforms_tasks_meta"_________________________[ROWS:     9]
+TABLE "wpuj_yoast_indexable"____________________________[ROWS:  7442]
+TABLE "wpuj_yoast_indexable_hierarchy"__________________[ROWS:  7438]
+TABLE "wpuj_yoast_migrations"___________________________[ROWS:    24]
+TABLE "wpuj_yoast_primary_term"_________________________[ROWS:   297]
+TABLE "wpuj_yoast_seo_links"____________________________[ROWS:   271]
+
+INSERT DATA RUNTIME: 3.1283 sec.
+STEP-2 COMPLETE @ 08:25:45 - RUNTIME: 3.1283 sec.
+AJAX ACTION [dbinstall] SUCCESS
+-------------------------
+
+LOG-TIME[/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/src/Core/Bootstrap.php:76] RESET TIME
+
+-------------------------
+AJAX ACTION [webupdate] START
+
+====================================
+SET SEARCH AND REPLACE LIST INSTALL TYPE single site
+====================================
+SEARCH ITEM[T:path |P:12] SEARCH: /home/halifoof/public_html REPLACE: /var/www/vhosts/halifax-now.ca/httpdocs [SCOPE: ALL]
+SEARCH ITEM[T:urlnd|P:10] SEARCH: http://halifax-now.ca/wp-content/uploads REPLACE: https://halifax-now.ca/wp-content/uploads [SCOPE: ALL]
+SEARCH ITEM[T:urlnd|P:10] SEARCH: http://halifax-now.ca/wp-content/mu-plugins REPLACE: https://halifax-now.ca/wp-content/mu-plugins [SCOPE: ALL]
+CHUNK LOAD DATA: IS NULL 
+CHUNK ACTION: CURRENT [start][][]
+DATABASE ERROR: mysqli_set_charset "utf8mb3" MSG: Invalid character set was provided
+
+
+********************************************************************************
+DUPLICATOR PRO INSTALL-LOG
+STEP-3 START @ 08:25:45
+NOTICE: Do NOT post to public sites or forums
+********************************************************************************
+CHARSET SERVER:	"latin1"
+CHARSET CLIENT:	"latin1"
+********************************************************************************
+OPTIONS:
+SKIP PATH REPLACE_____: false
+DISALLOW_FILE_EDIT____: [value = ], [inWpConfig = ]
+DISALLOW_FILE_MODS____: [value = ], [inWpConfig = ]
+AUTOSAVE_INTERVAL_____: [value = 60], [inWpConfig = ]
+WP_POST_REVISIONS_____: [value = 9223372036854775807], [inWpConfig = ]
+FORCE_SSL_ADMIN_______: [value = ], [inWpConfig = ]
+WP_AUTO_UPDATE_CORE___: [value = false], [inWpConfig = ]
+WP_CACHE______________: [value = 1], [inWpConfig = 1]
+WPCACHEHOME___________: [value = /], [inWpConfig = ]
+WP_DEBUG______________: [value = ], [inWpConfig = 1]
+WP_DEBUG_LOG__________: [value = ], [inWpConfig = ]
+WP_DEBUG_DISPLAY______: [value = 1], [inWpConfig = ]
+WP_DISABLE_FATAL_ERROR_HANDLER: [value = ], [inWpConfig = ]
+SCRIPT_DEBUG__________: [value = ], [inWpConfig = ]
+CONCATENATE_SCRIPTS___: [value = ], [inWpConfig = ]
+SAVEQUERIES___________: [value = 1], [inWpConfig = ]
+ALTERNATE_WP_CRON_____: [value = ], [inWpConfig = ]
+DISABLE_WP_CRON_______: [value = ], [inWpConfig = ]
+WP_CRON_LOCK_TIMEOUT__: [value = 60], [inWpConfig = ]
+COOKIE_DOMAIN_________: [value = ], [inWpConfig = ]
+WP_MEMORY_LIMIT_______: [value = 40M], [inWpConfig = ]
+WP_MAX_MEMORY_LIMIT___: [value = 1024M], [inWpConfig = ]
+WP_TEMP_DIR___________: [value = ], [inWpConfig = ]
+********************************************************************************
+
+********************************************************************************
+CHUNK PARAMS:
+maxIteration__________: 0
+timeOut_______________: 5000000
+throttling____________: 2000
+rowsPerPage___________: 1000
+********************************************************************************
+
+CHUNK ACTION: CURRENT [cleanup_trans][][]
+CLEAN OPTIONS [wpuj_options]
+	`option_name` = "duplicator_pro_plugin_data_stats"
+	`option_name` LIKE "\_transient%"
+	`option_name` LIKE "\_site\_transient%"
+	`option_name` IN ("duplicator_pro_ui_view_state","duplicator_pro_package_active","duplicator_pro_settings")
+DATABASE OPTIONS DELETED [ROWS:   246]
+DATABASE ACTIVITY LOGS DELETED [ROWS:     4]
+CHUNK ACTION: CURRENT [cleanup_extra][][]
+CLEANUP EXTRA
+	- SKIP DROP VIEWS
+	- SKIP DROP PROCS
+	- SKIP DROP FUNCS
+CHUNK ACTION: CURRENT [cleanup_packages][][]
+EMPTY PACKAGES TABLE
+CLEAN PACKAGES
+DATABASE PACKAGE DELETED [ROWS:     2]
+CHUNK ACTION: CURRENT [init][][]
+
+EVALUATE TABLE: "wpuj_actionscheduler_actions"____________________[ROWS:  7067][PG:   8][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_actions][0]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_actions][1]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_actions][2]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_actions][3]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_actions][4]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_actions][5]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_actions][6]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_actions][7]
+
+EVALUATE TABLE: "wpuj_actionscheduler_claims"_____________________[ROWS:    19][PG:   1][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_actionscheduler_groups"_____________________[ROWS:     9][PG:   1][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_groups][0]
+
+EVALUATE TABLE: "wpuj_actionscheduler_logs"_______________________[ROWS: 21202][PG:  22][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][0]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][1]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][2]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][3]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][4]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][5]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][6]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][7]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][8]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][9]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][10]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][11]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][12]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][13]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][14]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][15]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][16]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][17]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][18]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][19]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][20]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_actionscheduler_logs][21]
+
+EVALUATE TABLE: "wpuj_commentmeta"________________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_comments"___________________________________[ROWS:     8][PG:   1][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_comments][0]
+
+EVALUATE TABLE: "wpuj_duplicator_activity_logs"___________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_duplicator_backups"_________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_duplicator_entities"________________________[ROWS:     8][PG:   1][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_duplicator_entities][0]
+
+EVALUATE TABLE: "wpuj_ea11y_global_remediation_relationship"______[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_ea11y_pages_remediation"____________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_ea11y_page_scanned"_________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_ea11y_scanner_results"______________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_e_events"___________________________________[ROWS:    13][PG:   1][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_e_events][0]
+
+EVALUATE TABLE: "wpuj_links"______________________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_litespeed_url"______________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_litespeed_url_file"_________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_options"____________________________________[ROWS:   609][PG:   1][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_options][0]
+
+EVALUATE TABLE: "wpuj_postmeta"___________________________________[ROWS: 29792][PG:  30][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][0]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][1]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][2]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][3]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][4]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][5]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][6]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][7]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][8]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][9]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][10]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][11]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][12]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][13]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][14]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][15]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][16]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][17]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][18]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][19]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][20]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][21]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][22]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][23]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][24]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][25]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][26]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][27]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][28]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_postmeta][29]
+
+EVALUATE TABLE: "wpuj_posts"______________________________________[ROWS:  2827][PG:   3][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_posts][0]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_posts][1]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_posts][2]
+
+EVALUATE TABLE: "wpuj_shepherd_tec_tasks"_________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_smush_dir_images"___________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_snippets"___________________________________[ROWS:     6][PG:   1][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_snippets][0]
+
+EVALUATE TABLE: "wpuj_tec_events"_________________________________[ROWS:   899][PG:   1][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_tec_events][0]
+
+EVALUATE TABLE: "wpuj_tec_kv_cache"_______________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_tec_occurrences"____________________________[ROWS:  1182][PG:   2][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_tec_occurrences][0]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_tec_occurrences][1]
+
+EVALUATE TABLE: "wpuj_tec_posts_and_ticket_groups"________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_tec_series_relationships"___________________[ROWS:    11][PG:   1][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_tec_slr_layouts"____________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_tec_slr_maps"_______________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_tec_slr_seat_types"_________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_tec_slr_sessions"___________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_tec_ticket_groups"__________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_termmeta"___________________________________[ROWS:    30][PG:   1][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_termmeta][0]
+
+EVALUATE TABLE: "wpuj_terms"______________________________________[ROWS:   249][PG:   1][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_terms][0]
+
+EVALUATE TABLE: "wpuj_term_relationships"_________________________[ROWS:  3194][PG:   4][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_term_taxonomy"______________________________[ROWS:   249][PG:   1][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_term_taxonomy][0]
+
+EVALUATE TABLE: "wpuj_usermeta"___________________________________[ROWS:    96][PG:   1][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_usermeta][0]
+
+EVALUATE TABLE: "wpuj_users"______________________________________[ROWS:     2][PG:   1][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_users][0]
+
+EVALUATE TABLE: "wpuj_wpforms_logs"_______________________________[ROWS:     3][PG:   1][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_wpforms_logs][0]
+
+EVALUATE TABLE: "wpuj_wpforms_payments"___________________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_wpforms_payment_meta"_______________________[ROWS:     0][PG:   0][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_wpforms_tasks_meta"_________________________[ROWS:     9][PG:   1][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_wpforms_tasks_meta][0]
+
+EVALUATE TABLE: "wpuj_yoast_indexable"____________________________[ROWS:  7442][PG:   8][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_yoast_indexable][0]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_yoast_indexable][1]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_yoast_indexable][2]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_yoast_indexable][3]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_yoast_indexable][4]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_yoast_indexable][5]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_yoast_indexable][6]
+	CHUNK ACTION: CURRENT [search_replace][wpuj_yoast_indexable][7]
+
+EVALUATE TABLE: "wpuj_yoast_indexable_hierarchy"__________________[ROWS:  7438][PG:   8][SCAN:no columns  ]
+
+EVALUATE TABLE: "wpuj_yoast_migrations"___________________________[ROWS:    24][PG:   1][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_yoast_migrations][0]
+
+EVALUATE TABLE: "wpuj_yoast_primary_term"_________________________[ROWS:   297][PG:   1][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_yoast_primary_term][0]
+
+EVALUATE TABLE: "wpuj_yoast_seo_links"____________________________[ROWS:   271][PG:   1][SCAN:text columns]
+	--- BASE STRINGS ---
+	SEARCH[urlnd]  1:"http://halifax-now.ca/wp-content/uploads" ========> "https://halifax-now.ca/wp-content/uploads"
+	SEARCH[urlnd]  2:"http://halifax-now.ca/wp-content/mu-plugins" =====> "https://halifax-now.ca/wp-content/mu-plugins"
+	SEARCH[path ]  3:"/home/halifoof/public_html" ======================> "/var/www/vhosts/halifax-now.ca/httpdocs"
+	CHUNK ACTION: CURRENT [search_replace][wpuj_yoast_seo_links][0]
+--------------------------------------
+SCANNED:	Tables:48 	|	 Rows:72294 	|	 Cells:820044 
+UPDATED:	Tables:5 	|	 Rows:1038 	|	 Cells:1578 
+ERRORS:		0 
+RUNTIME:	2.818000 sec
+CHUNK ACTION: CURRENT [rem_maintenance][][]
+
+====================================
+REMOVE MAINTENANCE MODE
+====================================
+MAINTENANCE MODE DISABLE
+CHUNK ACTION: CURRENT [rem_licenze_key][][]
+
+====================================
+REMOVE LICENSE KEY
+====================================
+CHUNK ACTION: CURRENT [config_update][][]
+SET CONFIG FILES
+Retained original entry wpconfig target:/var/www/vhosts/halifax-now.ca/httpdocs/wp-config.php
+New .htaccess file created:/var/www/vhosts/halifax-now.ca/httpdocs/.htaccess
+
+====================================
+CONFIGURATION FILE UPDATES
+====================================
+	UPDATE ABSPATH "__DIR__ . '/'"
+	UPDATE DB_NAME ""fifwvkap_fldg1""
+	UPDATE DB_USER "** OBSCURED **"
+	UPDATE DB_PASSWORD "** OBSCURED **"
+	UPDATE DB_HOST ""localhost""
+	UPDATE DB_CHARSET "utf8mb3"
+	UPDATE DB_COLLATE ""
+	WP CONFIG UPDATE WP_CACHE "true"
+	WP CONFIG UPDATE WP_DEBUG "false"
+	
+*** UPDATED WP CONFIG FILE ***
+
+====================================
+HTACCESS UPDATE
+====================================
+
+WEB SERVER CONFIGURATION FILE UPDATED:
+- Preparing .htaccess file with basic setup.
+HTACCESS FILE - Successfully updated the .htaccess file setting.
+
+====================================
+INDEX.PHP UPDATE
+====================================
+INDEX.PHP updated with new blog header "__DIR__ . '/wp-blog-header.php'"
+
+CHUNK ACTION: CURRENT [gen_update][][]
+
+====================================
+GENERAL UPDATES
+====================================
+UPDATE OPTION home ON TABLE wpuj_options
+UPDATE OPTION siteurl ON TABLE wpuj_options
+UPDATE OPTION duplicator_pro_exe_safe_mode ON TABLE wpuj_options
+
+====================================
+MANAGE PLUGINS
+====================================
+CHUNK ACTION: CURRENT [gen_clean][][]
+
+====================================
+GENERAL CLEANUP
+====================================
+ - REMOVED 0 storage items
+ - REMOVED 0 schedule items
+RESET ALL USERS SESSION TOKENS
+MIGRATION INFO SET
+CHUNK ACTION: CURRENT [create_admin][][]
+
+====================================
+RESET USERS PASSWORD
+====================================
+CHUNK ACTION: CURRENT [notice_test][][]
+
+====================================
+CHECK FOR INDEX.HTML
+====================================
+NO INDEX.HTML WAS FOUND
+
+====================================
+NOTICES TEST
+====================================
+No General Notices Found
+
+CHUNK ACTION: CURRENT [cleanup_tmp_files][][]
+
+====================================
+CLEANUP TMP FILES
+====================================
+CHUNK ACTION: CURRENT [set_files_perms][][]
+
+====================================
+SET PARAMS PERMISSION
+====================================
+
+*** SET FOLDER PERMISSION AFTER EXTRACTION
+--------------------------------------
+PATHS MAPPING : "/var/www/vhosts/halifax-now.ca/httpdocs"
+--------------------------------------
+SET FOLDER PERMISSION DONE
+CHUNK ACTION: CURRENT [final_report][][]
+
+====================================
+FINAL REPORT NOTICES
+====================================
+
+STEP-3 COMPLETE @ 08:25:48 - RUNTIME: 3.0472 sec. 
+
+
+AJAX ACTION [webupdate] SUCCESS
+-------------------------
+
+LOG-TIME[/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/src/Core/Bootstrap.php:76] RESET TIME
+
+-------------------------
+AJAX ACTION [finalpre] START
+AJAX ACTION [finalpre] SUCCESS
+-------------------------
+
+LOG-TIME[/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/src/Core/Bootstrap.php:76] RESET TIME
+
+-------------------------
+AJAX ACTION [finalafter] START
+AJAX ACTION [finalafter] SUCCESS
+-------------------------
+
+LOG-TIME[/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/src/Core/Bootstrap.php:76] RESET TIME
+STEP ACTION: "on-validate"
+
+====================================
+FINAL REPORT NOTICES LIST
+====================================
+-----------------------
+[NOTICE] Warnings or notices on WordPress front-end tests!
+	SECTIONS: general
+	LONG MSG: SCRIPT FILE TEST: /var/www/vhosts/halifax-now.ca/httpdocs/index.php
+E_DEPRECATED Tribe\Events\Pro\Views\V2\Geo_Loc\Geocoding_Handler::filter_repository_args(): Implicitly marking parameter $context as nullable is deprecated, the explicit nullable type must be used instead
+	FILE: /var/www/vhosts/halifax-now.ca/httpdocs/wp-content/plugins/events-calendar-pro/src/Tribe/Views/V2/Geo_Loc/Geocoding_Handler.php[51]
+	--- TRACE ---
+	CLASS___: Duplicator\Installer\Utils\Tests\WP\TestsErrorHandler::shutdownFILE: [-1]
+-----
+For solutions to these issues see the online FAQs 
+https://duplicator.com/knowledge-base 
+
+
+-----------------------
+[NOTICE] Warnings or notices on WordPress backend tests!
+	SECTIONS: general
+	LONG MSG: SCRIPT FILE TEST: /var/www/vhosts/halifax-now.ca/httpdocs/wp-login.php
+E_DEPRECATED Tribe__Repository__Query_Filters::meta_not(): Implicitly marking parameter $query_slug as nullable is deprecated, the explicit nullable type must be used instead
+	FILE: /var/www/vhosts/halifax-now.ca/httpdocs/wp-content/plugins/the-events-calendar/common/src/Tribe/Repository/Query_Filters.php[1148]
+	--- TRACE ---
+	CLASS___: Duplicator\Installer\Utils\Tests\WP\TestsErrorHandler::shutdownFILE: [-1]
+-----
+For solutions to these issues see the online FAQs 
+https://duplicator.com/knowledge-base 
+
+
+====================================
+LOG-TIME[/var/www/vhosts/halifax-now.ca/httpdocs/dup-installer/ctrls/ctrl.base.php:191][DELTA:   1.94708]  MESSAGE:END RENDER PAGE
