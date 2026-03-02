@@ -1,0 +1,331 @@
+/* ==========================================================================
+   HFX Now — Events Page UX Improvements
+   Loaded only on events pages via hfxnow-performance.php
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Category Filter Bar (pill/chip navigation)
+   -------------------------------------------------------------------------- */
+
+.hfxnow-category-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 16px 0;
+	margin-bottom: 8px;
+}
+
+.hfxnow-filter-pill {
+	display: inline-block;
+	padding: 8px 18px;
+	border-radius: 999px;
+	border: 1.5px solid #d0d0d0;
+	background: #fff;
+	color: #333;
+	font-size: 14px;
+	font-weight: 500;
+	text-decoration: none;
+	transition: background 0.15s, color 0.15s, border-color 0.15s;
+	white-space: nowrap;
+}
+
+.hfxnow-filter-pill:hover,
+.hfxnow-filter-pill:focus {
+	background: #f0f0f0;
+	border-color: #999;
+	color: #111;
+	text-decoration: none;
+}
+
+.hfxnow-filter-pill.active {
+	background: #1a1a1a;
+	border-color: #1a1a1a;
+	color: #fff;
+}
+
+/* --------------------------------------------------------------------------
+   Quick Date Filters (Today / This Week / This Month)
+   -------------------------------------------------------------------------- */
+
+.hfxnow-date-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 0 0 20px;
+	border-bottom: 1px solid #e5e5e5;
+	margin-bottom: 24px;
+}
+
+.hfxnow-date-pill {
+	display: inline-block;
+	padding: 6px 14px;
+	border-radius: 6px;
+	background: #f5f5f5;
+	color: #555;
+	font-size: 13px;
+	font-weight: 600;
+	text-decoration: none;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	transition: background 0.15s, color 0.15s;
+}
+
+.hfxnow-date-pill:hover,
+.hfxnow-date-pill:focus {
+	background: #e0e0e0;
+	color: #111;
+	text-decoration: none;
+}
+
+.hfxnow-date-pill.active {
+	background: #1a1a1a;
+	color: #fff;
+}
+
+/* --------------------------------------------------------------------------
+   Date Chip — Prominent calendar-style date on event cards
+   -------------------------------------------------------------------------- */
+
+.tribe-events-calendar-list__event-date-tag {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-width: 60px;
+	padding: 8px 12px;
+	background: #f5f5f5;
+	border-radius: 8px;
+	text-align: center;
+	flex-shrink: 0;
+}
+
+.tribe-events-calendar-list__event-date-tag-month {
+	font-size: 12px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: #888;
+	line-height: 1.2;
+}
+
+.tribe-events-calendar-list__event-date-tag-daynum {
+	font-size: 26px;
+	font-weight: 800;
+	color: #1a1a1a;
+	line-height: 1.1;
+}
+
+.tribe-events-calendar-list__event-date-tag-weekday {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	color: #999;
+	line-height: 1.2;
+}
+
+/* Ensure event row uses flexbox so the date chip sits alongside content */
+.tribe-events-calendar-list__event-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 16px;
+}
+
+.tribe-events-calendar-list__event-wrapper {
+	flex: 1;
+	min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Event Card Spacing & Layout
+   -------------------------------------------------------------------------- */
+
+.tribe-events-calendar-list__event {
+	padding: 20px 0;
+	border-bottom: 1px solid #e8e8e8;
+}
+
+.tribe-events-calendar-list__event:last-child {
+	border-bottom: none;
+}
+
+.tribe-events-calendar-list__event-title a {
+	font-size: 20px;
+	font-weight: 700;
+	line-height: 1.3;
+	color: #1a1a1a;
+	text-decoration: none;
+}
+
+.tribe-events-calendar-list__event-title a:hover {
+	text-decoration: underline;
+}
+
+.tribe-events-calendar-list__event-venue,
+.tribe-events-calendar-list__event-datetime {
+	font-size: 14px;
+	color: #666;
+	margin-top: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   Subscribe Bar
+   -------------------------------------------------------------------------- */
+
+.hfxnow-subscribe-bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px;
+	padding: 20px 0;
+	margin-top: 32px;
+	border-top: 1px solid #e5e5e5;
+}
+
+.hfxnow-subscribe-label {
+	font-size: 14px;
+	font-weight: 600;
+	color: #555;
+}
+
+.hfxnow-subscribe-btn {
+	display: inline-block;
+	padding: 8px 16px;
+	border-radius: 6px;
+	font-size: 13px;
+	font-weight: 600;
+	text-decoration: none;
+	transition: background 0.15s, color 0.15s;
+}
+
+.hfxnow-subscribe-gcal {
+	background: #4285f4;
+	color: #fff;
+}
+
+.hfxnow-subscribe-gcal:hover {
+	background: #3367d6;
+	color: #fff;
+	text-decoration: none;
+}
+
+.hfxnow-subscribe-ical {
+	background: #f5f5f5;
+	color: #333;
+	border: 1px solid #d0d0d0;
+}
+
+.hfxnow-subscribe-ical:hover {
+	background: #e5e5e5;
+	color: #111;
+	text-decoration: none;
+}
+
+/* --------------------------------------------------------------------------
+   Mobile-First Responsive Adjustments
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+	/* Stack event cards vertically with full-width images */
+	.tribe-events-calendar-list__event-row {
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	.tribe-events-calendar-list__event-date-tag {
+		flex-direction: row;
+		gap: 6px;
+		min-width: auto;
+		padding: 6px 12px;
+		border-radius: 6px;
+		width: fit-content;
+	}
+
+	.tribe-events-calendar-list__event-date-tag-month {
+		font-size: 11px;
+	}
+
+	.tribe-events-calendar-list__event-date-tag-daynum {
+		font-size: 18px;
+	}
+
+	.tribe-events-calendar-list__event-date-tag-weekday {
+		font-size: 11px;
+	}
+
+	/* Full-width featured images on mobile */
+	.tribe-events-calendar-list__event-featured-image {
+		width: 100%;
+		margin-bottom: 12px;
+	}
+
+	.tribe-events-calendar-list__event-featured-image img {
+		width: 100%;
+		height: auto;
+		border-radius: 8px;
+	}
+
+	/* Increase title size for readability */
+	.tribe-events-calendar-list__event-title a {
+		font-size: 18px;
+		line-height: 1.3;
+	}
+
+	/* Ensure adequate tap targets (44px minimum) */
+	.tribe-events-calendar-list__event-title a,
+	.hfxnow-filter-pill,
+	.hfxnow-date-pill,
+	.hfxnow-subscribe-btn {
+		min-height: 44px;
+		display: inline-flex;
+		align-items: center;
+	}
+
+	/* Better spacing between cards on mobile */
+	.tribe-events-calendar-list__event {
+		padding: 16px 0;
+	}
+
+	/* Stack subscribe bar vertically */
+	.hfxnow-subscribe-bar {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	/* Full-width filter scrolling on small screens */
+	.hfxnow-category-filters {
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none; /* Firefox */
+		padding-bottom: 8px;
+	}
+
+	.hfxnow-category-filters::-webkit-scrollbar {
+		display: none; /* Chrome/Safari */
+	}
+
+	/* Make pagination button large and easy to tap */
+	.tribe-events-calendar-list__nav .tribe-events-c-nav__next,
+	.tribe-events-calendar-list__nav .tribe-events-c-nav__prev {
+		padding: 14px 24px;
+		font-size: 16px;
+		min-height: 48px;
+	}
+}
+
+/* --------------------------------------------------------------------------
+   Desktop Enhancements (768px+)
+   -------------------------------------------------------------------------- */
+
+@media (min-width: 769px) {
+	.tribe-events-calendar-list__event-featured-image {
+		max-width: 200px;
+		flex-shrink: 0;
+	}
+
+	.tribe-events-calendar-list__event-featured-image img {
+		border-radius: 8px;
+		width: 100%;
+		height: auto;
+	}
+}
