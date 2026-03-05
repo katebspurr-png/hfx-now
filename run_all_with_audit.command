@@ -10,15 +10,19 @@
 # 5. Makes event titles unique (fixes WordPress duplicate detection)
 # 6. Opens both dashboards in browser
 #
+
 set -e  # Exit on any error
+
 # Get the directory where this script lives
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$SCRIPT_DIR"
+
 echo "=========================================="
 echo "Halifax-Now Complete Workflow"
 echo "Started: $(date)"
 echo "Directory: $SCRIPT_DIR"
 echo "=========================================="
+
 # ====================================
 # STEP 1: Run all scrapers and merge
 # ====================================
@@ -29,6 +33,7 @@ if ! python3 master_runner.py; then
     exit 1
 fi
 echo "✅ Scrapers complete, master_events.csv updated"
+
 # ====================================
 # STEP 2: Generate curation dashboard
 # ====================================
@@ -44,40 +49,45 @@ if [ -f "curation_dashboard.py" ]; then
 else
     echo "⚠️  curation_dashboard.py not found, skipping"
 fi
+
 # ====================================
 # STEP 3: Fetch site events via API
 # ====================================
 echo ""
 echo ">>> STEP 3: Fetching current site events via API..."
 python3 fetch_site_events_api.py
+
 if [ $? -eq 0 ]; then
     echo "✅ Site events fetched successfully"
-
+    
     # ====================================
     # STEP 4: Run site audit
     # ====================================
     echo ""
     echo ">>> STEP 4: Running site audit (comparing site to master)..."
     python3 compare_site_xml_to_master.py --use-api
-
+    
     if [ $? -eq 0 ]; then
         echo "✅ Site audit complete"
-
+        
         # Generate audit dashboard
         echo ""
         echo ">>> Generating audit dashboard..."
         python3 generate_audit_dashboard.py
-
+        
         if [ $? -eq 0 ]; then
             echo "✅ Audit dashboard generated"
+
             # ====================================
             # STEP 4.5: Make event titles unique
             # ====================================
             echo ""
             echo ">>> STEP 4.5: Making event titles unique for import..."
+
             AUDIT_IMPORT="output/ready_to_import/ready_to_import_from_audit.csv"
             if [ -f "$AUDIT_IMPORT" ]; then
                 python3 make_titles_unique.py "$AUDIT_IMPORT"
+
                 if [ $? -eq 0 ]; then
                     echo "✅ Unique titles generated"
                     UNIQUE_FILE="output/ready_to_import/ready_to_import_from_audit_UNIQUE_$(date +%Y-%m-%d).csv"
@@ -104,22 +114,26 @@ else
     echo ""
     echo "Skipping site audit..."
 fi
+
 # ====================================
 # STEP 5: Open dashboards in browser
 # ====================================
 echo ""
 echo ">>> STEP 5: Opening dashboards..."
+
 # Open curation dashboard if it exists
 if [ -f "curation_dashboard.html" ]; then
     echo "🌐 Opening curation dashboard..."
     open curation_dashboard.html 2>/dev/null || xdg-open curation_dashboard.html 2>/dev/null || echo "⚠️  Could not auto-open curation dashboard"
 fi
+
 # Open audit dashboard if it exists
 if [ -f "audit_dashboard.html" ]; then
     echo "🌐 Opening audit dashboard..."
     sleep 1  # Brief delay so dashboards don't open simultaneously
     open audit_dashboard.html 2>/dev/null || xdg-open audit_dashboard.html 2>/dev/null || echo "⚠️  Could not auto-open audit dashboard"
 fi
+
 # ====================================
 # Summary
 # ====================================

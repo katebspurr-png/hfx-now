@@ -1,0 +1,16 @@
+{
+  "_comment": "Neptune Theatre show prices. Update this file each season.",
+  "_format": "Use show slug (from URL) as key, price as value. Price can be single ($45) or range ($45 - 65)",
+  
+  "wizard-of-oz": "",
+  "dickens-a-christmas-carol": "",
+  "ypco-mary-shelleys-frankenstein": "",
+  "mad-madge": "",
+  "cult-play": "",
+  "whos-afraid-of-virginia-woolf": "",
+  "ypco-disneys-newsies": "",
+  "chase-the-ace": "",
+  "come-from-away": "",
+  "the-ghost-of-violet-shaw": ""
+}
+

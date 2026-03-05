@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Instagram Event Extractor – Halifax-Now.ca</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+      --brand-blue: #1e3a5f;
+      --brand-blue-light: #2d4a6f;
+      --accent-amber: #f59e0b;
+      --accent-amber-light: #fbbf24;
+      --bg-page: #f8fafc;
+      --bg-section: #ffffff;
+      --bg-elevated: #ffffff;
+      --text-primary: #111827;
+      --text-secondary: #4b5563;
+      --text-muted: #9ca3af;
+      --border: #e5e7eb;
+      --border-light: #f3f4f6;
+      --success: #10b981;
+      --success-light: #d1fae5;
+      --danger: #ef4444;
+      --danger-light: #fee2e2;
+      --info-bg: #dbeafe;
+      --info-text: #1e40af;
+      --purple-bg: #f3e8ff;
+      --purple-text: #7c3aed;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-pill: 999px;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+      --transition-fast: 150ms ease;
+      --transition-base: 200ms ease;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-family);
+      background: var(--bg-page);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-blue-light) 100%);
+      color: #fff;
+      padding: 2rem 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .header-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 1rem;
+      max-width: 600px;
+    }
+
+    .logo-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    /* Panels */
+    .panel {
+      background: var(--bg-section);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-sm);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .panel-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .panel-subtitle {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    /* Info boxes */
+    .info-box {
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius-md);
+      font-size: 0.9375rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .info-box.blue {
+      background: var(--info-bg);
+      color: var(--info-text);
+    }
+
+    .info-box.purple {
+      background: var(--purple-bg);
+      color: var(--purple-text);
+    }
+
+    .info-box.green {
+      background: var(--success-light);
+      color: #065f46;
+    }
+
+    .info-box.amber {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .info-box strong {
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .info-box ol, .info-box ul {
+      margin: 0.5rem 0 0 1.25rem;
+    }
+
+    .info-box li {
+      margin-bottom: 0.25rem;
+    }
+
+    /* Screenshot Upload */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: 2rem;
+      text-align: center;
+      background: var(--bg-page);
+      transition: all var(--transition-base);
+      cursor: pointer;
+      margin-bottom: 1rem;
+    }
+
+    .upload-zone:hover {
+      border-color: var(--brand-blue);
+      background: var(--bg-elevated);
+    }
+
+    .upload-zone.drag-over {
+      border-color: var(--accent-amber);
+      background: #fffbeb;
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .screenshot-preview {
+      max-width: 100%;
+      border-radius: var(--radius-md);
+      margin-top: 1rem;
+      box-shadow: var(--shadow-md);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* Form elements */
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 0.375rem;
+    }
+
+    input[type="text"],
+    input[type="url"],
+    input[type="date"],
+    input[type="time"],
+    input[type="number"],
+    input[type="file"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-family: var(--font-family);
+      font-size: 1rem;
+      color: var(--text-primary);
+      background: var(--bg-elevated);
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--brand-blue);
+      box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+    @media (max-width: 600px) {
+      .form-row, .form-row-3 { grid-template-columns: 1fr; }
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: var(--font-family);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--brand-blue);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--brand-blue-light);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-secondary {
+      background: var(--bg-page);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-elevated);
+      border-color: var(--text-secondary);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .btn-success:hover {
+      background: #059669;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-sm {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Loading spinner */
+    .spinner {
+      border: 3px solid var(--border-light);
+      border-top: 3px solid var(--brand-blue);
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Toast notifications */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--text-primary);
+      color: #fff;
+      padding: 1rem 1.5rem;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+    }
+
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--danger); }
+    .toast.info { background: var(--brand-blue); }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* Event list */
+    .event-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      margin-bottom: 0.75rem;
+      transition: all var(--transition-fast);
+    }
+
+    .event-item:hover {
+      border-color: var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .event-item-title {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .event-item-meta {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .event-item-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Tags */
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .tag {
+      background: var(--bg-page);
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.75rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tag-remove {
+      cursor: pointer;
+      color: var(--text-muted);
+      font-weight: bold;
+    }
+
+    .tag-remove:hover {
+      color: var(--danger);
+    }
+
+    .tag-input-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .tag-input-row input {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-inner">
+      <h1>
+        <span class="logo-mark">📸</span>
+        Instagram Event Extractor
+      </h1>
+      <p>Upload a screenshot, paste the caption, and let AI extract event details for Halifax-Now.ca</p>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- API Key Setup Notice -->
+    <div class="panel" id="apiKeyNotice">
+      <div class="info-box amber">
+        <strong>⚠️ Setup Required</strong>
+        <p>Before using this tool, you need to add your Anthropic API key to the code.</p>
+        <ol>
+          <li>Open this HTML file in a text editor (like Notepad or TextEdit)</li>
+          <li>Find the line that says: <code>const API_KEY = 'YOUR_API_KEY_HERE';</code></li>
+          <li>Replace <code>YOUR_API_KEY_HERE</code> with your actual API key</li>
+          <li>Save the file and refresh this page</li>
+        </ol>
+        <p style="margin-top: 0.5rem;"><strong>Note:</strong> Never share your API key publicly or commit it to version control!</p>
+      </div>
+    </div>
+
+    <!-- Step 1: Upload Screenshot -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">📷 Step 1: Upload Instagram Screenshot</h2>
+      </div>
+
+      <div class="info-box blue">
+        <strong>How to get a screenshot:</strong>
+        <ol>
+          <li>Open the Instagram post in your browser or app</li>
+          <li>Take a screenshot (the whole post including the image/poster and caption)</li>
+          <li>Upload it here</li>
+        </ol>
+      </div>
+
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">📤</div>
+        <p><strong>Click to upload</strong> or drag & drop your screenshot</p>
+        <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.5rem;">PNG, JPG, or WebP</p>
+      </div>
+
+      <input type="file" id="screenshotInput" accept="image/*" class="hidden">
+
+      <div id="screenshotPreviewContainer" class="hidden">
+        <img id="screenshotPreview" class="screenshot-preview" alt="Screenshot preview">
+        <button class="btn btn-secondary btn-sm" onclick="removeScreenshot()" style="margin-top: 1rem;">Remove Screenshot</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Add Caption & Extract -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">✍️ Step 2: Paste Instagram Caption</h2>
+      </div>
+
+      <div class="info-box purple">
+        <strong>Tip:</strong> Copy the full caption text from the Instagram post and paste it below. The AI will combine this with the screenshot to extract all event details.
+      </div>
+
+      <div class="form-group">
+        <label for="captionText">Instagram Caption</label>
+        <textarea id="captionText" placeholder="Paste the Instagram caption here..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="instagramUrl">Instagram Post URL (optional)</label>
+        <input type="url" id="instagramUrl" placeholder="https://www.instagram.com/p/...">
+      </div>
+
+      <button class="btn btn-primary" onclick="extractEventData()" id="extractBtn">
+        <span id="extractBtnText">🤖 Extract Event Data with AI</span>
+        <div class="spinner hidden" id="extractSpinner"></div>
+      </button>
+
+      <div id="extractionResults" class="hidden" style="margin-top: 1.5rem;">
+        <div class="info-box green">
+          <strong>✅ Event data extracted successfully!</strong>
+          <p>Review the information below and make any necessary edits before saving.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Review & Edit Event Details -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">📝 Step 3: Review & Edit Event Details</h2>
+      </div>
+
+      <form id="eventForm">
+        <div class="form-group">
+          <label for="eventName">Event Name *</label>
+          <input type="text" id="eventName" required placeholder="e.g., SOULTIME - All Night Rhythm & Soul 45's">
+        </div>
+
+        <div class="form-group">
+          <label for="eventExcerpt">Event Excerpt (Short Description)</label>
+          <textarea id="eventExcerpt" rows="2" placeholder="Brief one-line description..."></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eventVenue">Venue Name</label>
+            <input type="text" id="eventVenue" placeholder="e.g., Woodside Tavern">
+          </div>
+          <div class="form-group">
+            <label for="eventOrganizer">Organizer Name</label>
+            <input type="text" id="eventOrganizer" placeholder="e.g., City of Lakes Soul Club">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eventStartDate">Start Date *</label>
+            <input type="date" id="eventStartDate" required>
+          </div>
+          <div class="form-group">
+            <label for="eventEndDate">End Date</label>
+            <input type="date" id="eventEndDate">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eventStartTime">Start Time</label>
+            <input type="time" id="eventStartTime">
+          </div>
+          <div class="form-group">
+            <label for="eventEndTime">End Time (leave blank if unknown)</label>
+            <input type="time" id="eventEndTime">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="allDayEvent" style="width: auto; margin-right: 0.5rem;">
+            All Day Event
+          </label>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eventCategory">Category</label>
+            <select id="eventCategory">
+              <option value="">Select a category...</option>
+              <option value="Music">Music</option>
+              <option value="Nightlife">Nightlife</option>
+              <option value="Arts & Culture">Arts & Culture</option>
+              <option value="Food & Drink">Food & Drink</option>
+              <option value="Sports & Fitness">Sports & Fitness</option>
+              <option value="Community">Community</option>
+              <option value="Business">Business</option>
+              <option value="Family">Family</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="eventCost">Cost (0 for free)</label>
+            <input type="number" id="eventCost" min="0" step="0.01" placeholder="0">
+          </div>
+        </div>
+
+        <div class="form-row-3">
+          <div class="form-group">
+            <label for="currencySymbol">Currency Symbol</label>
+            <input type="text" id="currencySymbol" value="$" maxlength="3">
+          </div>
+          <div class="form-group">
+            <label for="currencyPosition">Position</label>
+            <select id="currencyPosition">
+              <option value="prefix">Before ($20)</option>
+              <option value="suffix">After (20$)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="currencyCode">ISO Code</label>
+            <input type="text" id="currencyCode" value="CAD" maxlength="3">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="featuredImage">Featured Image URL</label>
+          <input type="url" id="featuredImage" placeholder="Add after uploading screenshot to WordPress">
+          <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem;">
+            💡 Upload your screenshot to WordPress Media Library, then paste the URL here
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label for="eventWebsite">Event Website / Tickets URL</label>
+          <input type="url" id="eventWebsite" placeholder="https://...">
+        </div>
+
+        <div class="form-group">
+          <label>Event Tags</label>
+          <div class="tags-container" id="tagsContainer"></div>
+          <div class="tag-input-row">
+            <input type="text" id="tagInput" placeholder="Add a tag...">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="addTag()">Add Tag</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="showMapLink" checked style="width: auto; margin-right: 0.5rem;">
+            Show Map Link
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="showMap" checked style="width: auto; margin-right: 0.5rem;">
+            Show Map
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="hideFromListings" style="width: auto; margin-right: 0.5rem;">
+            Hide From Event Listings
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="stickyInMonth" style="width: auto; margin-right: 0.5rem;">
+            Sticky in Month View
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label for="eventDescription">Full Event Description</label>
+          <textarea id="eventDescription" rows="6" placeholder="Full event description with all details..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-success" style="margin-top: 1rem;">
+          💾 Save Event
+        </button>
+      </form>
+    </div>
+
+    <!-- Step 4: Saved Events List -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">📋 Saved Events</h2>
+        <span class="panel-subtitle" id="eventsCount">0 events saved</span>
+      </div>
+
+      <div id="eventsList"></div>
+
+      <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+        <button class="btn btn-primary" onclick="exportTECCSV()">
+          📥 Export for The Events Calendar
+        </button>
+        <button class="btn btn-secondary" onclick="exportJSON()">
+          📄 Export as JSON
+        </button>
+        <button class="btn btn-danger" onclick="clearAllEvents()">
+          🗑️ Clear All Events
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ============================================
+    // CONFIGURATION
+    // ============================================
+    const API_SERVER_URL = 'http://localhost:5001'; // Python backend server
+
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+    let currentScreenshot = null;
+    let currentTags = [];
+    let parsedData = {};
+
+    // Check if backend server is running
+    window.addEventListener('DOMContentLoaded', () => {
+      checkServerHealth();
+      renderEventsList();
+    });
+
+    async function checkServerHealth() {
+      try {
+        const response = await fetch(`${API_SERVER_URL}/health`);
+        if (response.ok) {
+          document.getElementById('apiKeyNotice').style.display = 'none';
+        }
+      } catch (error) {
+        document.getElementById('apiKeyNotice').style.display = 'block';
+        const noticeBox = document.querySelector('#apiKeyNotice .info-box');
+        noticeBox.innerHTML = `
+          <strong>⚠️ Backend Server Not Running</strong>
+          <p>Please start the Python backend server first:</p>
+          <ol>
+            <li>Open Terminal/iTerm2</li>
+            <li>Navigate to: <code>cd "/Users/katespurr/Desktop/Halifax Now/html"</code></li>
+            <li>Run: <code>python3 api_server.py</code></li>
+            <li>Refresh this page</li>
+          </ol>
+        `;
+      }
+    }
+
+    // ============================================
+    // SCREENSHOT UPLOAD
+    // ============================================
+    const uploadZone = document.getElementById('uploadZone');
+    const screenshotInput = document.getElementById('screenshotInput');
+    const screenshotPreview = document.getElementById('screenshotPreview');
+    const screenshotPreviewContainer = document.getElementById('screenshotPreviewContainer');
+
+    uploadZone.addEventListener('click', () => {
+      screenshotInput.click();
+    });
+
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('drag-over');
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('drag-over');
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('drag-over');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleScreenshotUpload(files[0]);
+      }
+    });
+
+    screenshotInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleScreenshotUpload(e.target.files[0]);
+      }
+    });
+
+    function handleScreenshotUpload(file) {
+      if (!file.type.startsWith('image/')) {
+        showToast('Please upload an image file', 'error');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        currentScreenshot = e.target.result;
+        screenshotPreview.src = currentScreenshot;
+        uploadZone.classList.add('hidden');
+        screenshotPreviewContainer.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeScreenshot() {
+      currentScreenshot = null;
+      screenshotPreview.src = '';
+      uploadZone.classList.remove('hidden');
+      screenshotPreviewContainer.classList.add('hidden');
+      screenshotInput.value = '';
+    }
+
+    // ============================================
+    // AI EVENT EXTRACTION
+    // ============================================
+    async function extractEventData() {
+      const captionText = document.getElementById('captionText').value.trim();
+      const instagramUrl = document.getElementById('instagramUrl').value.trim();
+
+      if (!currentScreenshot) {
+        showToast('Please upload a screenshot first', 'error');
+        return;
+      }
+
+      if (!captionText || captionText.length === 0) {
+        showToast('Please paste the Instagram caption', 'error');
+        return;
+      }
+
+      // Show loading state
+      const extractBtn = document.getElementById('extractBtn');
+      const extractBtnText = document.getElementById('extractBtnText');
+      const extractSpinner = document.getElementById('extractSpinner');
+
+      extractBtn.disabled = true;
+      extractBtnText.classList.add('hidden');
+      extractSpinner.classList.remove('hidden');
+
+      try {
+        // Get base64 image data (remove data URL prefix)
+        const base64Parts = currentScreenshot.split(',');
+        const base64Image = base64Parts[1];
+
+        // Detect image type from data URL
+        const imageType = base64Parts[0].includes('png') ? 'image/png' :
+                         base64Parts[0].includes('webp') ? 'image/webp' :
+                         'image/jpeg';
+
+        console.log('Caption text length:', captionText.length);
+        console.log('Image type:', imageType);
+
+        // Call Python backend server
+        const response = await fetch(`${API_SERVER_URL}/extract-event`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            caption: captionText,
+            url: instagramUrl,
+            screenshot: currentScreenshot
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('API Error Response:', errorData);
+          throw new Error(errorData.error || `Server error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('API Response:', result);
+
+        if (!result.success) {
+          throw new Error(result.error || 'Unknown error from server');
+        }
+
+        const content = result.data;
+
+        // Parse JSON response
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          throw new Error('Could not parse AI response');
+        }
+
+        parsedData = JSON.parse(jsonMatch[0]);
+
+        // Check if event has passed
+        if (parsedData.eventName === 'EVENT_PASSED') {
+          showToast('This event has already passed and will be skipped', 'info');
+          clearForm();
+          return;
+        }
+
+        // Populate form
+        document.getElementById('eventName').value = parsedData.eventName || '';
+        document.getElementById('eventExcerpt').value = parsedData.eventExcerpt || '';
+        document.getElementById('eventVenue').value = parsedData.eventVenueName || '';
+        document.getElementById('eventOrganizer').value = parsedData.eventOrganizerName || '';
+        document.getElementById('eventStartDate').value = parsedData.eventStartDate || '';
+        document.getElementById('eventEndDate').value = parsedData.eventEndDate || '';
+        document.getElementById('eventCategory').value = parsedData.eventCategory || '';
+        document.getElementById('eventCost').value = parsedData.eventCost || '';
+        document.getElementById('eventDescription').value = parsedData.eventDescription || '';
+        document.getElementById('eventWebsite').value = parsedData.eventWebsite || instagramUrl;
+
+        // Parse times
+        if (parsedData.eventStartTime) {
+          document.getElementById('eventStartTime').value = parseTimeToInput(parsedData.eventStartTime);
+        }
+        if (parsedData.eventEndTime) {
+          document.getElementById('eventEndTime').value = parseTimeToInput(parsedData.eventEndTime);
+        }
+
+        // Parse tags
+        if (parsedData.eventTags) {
+          currentTags = parsedData.eventTags.split(',').map(t => t.trim()).filter(t => t);
+          renderTags();
+        }
+
+        // Upload screenshot to WordPress
+        showToast('Uploading image to WordPress...', 'info');
+        try {
+          const uploadResponse = await fetch(`${API_SERVER_URL}/upload-to-wordpress`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              image: currentScreenshot,
+              filename: `event-${parsedData.eventStartDate || 'image'}-${Date.now()}.png`
+            })
+          });
+
+          if (uploadResponse.ok) {
+            const uploadResult = await uploadResponse.json();
+            if (uploadResult.success) {
+              document.getElementById('featuredImage').value = uploadResult.url;
+              showToast('Image uploaded to WordPress!', 'success');
+              console.log('WordPress image URL:', uploadResult.url);
+            } else {
+              showToast('Image upload failed: ' + uploadResult.error, 'error');
+            }
+          } else {
+            showToast('Image upload failed. You can add it manually.', 'error');
+          }
+        } catch (uploadError) {
+          console.error('WordPress upload error:', uploadError);
+          showToast('Image upload failed. You can add it manually.', 'error');
+        }
+
+        // Show success message
+        document.getElementById('extractionResults').classList.remove('hidden');
+        showToast('Event data extracted successfully!', 'success');
+
+        // Scroll to form
+        document.getElementById('eventForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      } catch (error) {
+        console.error('Extraction error:', error);
+        showToast('Failed to extract event data. Please try again or fill in manually.', 'error');
+      } finally {
+        // Reset button state
+        extractBtn.disabled = false;
+        extractBtnText.classList.remove('hidden');
+        extractSpinner.classList.add('hidden');
+      }
+    }
+
+    function parseTimeToInput(timeStr) {
+      // Convert "8:00 PM" to "20:00" for time input
+      if (!timeStr) return '';
+      const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (!match) return '';
+      let hours = parseInt(match[1]);
+      const minutes = match[2];
+      const ampm = match[3].toUpperCase();
+      if (ampm === 'PM' && hours < 12) hours += 12;
+      if (ampm === 'AM' && hours === 12) hours = 0;
+      return String(hours).padStart(2, '0') + ':' + minutes;
+    }
+
+    // ============================================
+    // TAGS MANAGEMENT
+    // ============================================
+    function renderTags() {
+      const container = document.getElementById('tagsContainer');
+      container.innerHTML = currentTags.map(tag => `
+        <div class="tag">
+          <span>${escapeHtml(tag)}</span>
+          <span class="tag-remove" onclick="removeTag('${escapeHtml(tag)}')">×</span>
+        </div>
+      `).join('');
+    }
+
+    function addTag() {
+      const input = document.getElementById('tagInput');
+      const tag = input.value.trim();
+      if (tag && !currentTags.includes(tag)) {
+        currentTags.push(tag);
+        renderTags();
+        input.value = '';
+      }
+    }
+
+    function removeTag(tag) {
+      currentTags = currentTags.filter(t => t !== tag);
+      renderTags();
+    }
+
+    document.getElementById('tagInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addTag();
+      }
+    });
+
+    // ============================================
+    // EVENT STORAGE
+    // ============================================
+    function getEvents() {
+      const stored = localStorage.getItem('halifaxEvents');
+      return stored ? JSON.parse(stored) : [];
+    }
+
+    function saveEvents(events) {
+      localStorage.setItem('halifaxEvents', JSON.stringify(events));
+      renderEventsList();
+    }
+
+    // ============================================
+    // FORM SUBMISSION
+    // ============================================
+    document.getElementById('eventForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const events = getEvents();
+      const newEvent = {
+        id: Date.now(),
+        eventName: document.getElementById('eventName').value,
+        eventExcerpt: document.getElementById('eventExcerpt').value,
+        eventVenueName: document.getElementById('eventVenue').value,
+        eventOrganizerName: document.getElementById('eventOrganizer').value,
+        eventStartDate: document.getElementById('eventStartDate').value,
+        eventStartTime: formatTimeForTEC(document.getElementById('eventStartTime').value),
+        eventEndDate: document.getElementById('eventEndDate').value,
+        eventEndTime: formatTimeForTEC(document.getElementById('eventEndTime').value),
+        allDayEvent: document.getElementById('allDayEvent').checked,
+        timezone: 'America/Halifax',
+        hideFromEventListings: document.getElementById('hideFromListings').checked,
+        stickyInMonthView: document.getElementById('stickyInMonth').checked,
+        eventCategory: document.getElementById('eventCategory').value,
+        eventTags: currentTags.join(', '),
+        eventCost: document.getElementById('eventCost').value,
+        eventCurrencySymbol: document.getElementById('currencySymbol').value,
+        eventCurrencyPosition: document.getElementById('currencyPosition').value,
+        eventIsoCurrencyCode: document.getElementById('currencyCode').value,
+        eventFeaturedImage: document.getElementById('featuredImage').value,
+        eventWebsite: document.getElementById('eventWebsite').value,
+        eventShowMapLink: document.getElementById('showMapLink').checked,
+        eventShowMap: document.getElementById('showMap').checked,
+        eventDescription: document.getElementById('eventDescription').value
+      };
+
+      events.push(newEvent);
+      saveEvents(events);
+      clearForm();
+      showToast('Event saved!', 'success');
+    });
+
+    function formatTimeForTEC(time24) {
+      // Convert 24h time to 12h format for TEC (e.g., "19:30" -> "7:30 PM")
+      if (!time24) return '';
+      const [hours, minutes] = time24.split(':');
+      const h = parseInt(hours);
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const hour12 = h % 12 || 12;
+      return `${hour12}:${minutes} ${ampm}`;
+    }
+
+    function clearForm() {
+      document.getElementById('eventForm').reset();
+      document.getElementById('showMapLink').checked = true;
+      document.getElementById('showMap').checked = true;
+      currentTags = [];
+      renderTags();
+      document.getElementById('captionText').value = '';
+      document.getElementById('instagramUrl').value = '';
+      document.getElementById('currencySymbol').value = '$';
+      document.getElementById('currencyCode').value = 'CAD';
+      parsedData = {};
+      removeScreenshot();
+      document.getElementById('extractionResults').classList.add('hidden');
+    }
+
+    // ============================================
+    // EVENTS LIST
+    // ============================================
+    function renderEventsList() {
+      const events = getEvents();
+      const container = document.getElementById('eventsList');
+      document.getElementById('eventsCount').textContent = `${events.length} event${events.length !== 1 ? 's' : ''} saved`;
+
+      if (events.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <p>No events saved yet.<br>Extract an event above to get started!</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = events.map(event => `
+        <div class="event-item fade-in">
+          <div class="event-item-info">
+            <div class="event-item-title">${escapeHtml(event.eventName)}</div>
+            <div class="event-item-meta">
+              ${event.eventStartDate ? formatDateDisplay(event.eventStartDate) : 'No date'}
+              ${event.eventStartTime ? ' · ' + event.eventStartTime : ''}
+              ${event.eventVenueName ? ' · ' + escapeHtml(event.eventVenueName) : ''}
+            </div>
+          </div>
+          <div class="event-item-actions">
+            <button class="btn btn-secondary btn-sm" onclick="editEvent(${event.id})">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteEvent(${event.id})">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function formatDateDisplay(dateStr) {
+      const date = new Date(dateStr + 'T00:00:00');
+      return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function deleteEvent(id) {
+      if (!confirm('Delete this event?')) return;
+      saveEvents(getEvents().filter(e => e.id !== id));
+      showToast('Event deleted', 'success');
+    }
+
+    function editEvent(id) {
+      const event = getEvents().find(e => e.id === id);
+      if (!event) return;
+
+      document.getElementById('eventName').value = event.eventName || '';
+      document.getElementById('eventExcerpt').value = event.eventExcerpt || '';
+      document.getElementById('eventVenue').value = event.eventVenueName || '';
+      document.getElementById('eventOrganizer').value = event.eventOrganizerName || '';
+      document.getElementById('eventStartDate').value = event.eventStartDate || '';
+      document.getElementById('eventEndDate').value = event.eventEndDate || '';
+      document.getElementById('allDayEvent').checked = event.allDayEvent || false;
+      document.getElementById('eventCategory').value = event.eventCategory || '';
+      document.getElementById('eventCost').value = event.eventCost || '';
+      document.getElementById('currencySymbol').value = event.eventCurrencySymbol || '$';
+      document.getElementById('currencyCode').value = event.eventIsoCurrencyCode || 'CAD';
+      document.getElementById('featuredImage').value = event.eventFeaturedImage || '';
+      document.getElementById('eventWebsite').value = event.eventWebsite || '';
+      document.getElementById('showMapLink').checked = event.eventShowMapLink !== false;
+      document.getElementById('showMap').checked = event.eventShowMap !== false;
+      document.getElementById('hideFromListings').checked = event.hideFromEventListings || false;
+      document.getElementById('stickyInMonth').checked = event.stickyInMonthView || false;
+      document.getElementById('eventDescription').value = event.eventDescription || '';
+
+      // Parse time back to 24h for input
+      if (event.eventStartTime) {
+        document.getElementById('eventStartTime').value = parseTimeToInput(event.eventStartTime);
+      }
+      if (event.eventEndTime) {
+        document.getElementById('eventEndTime').value = parseTimeToInput(event.eventEndTime);
+      }
+
+      // Tags
+      currentTags = event.eventTags ? event.eventTags.split(', ').filter(t => t) : [];
+      renderTags();
+
+      saveEvents(getEvents().filter(e => e.id !== id));
+      document.getElementById('eventForm').scrollIntoView({ behavior: 'smooth' });
+      showToast('Event loaded for editing', 'info');
+    }
+
+    function clearAllEvents() {
+      if (!confirm('Delete ALL saved events? This cannot be undone.')) return;
+      saveEvents([]);
+      showToast('All events cleared', 'success');
+    }
+
+    // ============================================
+    // EXPORT - TEC CSV FORMAT
+    // ============================================
+    function exportTECCSV() {
+      const events = getEvents();
+      if (events.length === 0) {
+        showToast('No events to export', 'error');
+        return;
+      }
+
+      console.log('Starting CSV export for', events.length, 'events');
+
+      // TEC CSV Headers (exact match to their import format)
+      const headers = [
+        'EVENT NAME',
+        'EVENT EXCERPT',
+        'EVENT VENUE NAME',
+        'EVENT ORGANIZER NAME',
+        'EVENT START DATE',
+        'EVENT START TIME',
+        'EVENT END DATE',
+        'EVENT END TIME',
+        'ALL DAY EVENT',
+        'TIMEZONE',
+        'HIDE FROM EVENT LISTINGS',
+        'STICKY IN MONTH VIEW',
+        'EVENT CATEGORY',
+        'EVENT TAGS',
+        'EVENT COST',
+        'EVENT CURRENCY SYMBOL',
+        'EVENT CURRENCY POSITION',
+        'EVENT ISO CURRENCY CODE',
+        'EVENT FEATURED IMAGE',
+        'EVENT WEBSITE',
+        'EVENT SHOW MAP LINK',
+        'EVENT SHOW MAP',
+        'ALLOW COMMENTS',
+        'ALLOW TRACKBACKS AND PINGBACKS',
+        'EVENT DESCRIPTION'
+      ];
+
+      const csvRows = [headers.join(',')];
+
+      events.forEach(event => {
+        const row = [
+          event.eventName || '',
+          event.eventExcerpt || '',
+          event.eventVenueName || '',
+          event.eventOrganizerName || '',
+          event.eventStartDate || '',
+          event.eventStartTime || '',
+          event.eventEndDate || '',
+          event.eventEndTime || '',
+          event.allDayEvent ? 'TRUE' : 'FALSE',
+          event.timezone || 'America/Halifax',
+          event.hideFromEventListings ? 'TRUE' : 'FALSE',
+          event.stickyInMonthView ? 'TRUE' : 'FALSE',
+          event.eventCategory || '',
+          event.eventTags || '',
+          event.eventCost || '',
+          event.eventCurrencySymbol || '$',
+          event.eventCurrencyPosition || 'prefix',
+          event.eventIsoCurrencyCode || 'CAD',
+          event.eventFeaturedImage || '',
+          event.eventWebsite || '',
+          event.eventShowMapLink !== false ? 'TRUE' : 'FALSE',
+          event.eventShowMap !== false ? 'TRUE' : 'FALSE',
+          'FALSE', // Allow comments
+          'FALSE', // Allow trackbacks
+          event.eventDescription || ''
+        ];
+
+        // Escape CSV values
+        const escapedRow = row.map(value => {
+          value = String(value);
+          if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+            return '"' + value.replace(/"/g, '""') + '"';
+          }
+          return value;
+        });
+
+        csvRows.push(escapedRow.join(','));
+      });
+
+      const csvContent = csvRows.join('\n');
+      console.log('CSV content length:', csvContent.length);
+      console.log('First 200 chars of CSV:', csvContent.substring(0, 200));
+
+      // Create blob with explicit UTF-8 BOM for Excel compatibility
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+      console.log('Blob created, size:', blob.size, 'type:', blob.type);
+
+      const filename = `tec-events-import-${new Date().toISOString().split('T')[0]}.csv`;
+      console.log('Attempting download with filename:', filename);
+
+      // Try download
+      const downloadSuccess = downloadBlob(blob, filename);
+
+      if (downloadSuccess) {
+        showToast(`Exported ${events.length} events for The Events Calendar!`, 'success');
+        console.log('CSV export completed successfully');
+      } else {
+        showToast('CSV export may have failed - check your downloads folder', 'error');
+        console.error('CSV export may have failed');
+      }
+    }
+
+    function exportJSON() {
+      const events = getEvents();
+      if (events.length === 0) {
+        showToast('No events to export', 'error');
+        return;
+      }
+      const blob = new Blob([JSON.stringify(events, null, 2)], { type: 'application/json' });
+      downloadBlob(blob, `halifax-events-${new Date().toISOString().split('T')[0]}.json`);
+      showToast(`Exported ${events.length} events as JSON`, 'success');
+    }
+
+    function downloadBlob(blob, filename) {
+      try {
+        console.log('Creating download link for:', filename);
+        const url = URL.createObjectURL(blob);
+        console.log('Blob URL created:', url);
+
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = filename;
+
+        // Add to DOM, click, then remove
+        document.body.appendChild(a);
+        console.log('Download link added to DOM, triggering click');
+        a.click();
+
+        // Small delay before cleanup
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          console.log('Download cleanup complete');
+        }, 100);
+
+        return true;
+      } catch (error) {
+        console.error('Download error:', error);
+        showToast('Download failed: ' + error.message, 'error');
+        return false;
+      }
+    }
+
+    // ============================================
+    // TOAST NOTIFICATIONS
+    // ============================================
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <span>${message}</span>
+      `;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => {
+          document.body.removeChild(toast);
+        }, 300);
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

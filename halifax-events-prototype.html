@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halifax-Now.ca - Do Stuff. Have Fun.</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0000CC;
+            --primary-dark: #0000AA;
+            --primary-light: #3333FF;
+            --secondary: #0066FF;
+            --accent: #00AAFF;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Impact', 'Arial Black', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1.2rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-circle {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .smiley-face {
+            width: 50px;
+            height: 50px;
+            position: relative;
+        }
+
+        .smiley-eye {
+            position: absolute;
+            width: 3px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 2px;
+            top: 12px;
+        }
+
+        .smiley-eye.left {
+            left: 14px;
+        }
+
+        .smiley-eye.right {
+            right: 14px;
+        }
+
+        .smiley-mouth {
+            position: absolute;
+            width: 24px;
+            height: 12px;
+            border: 3px solid var(--primary);
+            border-top: none;
+            border-radius: 0 0 24px 24px;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .logo-text h1 {
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+            line-height: 1;
+            margin-bottom: 0.2rem;
+        }
+
+        .logo-subtitle {
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.95;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.7rem 1.4rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: var(--primary);
+        }
+
+        /* Search Bar */
+        .search-container {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 1rem 1.2rem 1rem 3.5rem;
+            border: 3px solid white;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-weight: 600;
+        }
+
+        .search-bar::before {
+            content: "🔍";
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.3rem;
+        }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            padding: 0.5rem 0;
+            border-bottom: 3px solid transparent;
+            transition: border-color 0.3s ease;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+        }
+
+        nav a:hover, nav a.active {
+            border-bottom-color: white;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, rgba(0, 0, 204, 0.1) 0%, rgba(0, 102, 255, 0.1) 100%);
+            border: 4px solid var(--primary);
+            border-radius: 16px;
+            padding: 3rem;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .hero h2 {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--gray);
+            font-weight: 600;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-chip {
+            padding: 0.7rem 1.4rem;
+            border: 3px solid var(--primary);
+            border-radius: 24px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--primary);
+        }
+
+        .filter-chip:hover {
+            background: var(--primary-light);
+            color: white;
+            border-color: var(--primary-light);
+        }
+
+        .filter-chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .view-toggle {
+            margin-left: auto;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 3rem 0 1.5rem 0;
+        }
+
+        .section-header h2 {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+
+        .section-header a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+        }
+
+        /* Event Grid */
+        .event-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        /* Event Card */
+        .event-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+
+        .event-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 204, 0.2);
+            border-color: var(--primary);
+        }
+
+        .event-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            font-weight: bold;
+        }
+
+        .event-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .event-content {
+            padding: 1.2rem;
+        }
+
+        .event-category {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.05em;
+        }
+
+        .event-title {
+            font-size: 1.2rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            font-family: 'Arial Black', sans-serif;
+        }
+
+        .event-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+        }
+
+        .event-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .event-description {
+            color: var(--gray);
+            font-size: 0.9rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            font-family: Arial, sans-serif;
+            font-weight: 500;
+        }
+
+        .event-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 2px solid var(--border);
+        }
+
+        .event-price {
+            font-weight: 900;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .event-venue {
+            color: var(--primary);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        /* Map Container */
+        #map {
+            height: 600px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 3rem;
+            display: none;
+            border: 4px solid var(--primary);
+        }
+
+        #map.active {
+            display: block;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 204, 0.8);
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            border: 4px solid var(--primary);
+        }
+
+        .modal-header {
+            position: relative;
+            height: 300px;
+            background: var(--primary);
+        }
+
+        .modal-header img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: white;
+            border: 3px solid var(--primary);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            color: var(--primary);
+            font-weight: 900;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-body h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            font-weight: 900;
+        }
+
+        .modal-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .modal-meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .modal-meta-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .modal-meta-value {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .modal-description {
+            line-height: 1.8;
+            color: var(--gray);
+            margin-bottom: 2rem;
+            font-family: Arial, sans-serif;
+            font-weight: 500;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-large {
+            flex: 1;
+            padding: 1.2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-top {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .search-container {
+                flex-direction: column;
+            }
+
+            .hero h2 {
+                font-size: 2rem;
+            }
+
+            .event-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 0.5rem;
+            }
+
+            .view-toggle {
+                margin-left: 0;
+            }
+
+            .logo-text h1 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray);
+        }
+
+        .spinner {
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Special Sections */
+        .special-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 4px solid var(--primary);
+        }
+
+        .special-section h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .badge {
+            background: var(--primary);
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="header-top">
+                <div class="logo-container">
+                    <div class="logo-circle">
+                        <div class="smiley-face">
+                            <div class="smiley-eye left"></div>
+                            <div class="smiley-eye right"></div>
+                            <div class="smiley-mouth"></div>
+                        </div>
+                    </div>
+                    <div class="logo-text">
+                        <h1>HALIFAX-NOW.CA</h1>
+                        <div class="logo-subtitle">DO STUFF. HAVE FUN.</div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary">Submit Event</button>
+                    <button class="btn btn-primary">Sign In</button>
+                </div>
+            </div>
+            <div class="search-container">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search events, venues, or activities...">
+                </div>
+            </div>
+            <nav>
+                <a href="#" class="active">All Events</a>
+                <a href="#music">Music</a>
+                <a href="#food">Food & Drink</a>
+                <a href="#arts">Arts & Culture</a>
+                <a href="#sports">Sports & Fitness</a>
+                <a href="#nightlife">Nightlife</a>
+                <a href="#community">Community</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Hero -->
+        <div class="hero">
+            <h2>Discover What's Happening in Halifax</h2>
+            <p>From live music to happy hours, theater to run clubs – find your next adventure</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filter-chip active" data-filter="all">All Events</div>
+            <div class="filter-chip" data-filter="today">Today</div>
+            <div class="filter-chip" data-filter="weekend">This Weekend</div>
+            <div class="filter-chip" data-filter="free">Free Events</div>
+            <div class="filter-chip" data-filter="music">Music</div>
+            <div class="filter-chip" data-filter="food">Food & Drink</div>
+            <div class="filter-chip" data-filter="arts">Arts & Culture</div>
+            <div class="filter-chip" data-filter="fitness">Sports & Fitness</div>
+            <div class="view-toggle">
+                <button class="btn btn-secondary" id="toggleGrid">
+                    📋 List
+                </button>
+                <button class="btn btn-secondary" id="toggleMap">
+                    🗺️ Map
+                </button>
+            </div>
+        </div>
+
+        <!-- Map -->
+        <div id="map"></div>
+
+        <!-- Special Section: Run Clubs -->
+        <div class="special-section" id="run-clubs">
+            <h3>🏃 Run Clubs & Fitness Events <span class="badge">POPULAR</span></h3>
+            <div class="event-grid" id="runClubsGrid"></div>
+        </div>
+
+        <!-- Special Section: Happy Hours -->
+        <div class="special-section" id="happy-hours">
+            <h3>🍻 Happy Hours & Social Events <span class="badge">TRENDING</span></h3>
+            <div class="event-grid" id="happyHoursGrid"></div>
+        </div>
+
+        <!-- Featured Events Section -->
+        <div class="section-header">
+            <h2>Featured Events</h2>
+            <a href="#">See All →</a>
+        </div>
+        <div class="event-grid" id="featuredEvents"></div>
+
+        <!-- All Events Section -->
+        <div class="section-header">
+            <h2>All Upcoming Events</h2>
+            <a href="#">Load More →</a>
+        </div>
+        <div class="event-grid" id="allEvents"></div>
+    </div>
+
+    <!-- Event Modal -->
+    <div class="modal" id="eventModal">
+        <div class="modal-content">
+            <div class="modal-header" id="modalHeader">
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <h2 id="modalTitle"></h2>
+                <div class="modal-meta" id="modalMeta"></div>
+                <div class="modal-description" id="modalDescription"></div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary btn-large" id="modalWebsiteBtn">View Event Website</button>
+                    <button class="btn btn-secondary btn-large" onclick="closeModal()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Event Data with mock additions for run clubs and happy hours
+        const mockRunClubs = [
+            {
+                name: "Halifax Running Club - Weekly Social Run",
+                venue: "Citadel Hill",
+                start_date: "2026-02-05",
+                start_time: "6:00 PM",
+                category: "Sports & Fitness",
+                cost: "Free",
+                description: "Join us for our weekly 5K social run! All paces welcome. We meet at Citadel Hill and explore different routes each week. Post-run refreshments at local breweries.",
+                image: "",
+                website: "#",
+                tags: "running, fitness, social, outdoor"
+            },
+            {
+                name: "Dartmouth Run Crew",
+                venue: "Sullivan's Pond",
+                start_date: "2026-02-06",
+                start_time: "6:30 PM",
+                category: "Sports & Fitness",
+                cost: "Free",
+                description: "Dartmouth's friendliest running group! We run 3-10K routes around the waterfront. Beginners encouraged. Meet at Sullivan's Pond parking lot.",
+                image: "",
+                website: "#",
+                tags: "running, fitness, dartmouth, beginner-friendly"
+            },
+            {
+                name: "Trail Running Adventure - Blue Mountain",
+                venue: "Blue Mountain-Birch Cove Lakes",
+                start_date: "2026-02-08",
+                start_time: "9:00 AM",
+                category: "Sports & Fitness",
+                cost: "$10",
+                description: "Explore Halifax's beautiful trail system with experienced guides. 10K trail run with moderate difficulty. Coffee and snacks provided.",
+                image: "",
+                website: "#",
+                tags: "trail running, outdoor, nature, fitness"
+            },
+            {
+                name: "Morning Yoga & Run Combo",
+                venue: "Point Pleasant Park",
+                start_date: "2026-02-09",
+                start_time: "7:00 AM",
+                category: "Sports & Fitness",
+                cost: "$15",
+                description: "Start your Sunday with 30 minutes of yoga followed by a 5K run through Point Pleasant Park. All levels welcome.",
+                image: "",
+                website: "#",
+                tags: "yoga, running, fitness, morning, wellness"
+            }
+        ];
+
+        const mockHappyHours = [
+            {
+                name: "Good Robot Wednesday Happy Hour",
+                venue: "Good Robot Brewing Co.",
+                start_date: "2026-02-05",
+                start_time: "4:00 PM",
+                end_time: "7:00 PM",
+                category: "Food & Drink",
+                cost: "$$",
+                description: "$6 pints, $8 cocktails, and half-price appetizers every Wednesday. Local DJs from 5-7pm.",
+                image: "",
+                website: "https://goodrobotbrewing.ca",
+                tags: "happy hour, drinks, brewery, social"
+            },
+            {
+                name: "Waterfront Social Hour",
+                venue: "The Wooden Monkey",
+                start_date: "2026-02-06",
+                start_time: "3:00 PM",
+                end_time: "6:00 PM",
+                category: "Food & Drink",
+                cost: "$$",
+                description: "Daily happy hour featuring local wines, craft cocktails, and fresh oysters. Beautiful waterfront views.",
+                image: "",
+                website: "#",
+                tags: "happy hour, waterfront, oysters, cocktails"
+            },
+            {
+                name: "Durty Nelly's Irish Happy Hour",
+                venue: "Durty Nelly's",
+                start_date: "2026-02-07",
+                start_time: "4:00 PM",
+                end_time: "7:00 PM",
+                category: "Food & Drink",
+                cost: "$",
+                description: "Traditional Irish pub atmosphere with $5 Guinness pints and half-price pub fare during happy hour.",
+                image: "",
+                website: "#",
+                tags: "happy hour, irish pub, beer, downtown"
+            },
+            {
+                name: "Friday Social at The Seahorse",
+                venue: "The Seahorse Tavern",
+                start_date: "2026-02-07",
+                start_time: "5:00 PM",
+                end_time: "8:00 PM",
+                category: "Food & Drink",
+                cost: "$$",
+                description: "Kick off your weekend with live acoustic music, specialty cocktails at $8, and gourmet bar snacks.",
+                image: "",
+                website: "#",
+                tags: "happy hour, live music, cocktails, friday"
+            }
+        ];
+
+        // Placeholder images for events without them
+        const placeholderImages = [
+            'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400',
+            'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400',
+            'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400',
+            'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=400',
+            'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=400'
+        ];
+
+        let allEventsData = [];
+        let map = null;
+        let markers = [];
+
+        // Fetch and combine events
+        async function loadEvents() {
+            try {
+                const response = await fetch('/sessions/admiring-lucid-thompson/events_data.json');
+                const scrapedEvents = await response.json();
+
+                // Combine all events
+                allEventsData = [...scrapedEvents, ...mockRunClubs, ...mockHappyHours];
+
+                // Render events
+                renderEvents();
+                renderRunClubs();
+                renderHappyHours();
+                initMap();
+            } catch (error) {
+                console.error('Error loading events:', error);
+                // Use mock data only if fetch fails
+                allEventsData = [...mockRunClubs, ...mockHappyHours];
+                renderEvents();
+                renderRunClubs();
+                renderHappyHours();
+                initMap();
+            }
+        }
+
+        // Create event card HTML
+        function createEventCard(event, index) {
+            const category = event.category?.split(',')[0]?.trim() || 'Event';
+            const imageUrl = event.image || placeholderImages[index % placeholderImages.length];
+            const hasImage = event.image && event.image.length > 0;
+
+            const price = event.cost ? (event.cost === 'Free' || event.cost === '' ? 'Free' : `$${event.cost}`) : 'Free';
+
+            // Format date
+            let dateStr = event.start_date;
+            try {
+                const date = new Date(event.start_date);
+                dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            } catch (e) {
+                dateStr = event.start_date;
+            }
+
+            return `
+                <div class="event-card" onclick="openModal(${index})">
+                    <div class="event-image">
+                        ${hasImage ? `<img src="${imageUrl}" alt="${event.name}">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--primary)">🎭</div>`}
+                    </div>
+                    <div class="event-content">
+                        <span class="event-category">${category}</span>
+                        <h3 class="event-title">${event.name}</h3>
+                        <div class="event-meta">
+                            <div>📅 ${dateStr}</div>
+                            <div>🕐 ${event.start_time || 'TBA'}</div>
+                            <div>📍 ${event.venue}</div>
+                        </div>
+                        ${event.description ? `<p class="event-description">${event.description.replace(/<[^>]*>/g, '').substring(0, 100)}...</p>` : ''}
+                        <div class="event-footer">
+                            <span class="event-price">${price}</span>
+                            <span class="event-venue">→ DETAILS</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render events
+        function renderEvents(filteredEvents = null) {
+            const eventsToRender = filteredEvents || allEventsData;
+            const featuredContainer = document.getElementById('featuredEvents');
+            const allContainer = document.getElementById('allEvents');
+
+            // Featured events (first 6)
+            const featured = eventsToRender.slice(0, 6);
+            featuredContainer.innerHTML = featured.map((event, index) => createEventCard(event, index)).join('');
+
+            // All events (remaining)
+            const remaining = eventsToRender.slice(6, 30);
+            allContainer.innerHTML = remaining.map((event, index) => createEventCard(event, index + 6)).join('');
+        }
+
+        // Render run clubs
+        function renderRunClubs() {
+            const container = document.getElementById('runClubsGrid');
+            const runClubEvents = allEventsData.filter(e =>
+                e.tags?.includes('running') ||
+                e.tags?.includes('fitness') ||
+                e.category?.includes('Sports & Fitness')
+            ).slice(0, 4);
+
+            container.innerHTML = runClubEvents.map((event, index) => createEventCard(event, index)).join('');
+        }
+
+        // Render happy hours
+        function renderHappyHours() {
+            const container = document.getElementById('happyHoursGrid');
+            const happyHourEvents = allEventsData.filter(e =>
+                e.name?.toLowerCase().includes('happy hour') ||
+                e.tags?.includes('happy hour') ||
+                e.category?.includes('Food & Drink')
+            ).slice(0, 4);
+
+            container.innerHTML = happyHourEvents.map((event, index) => createEventCard(event, index)).join('');
+        }
+
+        // Initialize map
+        function initMap() {
+            map = L.map('map').setView([44.6488, -63.5752], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add markers for venues (with mock coordinates)
+            const venues = {
+                "Good Robot Brewing Co.": [44.6629, -63.5965],
+                "Bearly's House of Blues and Ribs": [44.6488, -63.5752],
+                "The Bus Stop Theatre Co-op": [44.6500, -63.5800],
+                "Citadel Hill": [44.6475, -63.5729],
+                "Sullivan's Pond": [44.6714, -63.5606],
+                "Point Pleasant Park": [44.6252, -63.5684]
+            };
+
+            allEventsData.forEach((event, index) => {
+                const coords = venues[event.venue] || [44.6488 + (Math.random() - 0.5) * 0.05, -63.5752 + (Math.random() - 0.5) * 0.05];
+                const marker = L.marker(coords).addTo(map);
+                marker.bindPopup(`<b>${event.name}</b><br>${event.venue}<br>${event.start_date}`);
+                marker.on('click', () => openModal(index));
+                markers.push(marker);
+            });
+        }
+
+        // Toggle map view
+        document.getElementById('toggleMap').addEventListener('click', () => {
+            const mapEl = document.getElementById('map');
+            const isActive = mapEl.classList.contains('active');
+
+            if (isActive) {
+                mapEl.classList.remove('active');
+                document.getElementById('toggleMap').textContent = '🗺️ Map';
+            } else {
+                mapEl.classList.add('active');
+                document.getElementById('toggleMap').textContent = '📋 List';
+                setTimeout(() => map.invalidateSize(), 100);
+            }
+        });
+
+        // Open modal
+        function openModal(index) {
+            const event = allEventsData[index];
+            const modal = document.getElementById('eventModal');
+
+            // Set content
+            document.getElementById('modalTitle').textContent = event.name;
+
+            // Header image
+            const header = document.getElementById('modalHeader');
+            if (event.image) {
+                header.innerHTML = `<img src="${event.image}" alt="${event.name}"><button class="modal-close" onclick="closeModal()">×</button>`;
+            } else {
+                header.innerHTML = `<button class="modal-close" onclick="closeModal()">×</button>`;
+            }
+
+            // Meta info
+            let dateStr = event.start_date;
+            try {
+                const date = new Date(event.start_date);
+                dateStr = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+            } catch (e) {}
+
+            document.getElementById('modalMeta').innerHTML = `
+                <div class="modal-meta-item">
+                    <div class="modal-meta-label">Date</div>
+                    <div class="modal-meta-value">${dateStr}</div>
+                </div>
+                <div class="modal-meta-item">
+                    <div class="modal-meta-label">Time</div>
+                    <div class="modal-meta-value">${event.start_time || 'TBA'}${event.end_time ? ' - ' + event.end_time : ''}</div>
+                </div>
+                <div class="modal-meta-item">
+                    <div class="modal-meta-label">Venue</div>
+                    <div class="modal-meta-value">${event.venue}</div>
+                </div>
+                <div class="modal-meta-item">
+                    <div class="modal-meta-label">Price</div>
+                    <div class="modal-meta-value">${event.cost || 'Free'}</div>
+                </div>
+            `;
+
+            // Description
+            const description = event.description ? event.description.replace(/<[^>]*>/g, '') : 'No description available.';
+            document.getElementById('modalDescription').textContent = description;
+
+            // Website button
+            const websiteBtn = document.getElementById('modalWebsiteBtn');
+            if (event.website && event.website !== '#') {
+                websiteBtn.onclick = () => window.open(event.website, '_blank');
+                websiteBtn.style.display = 'block';
+            } else {
+                websiteBtn.style.display = 'none';
+            }
+
+            modal.classList.add('active');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('eventModal').classList.remove('active');
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = allEventsData.filter(event =>
+                event.name.toLowerCase().includes(query) ||
+                event.venue.toLowerCase().includes(query) ||
+                event.category?.toLowerCase().includes(query) ||
+                event.tags?.toLowerCase().includes(query)
+            );
+            renderEvents(filtered);
+        });
+
+        // Filter functionality
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                // Update active state
+                document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                e.target.classList.add('active');
+
+                const filter = e.target.dataset.filter;
+
+                if (filter === 'all') {
+                    renderEvents();
+                } else if (filter === 'today') {
+                    const today = new Date().toISOString().split('T')[0];
+                    const filtered = allEventsData.filter(e => e.start_date === today);
+                    renderEvents(filtered);
+                } else if (filter === 'weekend') {
+                    const filtered = allEventsData.filter(e => {
+                        try {
+                            const date = new Date(e.start_date);
+                            const day = date.getDay();
+                            return day === 5 || day === 6 || day === 0; // Fri, Sat, Sun
+                        } catch { return false; }
+                    });
+                    renderEvents(filtered);
+                } else if (filter === 'free') {
+                    const filtered = allEventsData.filter(e => !e.cost || e.cost === '' || e.cost.toLowerCase() === 'free');
+                    renderEvents(filtered);
+                } else {
+                    const filtered = allEventsData.filter(e =>
+                        e.category?.toLowerCase().includes(filter) ||
+                        e.tags?.toLowerCase().includes(filter)
+                    );
+                    renderEvents(filtered);
+                }
+            });
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('eventModal').addEventListener('click', (e) => {
+            if (e.target.id === 'eventModal') {
+                closeModal();
+            }
+        });
+
+        // Initialize
+        loadEvents();
+    </script>
+</body>
+</html>
