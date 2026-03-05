@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halifax Now - Event Audit Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header .timestamp {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .stat-card h3 {
+            font-size: 0.9em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .number {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-card.warning .number {
+            color: #f59e0b;
+        }
+        
+        .stat-card.success .number {
+            color: #10b981;
+        }
+        
+        .stat-card.info .number {
+            color: #3b82f6;
+        }
+        
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            font-size: 1.8em;
+        }
+        
+        .venue-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .venue-item {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .venue-name {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .venue-count {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .event-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .event-table th {
+            background: #f3f4f6;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .event-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .event-table tr:hover {
+            background: #f9fafb;
+        }
+        
+        .date {
+            color: #667eea;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .similarity {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        
+        .similarity.high {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .similarity.medium {
+            background: #fed7aa;
+            color: #92400e;
+        }
+        
+        .alert {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .alert h4 {
+            color: #92400e;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        
+        .alert p {
+            color: #78350f;
+        }
+        
+        .success-box {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .success-box h4 {
+            color: #065f46;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background 0.2s;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+        }
+        
+        .show-more {
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .show-more a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .show-more a:hover {
+            text-decoration: underline;
+        }
+        
+        .expandable {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .note {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎭 Halifax Now - Event Audit Dashboard</h1>
+            <p class="timestamp">Generated: March 04, 2026 at 09:21 AM</p>
+        </div>
+        
+        <!-- Summary Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card warning">
+                <h3>Missing from Site</h3>
+                <div class="number">72</div>
+                <p>Events need importing</p>
+            </div>
+            
+            <div class="stat-card success">
+                <h3>Auto-Matched</h3>
+                <div class="number">133</div>
+                <p>Fuzzy matches found</p>
+            </div>
+            
+            <div class="stat-card info">
+                <h3>Extra on Site</h3>
+                <div class="number">338</div>
+                <p>Not in master list</p>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Needs Review</h3>
+                <div class="number">120</div>
+                <p>Manual review required</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📍 Missing Events by Venue</h2>
+            <p>Events in your master list that haven't been imported to the site yet.</p>
+<div class="venue-grid">
+            <div class="venue-item">
+                <span class="venue-name">The Carleton</span>
+                <span class="venue-count">23</span>
+            </div>
+
+            <div class="venue-item">
+                <span class="venue-name">Bearly's House of Blues and Ribs</span>
+                <span class="venue-count">7</span>
+            </div>
+
+            <div class="venue-item">
+                <span class="venue-name">Sanctuary Arts Centre</span>
+                <span class="venue-count">5</span>
+            </div>
+
+            <div class="venue-item">
+                <span class="venue-name">Seahorse Tavern</span>
+                <span class="venue-count">5</span>
+            </div>
+
+            <div class="venue-item">
+                <span class="venue-name">Yuk Yuk's Halifax</span>
+                <span class="venue-count">5</span>
+            </div>
+
+            <div class="venue-item">
+                <span class="venue-name">Casino Nova Scotia - The Bruce Guthro Theatre</span>
+                <span class="venue-count">3</span>
+            </div>
+
+            <div class="venue-item">
+                <span class="venue-name">The Marquee</span>
+                <span class="venue-count">3</span>
+            </div>
+
+            <div class="venue-item">
+                <span class="venue-name">Mary E. Black Gallery, 1061 Marginal Rd, Halifax</span>
+                <span class="venue-count">1</span>
+            </div>
+
+            <div class="venue-item">
+                <span class="venue-name">The Westin NS 1181 Hollis St, Halifax NS B3H 2P6</span>
+                <span class="venue-count">1</span>
+            </div>
+
+            <div class="venue-item">
+                <span class="venue-name">Light House Arts Centre, 1800 Argyle Street, Halifax, NS</span>
+                <span class="venue-count">1</span>
+            </div>
+</div><div class="show-more"><p>+ 18 more venues with 18 events</p></div>
+            <div class="alert">
+                <h4>⚡ Quick Action</h4>
+                <p>You have <strong>ready_to_import_from_audit.csv</strong> ready with 72 events to import into WordPress!</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📋 Sample Missing Events</h2>
+            <p>Preview of events that need to be added to your site (showing first 20):</p>
+            <div class="expandable">
+            <table class="event-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Event Title</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr>
+                        <td class="date">2026-03-05</td>
+                        <td>Craft Nova Scotia presents: TABU by Tyshan Wright</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-07</td>
+                        <td>The Epilepsy Association of the Maritimes Annual Purple Day Gala - The Art of Resilience</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-07</td>
+                        <td>Mamma Mia! A Drag-Along Spectacular</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-10</td>
+                        <td>Tuesday Night Talk: Building the Ocean Terminals and Rail Cut Through Halifax, Author Bob Chaulk</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-08</td>
+                        <td>Ian Janes</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-13</td>
+                        <td>4 TIX LEFT! Ben Caplan + Moira & Claire – Friday</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-14</td>
+                        <td>SOLD OUT: Ben Caplan + Moira & Claire – Saturday</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-21</td>
+                        <td>Sekhon X</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-28</td>
+                        <td>SOLD OUT A Tribute To John Prine – evening</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-04-03</td>
+                        <td>Charlie A’Court – Friday</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-04-10</td>
+                        <td>6 TIX LEFT! Caledonia</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-04-17</td>
+                        <td>SOLD OUT: Steve Poltz – Friday</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-04-28</td>
+                        <td>8 TIX LEFT! Jane Siberry – Tuesday</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-04-29</td>
+                        <td>SOLD OUT: Jane Siberry – Wednesday</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-05-03</td>
+                        <td>Connie Kaldor</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-05-07</td>
+                        <td>J.P. Cormier & Jake Lauzon</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-05-09</td>
+                        <td>Rasta Gumbo</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-05-23</td>
+                        <td>Pretty Archie</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-05-24</td>
+                        <td>Brass Camel</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-05-29</td>
+                        <td>Private Event</td>
+                    </tr>
+
+                </tbody>
+            </table>
+            </div>
+<div class="show-more"><p>+ 52 more events</p></div></div>
+        <div class="section">
+            <h2>🔍 Auto-Matched Events (Fuzzy)</h2>
+            <p>Events that were automatically matched despite minor differences in formatting:</p>
+            <div class="expandable">
+            <table class="event-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Site Title</th>
+                        <th>Master Title</th>
+                        <th>Match</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr>
+                        <td class="date">2026-03-05</td>
+                        <td>Spontaneity: Murder Mystery &amp; Improv &#8211; Mar 05</td>
+                        <td>Spontaneity: Murder Mystery & Improv</td>
+                        <td><span class="similarity high">90%</span></td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-05</td>
+                        <td>Wantaqpa&#8217;q / Calm Water: Paintings by Alex Balkam &#8211; Mar 05</td>
+                        <td>Wantaqpa'q / Calm Water: Paintings by Alex Balkam</td>
+                        <td><span class="similarity high">93%</span></td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-05</td>
+                        <td>Better Times Comedy at Good Robot &#8211; Mar 05</td>
+                        <td>Better Times Comedy at Good Robot</td>
+                        <td><span class="similarity high">90%</span></td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-05</td>
+                        <td>Live Art Dance: Graveyards and Gardens &#8211; Mar 05</td>
+                        <td>Live Art Dance: Graveyards and Gardens</td>
+                        <td><span class="similarity high">91%</span></td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-05</td>
+                        <td>Dal Theatre Society presents A Midsummer Night’s Stream &#8211; Mar 05</td>
+                        <td>Dal Theatre Society presents A Midsummer Night’s Stream</td>
+                        <td><span class="similarity high">94%</span></td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-05</td>
+                        <td>It&#8217;s About Time: Performance and Panel &#8211; Mar 05</td>
+                        <td>It's About Time: Performance and Panel</td>
+                        <td><span class="similarity high">91%</span></td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-07</td>
+                        <td>Gypsy – The Music Of Fleetwood Mac &#8211; Mar 07</td>
+                        <td>Gypsy – The Music Of Fleetwood Mac</td>
+                        <td><span class="similarity high">90%</span></td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-07</td>
+                        <td>After Hours &#8211; Catherine O&#8217;Hara Retrospective — Carbon Arc &#8211; Mar 07</td>
+                        <td>After Hours - Catherine O'Hara Retrospective — Carbon Arc</td>
+                        <td><span class="similarity high">94%</span></td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-07</td>
+                        <td>Candlelight: The Lord of the Rings &#8211; Mar 07</td>
+                        <td>Candlelight: The Lord of the Rings</td>
+                        <td><span class="similarity high">90%</span></td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-07</td>
+                        <td>Live Art Dance: Graveyards and Gardens &#8211; Mar 07</td>
+                        <td>Live Art Dance: Graveyards and Gardens</td>
+                        <td><span class="similarity high">91%</span></td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-07</td>
+                        <td>WOMEN&#8217;S DAY CELEBRATION</td>
+                        <td>WOMEN’S DAY CELEBRATION</td>
+                        <td><span class="similarity high">100%</span></td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-07</td>
+                        <td>Joe Murphy and the Water St. Blues Band &#8211; Mar 07</td>
+                        <td>Joe Murphy and the Water St. Blues Band</td>
+                        <td><span class="similarity high">92%</span></td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-04</td>
+                        <td>Dal Theatre Society presents A Midsummer Night’s Stream &#8211; Mar 04</td>
+                        <td>Dal Theatre Society presents A Midsummer Night’s Stream</td>
+                        <td><span class="similarity high">94%</span></td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-04</td>
+                        <td>Catherine Robertson&#8217;s Comedy Hour! &#8211; Mar 04</td>
+                        <td>Catherine Robertson's Comedy Hour!</td>
+                        <td><span class="similarity high">90%</span></td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-09</td>
+                        <td>Scotiabank Centre Free Noon Skate</td>
+                        <td>Scotiabank Centre Free Noon Skate</td>
+                        <td><span class="similarity high">100%</span></td>
+                    </tr>
+
+                </tbody>
+            </table>
+            </div>
+<div class="show-more"><p>+ 118 more matches</p></div>
+            <div class="note">
+                <p><strong>Note:</strong> These events are considered duplicates and won't be imported again. The most common differences are HTML entities (&amp; vs &) and minor formatting variations.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>➕ Events Only on Site</h2>
+            <p>Events found on your live site but not in your master list (excluding untitled events):</p>
+            <div class="expandable">
+            <table class="event-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Event Title</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr>
+                        <td class="date">2026-03-05</td>
+                        <td>Candlelight: Best of Bridgerton on Strings &#8211; Waitlist &#8211; Mar 05</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-05</td>
+                        <td>&#x1f602; MouseTrap Comedy w/ Better Times Comedy</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-06</td>
+                        <td>Candlelight: The Best of Hans Zimmer &#8211; Mar 06</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-06</td>
+                        <td>Dance Night</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-06</td>
+                        <td>What People Are Saying &#8211; Mar 06</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-06</td>
+                        <td>6 TIX LEFT! Alfie Zappacosta – Friday &#8211; Mar 06</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-06</td>
+                        <td>5 TIX LEFT! Alfie Zappacosta – Friday &#8211; Mar 06</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-06</td>
+                        <td>2 TIX LEFT! Alfie Zappacosta – Friday &#8211; Mar 06</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-06</td>
+                        <td>Travis Lindsay &#8211; Mar 06-7</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-06</td>
+                        <td>Candlelight: Tribute to Pink Floyd &#8211; Mar 06</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-06</td>
+                        <td>Comedians Solve The Housing Crisis | Live in Halifax!</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-06</td>
+                        <td>The Ordeals &#8211; Mar 06</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-06</td>
+                        <td>One Night In Ghana &#8211; Mar 06</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-06</td>
+                        <td>Coupl&#8217;a Queers presents: THEY HAVE LANDED!</td>
+                    </tr>
+
+                    <tr>
+                        <td class="date">2026-03-06</td>
+                        <td>Club Mayhem</td>
+                    </tr>
+
+                </tbody>
+            </table>
+            </div>
+<div class="show-more"><p>+ 323 more events</p></div>
+            <div class="note">
+                <p><strong>Note:</strong> These might be manual entries, Instagram events, or events from sources not yet in your master scraper system.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>✅ Next Steps</h2>
+
+            <div class="success-box">
+                <h4>Ready to Import</h4>
+                <p><strong>72 events</strong> are ready to import from <code>ready_to_import_from_audit.csv</code></p>
+            </div>
+
+            <div class="note" style="margin-top: 15px;">
+                <h4>How to Use This Audit:</h4>
+                <ol style="margin-left: 20px; margin-top: 10px;">
+                    <li>Import missing events using <code>ready_to_import_from_audit.csv</code> in WordPress</li>
+                    <li>Clean up "Untitled event" placeholders from your site</li>
+                    <li>Review any events "Only on Site" to see if they should be added to scrapers</li>
+                    <li>Run the audit again after imports to verify everything is in sync</li>
+                </ol>
+            </div>
+        </div>
+    </body>
+</html>
