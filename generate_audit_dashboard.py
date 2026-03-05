@@ -142,6 +142,10 @@ def generate_dashboard():
         .stat-card.info .number {{
             color: #3b82f6;
         }}
+
+        .stat-card.review .number {{
+            color: #e67e22;
+        }}
         
         .section {{
             background: white;
@@ -349,7 +353,7 @@ def generate_dashboard():
                 <p>Not in master list</p>
             </div>
             
-            <div class="stat-card">
+            <div class="stat-card review">
                 <h3>Needs Review</h3>
                 <div class="number">{total_needs_review}</div>
                 <p>Manual review required</p>
@@ -511,6 +515,56 @@ def generate_dashboard():
         </div>
 """
     
+    # Needs Review Section
+    if needs_review:
+        html += """
+        <div class="section">
+            <h2>🔎 Needs Review</h2>
+            <p>These events scored <strong>80-90% similarity</strong> — too close to auto-dismiss, but not close enough to auto-match.
+            Check if the site title and master title refer to the same event.</p>
+            <table class="event-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Site Title</th>
+                        <th>Master Title</th>
+                        <th>Match</th>
+                        <th>Verdict</th>
+                    </tr>
+                </thead>
+                <tbody>
+"""
+        for match in needs_review:
+            similarity = float(match.get('similarity', 0))
+            sim_pct = f"{similarity * 100:.0f}%"
+            site_time = match.get('site_time', '')
+            master_time = match.get('master_time', '')
+            time_note = ""
+            if site_time and master_time and site_time != master_time:
+                time_note = f' <span style="color:#92400e;font-size:0.8em;">(site {site_time} vs master {master_time})</span>'
+
+            html += f"""
+                    <tr>
+                        <td class="date">{match.get('date', '')}{time_note}</td>
+                        <td>{match.get('site_title', '')}</td>
+                        <td>{match.get('master_title', '')}</td>
+                        <td><span class="similarity medium">{sim_pct}</span></td>
+                        <td style="font-size:0.85em;color:#666;">— check manually —</td>
+                    </tr>
+"""
+
+        html += """
+                </tbody>
+            </table>
+            <div class="alert" style="margin-top: 15px;">
+                <h4>What to do with these</h4>
+                <p><strong>Same event?</strong> No action needed — it's already on the site under a slightly different name.<br>
+                <strong>Different event?</strong> It will be in <code>ready_to_import_from_audit.csv</code> for import.
+                If it was wrongly excluded, check the fuzzy thresholds in <code>compare_site_xml_to_master.py</code>.</p>
+            </div>
+        </div>
+"""
+
     # Extra Events on Site
     if future_only_site and not all('untitled' in e.get('title', '').lower() for e in future_only_site):
         # Only show if there are non-untitled events
@@ -580,6 +634,7 @@ def generate_dashboard():
                 <h4>How to Use This Audit:</h4>
                 <ol style="margin-left: 20px; margin-top: 10px;">
                     <li>Import missing events using <code>ready_to_import_from_audit.csv</code> in WordPress</li>
+                    <li>Review the "Needs Review" events above — decide if they're duplicates or genuinely different</li>
                     <li>Clean up "Untitled event" placeholders from your site</li>
                     <li>Review any events "Only on Site" to see if they should be added to scrapers</li>
                     <li>Run the audit again after imports to verify everything is in sync</li>
