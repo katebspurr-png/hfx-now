@@ -1,0 +1,33 @@
+# Generated output
+output/
+
+# Generated dashboards and reports
+audit_dashboard.html
+curation_dashboard.html
+event_diff_report.html
+debug_page.html
+
+# Generated CSV files (audit/comparison results)
+matched_fuzzy*.csv
+needs_review*.csv
+only_in_master*.csv
+only_in_site_xml*.csv
+possible_fuzzy_matches*.csv
+ready_to_import*.csv
+site_events_from_api.csv
+site_potential_duplicates.csv
+audit_future_only_in_site.csv
+
+# Archives
+*.zip
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store
+
+# Environment / secrets
+.env
