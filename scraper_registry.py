@@ -246,11 +246,11 @@ SCRAPERS: List[ScraperConfig] = [
     ),
     ScraperConfig(
         key="hfxcomedyfest",
-        name="Halifax Comedy Festival",
-        script=rel("scrapers", "hfx_comedy_fest_scraper.py"),
-        output=rel("output", "hfx_comedy_fest_events.csv"),
-        enabled=False,
-        notes="DISABLED - 403 Forbidden error from Tixr. Needs Cowork to fix anti-bot protection.",
+        name="Halifax Comedy Festival (Tixr)",
+        script=rel("tixr_scraper.py"),
+        output=rel("output", "tixr_hfx_comedy_fest_events.csv"),
+        enabled=True,
+        notes="Playwright-based Tixr scraper; bypasses anti-bot protection via browser rendering",
     ),
     ScraperConfig(
         key="rumourshfx",
