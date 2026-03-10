@@ -314,6 +314,63 @@ def events_match(name1: str, name2: str, min_length: int = 8) -> bool:
     return shorter in longer
 
 
+def clean_event_name(name: str) -> str:
+    """
+    Strip noisy marketing prefixes/suffixes from event titles.
+
+    Removes:
+    - Ticket-count prefixes like "4 TIX LEFT! ", "8 TICKETS LEFT! "
+    - Sold-out prefixes like "SOLD OUT: ", "SOLD OUT! ", "SOLD OUT "
+    - Waitlist suffixes like "- Waitlist" and prefixes like "Waitlist: "
+    """
+    if not name:
+        return name
+    # Ticket count prefixes: "4 TIX LEFT! ", "8 TICKETS LEFT! "
+    name = re.sub(r'^\d+\s+TI(?:X|CKETS?)\s+LEFT!?\s*', '', name, flags=re.IGNORECASE).strip()
+    # Sold out prefixes: "SOLD OUT: ", "SOLD OUT! ", "SOLD OUT "
+    name = re.sub(r'^SOLD\s+OUT[:\s!]*', '', name, flags=re.IGNORECASE).strip()
+    # Waitlist prefix: "Waitlist: "
+    name = re.sub(r'^Waitlist[:\s]+', '', name, flags=re.IGNORECASE).strip()
+    # Waitlist suffix: "- Waitlist"
+    name = re.sub(r'\s*-\s*Waitlist\s*$', '', name, flags=re.IGNORECASE).strip()
+    return name
+
+
+def is_junk_event(name: str) -> bool:
+    """
+    Return True if the event title looks like junk that should be filtered out.
+
+    Catches:
+    - Closed/closing notices (e.g. "ALL Locations Closed for Christmas")
+    - "OPEN Regular Hours" notices
+    - "STAFF EVENT" mentions
+    - "Untitled event"
+    - "Watch Video" (scraper button text)
+    - Titles that are just "Activities" or "Private Event"
+    - Titles starting with "PO Box" (address scraped as event name)
+    """
+    if not name:
+        return True
+    n = name.strip()
+    # Closed / closing notices
+    if re.search(r'\bclos(ed|ing)\b', n, re.IGNORECASE):
+        return True
+    # "OPEN Regular Hours"
+    if re.search(r'\bopen\s+regular\s+hours\b', n, re.IGNORECASE):
+        return True
+    # STAFF EVENT
+    if re.search(r'\bstaff\s+event\b', n, re.IGNORECASE):
+        return True
+    # Exact junk titles (case-insensitive)
+    lower = n.lower().strip()
+    if lower in {'untitled event', 'watch video', 'activities', 'private event'}:
+        return True
+    # Starts with PO Box
+    if re.match(r'^PO\s+Box\b', n, re.IGNORECASE):
+        return True
+    return False
+
+
 def normalize_row_for_master(raw_row: Dict[str, str]) -> Dict[str, str]:
     """
     Normalize a raw row from any scraper into our TEC_HEADERS schema.
@@ -331,6 +388,10 @@ def normalize_row_for_master(raw_row: Dict[str, str]) -> Dict[str, str]:
         if canon in CANONICAL_HEADER_MAP:
             target_header = CANONICAL_HEADER_MAP[canon]
             normalized[target_header] = (value or "").strip()
+
+    # Clean noisy prefixes/suffixes from the event title
+    if normalized.get("Event Name"):
+        normalized["Event Name"] = clean_event_name(normalized["Event Name"])
 
     return normalized
 
@@ -668,6 +729,11 @@ def merge_all_events():
 
             # Basic sanity check: must have name + start date
             if not row.get("Event Name") or not row.get("Event Start Date"):
+                per_scraper_invalid[cfg.key] += 1
+                continue
+
+            # Filter junk events (closure notices, scraper artifacts, etc.)
+            if is_junk_event(row["Event Name"]):
                 per_scraper_invalid[cfg.key] += 1
                 continue
 
