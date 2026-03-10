@@ -3,6 +3,7 @@ from dateutil import parser as dateparser
 import csv
 import datetime
 import os
+import re
 import shutil
 
 from category_mapping import normalize_categories
@@ -66,21 +67,58 @@ FIELDNAMES = [
 
 def parse_date_range_lenient(date_text):
     """
-    Lenient date parsing:
-      - If only one date -> start filled, end blank
-      - If parsing fails -> both blank
+    Lenient date parsing that handles:
+      - ISO dates:    "2025-11-20"
+      - Single dates: "Nov 20, 2025"  /  "March 15"
+      - Ranges:       "March 10 - March 15, 2026"
+      - Compact:      "March 10-15, 2026"
+    Returns (start_date, end_date) as "YYYY-MM-DD" strings, or "" on failure.
     """
     if not date_text:
         return "", ""
-    try:
-        parts = [p.strip() for p in date_text.split("-")]
-        if len(parts) == 1:
-            d = dateparser.parse(parts[0], dayfirst=False, fuzzy=True)
+    text = date_text.strip()
+
+    # 1) Try ISO format first (YYYY-MM-DD) — don't split on its dashes
+    iso_match = re.match(r'^(\d{4}-\d{2}-\d{2})$', text)
+    if iso_match:
+        try:
+            d = dateparser.parse(iso_match.group(1))
             return d.strftime("%Y-%m-%d"), ""
-        else:
+        except Exception:
+            return "", ""
+
+    # 2) Split only on " - " (space-dash-space) for ranges like
+    #    "March 10 - March 15, 2026"  or  "Nov 1, 2026 - Nov 5, 2026"
+    if " - " in text:
+        parts = [p.strip() for p in text.split(" - ", 1)]
+        try:
             d1 = dateparser.parse(parts[0], dayfirst=False, fuzzy=True)
             d2 = dateparser.parse(parts[1], dayfirst=False, fuzzy=True)
             return d1.strftime("%Y-%m-%d"), d2.strftime("%Y-%m-%d")
+        except Exception:
+            pass
+
+    # 3) Compact range like "March 10-15, 2026" — extract with regex
+    compact = re.match(
+        r'^([A-Za-z]+\s+\d{1,2})\s*-\s*(\d{1,2}(?:,\s*\d{4})?)\s*$', text
+    )
+    if compact:
+        # e.g. "March 10" and "15, 2026"
+        #  -> reconstruct second date as "March 15, 2026"
+        month_day = compact.group(1)          # "March 10"
+        end_part = compact.group(2)           # "15, 2026"
+        month_word = month_day.split()[0]     # "March"
+        try:
+            d1 = dateparser.parse(month_day, dayfirst=False, fuzzy=True)
+            d2 = dateparser.parse(f"{month_word} {end_part}", dayfirst=False, fuzzy=True)
+            return d1.strftime("%Y-%m-%d"), d2.strftime("%Y-%m-%d")
+        except Exception:
+            pass
+
+    # 4) Single date — "Nov 20, 2025" or "March 15"
+    try:
+        d = dateparser.parse(text, dayfirst=False, fuzzy=True)
+        return d.strftime("%Y-%m-%d"), ""
     except Exception:
         return "", ""
 
@@ -383,7 +421,18 @@ def main():
                 if should_skip_event(row.get("EVENT NAME", "")):
                     print(f"  -> Skipping (covered by Ticketmaster): {row.get('EVENT NAME', '')}")
                     continue
-                    
+
+                # Skip past events — only keep today or future
+                start = row.get("EVENT START DATE", "")
+                if start:
+                    try:
+                        event_date = datetime.date.fromisoformat(start)
+                        if event_date < datetime.date.today():
+                            print(f"  -> Skipping (past event {start}): {row.get('EVENT NAME', '')}")
+                            continue
+                    except ValueError:
+                        pass
+
                 rows.append(row)
             except Exception as e:
                 print("Error scraping", url, "->", e)
