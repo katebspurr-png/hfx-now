@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Halifax-Now.ca — Do Stuff. Have Fun.</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&family=Barlow:wght@400;500;600&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --blue: #1A0FCC;
+  --blue-hover: #1509b3;
+  --white: #FFFFFF;
+  --cream: #F6F5F1;
+  --black: #080808;
+  --mid: #444;
+  --muted: #888;
+  --rule: #D8D7D2;
+}
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--white);
+  color: var(--black);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+/* ─── NAV ─── */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: var(--white);
+  border-bottom: 1.5px solid var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  height: 68px;
+}
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.smiley svg { display: block; }
+.logo-lockup { line-height: 1; }
+.logo-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 21px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--blue);
+}
+.logo-tag {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--blue);
+  opacity: 0.55;
+  margin-top: 2px;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  list-style: none;
+}
+.nav-links li a {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--black);
+  text-decoration: none;
+  padding: 0 16px;
+  transition: color 0.12s;
+}
+.nav-links li a:hover { color: var(--blue); }
+.nav-links li.cta a {
+  background: var(--blue);
+  color: var(--white);
+  padding: 9px 18px;
+  margin-left: 8px;
+  transition: background 0.12s;
+}
+.nav-links li.cta a:hover { background: var(--blue-hover); }
+/* ─── HERO ─── */
+.hero {
+  background: var(--blue);
+  color: var(--white);
+  padding: 60px 40px 52px;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 56px;
+  align-items: center;
+}
+.hero-eyebrow {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.5;
+  margin-bottom: 16px;
+}
+.hero h1 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 84px;
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  margin-bottom: 22px;
+}
+.hero-desc {
+  font-size: 15px;
+  opacity: 0.75;
+  max-width: 360px;
+  line-height: 1.65;
+  margin-bottom: 28px;
+}
+.search-bar {
+  display: flex;
+  max-width: 420px;
+}
+.search-bar input {
+  flex: 1;
+  padding: 13px 16px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 14px;
+  background: rgba(255,255,255,0.13);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  border-right: none;
+  color: var(--white);
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.search-bar input:focus {
+  background: rgba(255,255,255,0.18);
+  border-color: rgba(255,255,255,0.5);
+}
+.search-bar input::placeholder { color: rgba(255,255,255,0.45); }
+.search-bar button {
+  padding: 13px 20px;
+  background: var(--white);
+  color: var(--blue);
+  border: none;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.12s;
+}
+.search-bar button:hover { opacity: 0.9; }
+/* Hero right — featured picks */
+.hero-right { display: flex; flex-direction: column; gap: 0; }
+.picks-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.5;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.picks-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.2);
+}
+.pick-card {
+  padding: 14px 16px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-bottom: none;
+  cursor: pointer;
+  transition: background 0.12s;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pick-card:last-child { border-bottom: 1px solid rgba(255,255,255,0.15); }
+.pick-card:hover { background: rgba(255,255,255,0.08); }
+.pick-card.top { background: rgba(255,255,255,0.1); }
+.pc-cat {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 9.5px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  margin-bottom: 5px;
+}
+.pc-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+.pc-meta {
+  font-size: 12px;
+  opacity: 0.6;
+  line-height: 1.4;
+}
+.pc-tag {
+  flex-shrink: 0;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  background: rgba(255,255,255,0.18);
+  white-space: nowrap;
+  margin-top: 2px;
+}
+/* ─── FILTER BAR ─── */
+.filter-bar {
+  background: var(--cream);
+  border-bottom: 1.5px solid var(--black);
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 50px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.filter-bar::-webkit-scrollbar { display: none; }
+.filter-bar-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+.chip {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 5px 13px;
+  border: 1.5px solid var(--rule);
+  background: var(--white);
+  color: var(--mid);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.12s;
+}
+.chip:hover { border-color: var(--blue); color: var(--blue); }
+.chip.on { background: var(--blue); border-color: var(--blue); color: var(--white); }
+/* ─── PAGE BODY ─── */
+.page {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 44px 40px 64px;
+}
+.sec-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1.5px solid var(--black);
+  padding-bottom: 11px;
+  margin-bottom: 26px;
+}
+.sec-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 28px;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+.sec-link {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--blue);
+  text-decoration: none;
+  opacity: 0.85;
+  transition: opacity 0.12s;
+}
+.sec-link:hover { opacity: 1; }
+.view-toggle {
+  display: flex;
+  border: 1.5px solid var(--rule);
+  margin-bottom: 22px;
+  align-self: flex-end;
+  width: fit-content;
+  margin-left: auto;
+}
+.vt {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border: none;
+  background: transparent;
+  color: var(--mid);
+  cursor: pointer;
+  border-right: 1.5px solid var(--rule);
+  transition: all 0.12s;
+}
+.vt:last-child { border-right: none; }
+.vt.on, .vt:hover { background: var(--blue); color: var(--white); }
+/* ─── EVENT GRID ─── */
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--rule);
+  border: 1.5px solid var(--black);
+  margin-bottom: 52px;
+}
+.ec {
+  background: var(--white);
+  padding: 22px 20px 18px;
+  cursor: pointer;
+  transition: background 0.1s;
+  display: flex;
+  flex-direction: column;
+  min-height: 168px;
+  position: relative;
+}
+.ec:hover { background: var(--cream); }
+.ec.wide {
+  grid-column: span 2;
+  background: var(--blue);
+  color: var(--white);
+}
+.ec.wide:hover { background: var(--blue-hover); }
+.ec-when {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+.ec.wide .ec-when { color: rgba(255,255,255,0.5); }
+.ec-cat {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  display: inline-block;
+  padding: 2px 7px;
+  margin-bottom: 7px;
+  background: rgba(26,15,204,0.07);
+  color: var(--blue);
+  align-self: flex-start;
+}
+.ec.wide .ec-cat {
+  background: rgba(255,255,255,0.18);
+  color: var(--white);
+}
+.ec-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.08;
+  flex: 1;
+  margin-bottom: 12px;
+}
+.ec.wide .ec-title { font-size: 30px; }
+.ec-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+.ec-venue {
+  font-size: 12px;
+  color: var(--muted);
+}
+.ec.wide .ec-venue { color: rgba(255,255,255,0.6); }
+.badge {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+}
+.badge.free { background: #D8F4D8; color: #1A5C1A; }
+.badge.paid { background: var(--cream); color: var(--mid); }
+.badge.white { background: rgba(255,255,255,0.2); color: var(--white); }
+/* ─── LIST ─── */
+.event-list {
+  border: 1.5px solid var(--black);
+  margin-bottom: 52px;
+}
+.eli {
+  display: grid;
+  grid-template-columns: 72px 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.eli:last-child { border-bottom: none; }
+.eli:hover { background: var(--cream); }
+.eli-date {
+  background: var(--blue);
+  color: var(--white);
+  text-align: center;
+  padding: 7px 4px;
+  flex-shrink: 0;
+}
+.eli-day {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 26px;
+  line-height: 1;
+}
+.eli-mon {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.eli-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+.eli-meta {
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dot { width: 2px; height: 2px; border-radius: 50%; background: var(--rule); flex-shrink: 0; }
+.eli-cost {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--blue);
+  white-space: nowrap;
+}
+/* ─── MARQUEE ─── */
+.marquee-band {
+  background: var(--black);
+  overflow: hidden;
+  padding: 16px 0;
+  border-top: 1.5px solid var(--black);
+}
+.marquee-track {
+  display: flex;
+  gap: 0;
+  animation: scroll 28s linear infinite;
+  width: max-content;
+}
+@keyframes scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-item {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 15px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--white);
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  white-space: nowrap;
+}
+.marquee-item .star {
+  color: var(--blue);
+  font-size: 16px;
+  line-height: 1;
+}
+/* ─── FOOTER ─── */
+footer {
+  background: var(--black);
+  color: var(--white);
+  padding: 44px 40px 28px;
+}
+.footer-inner {
+  max-width: 1160px;
+  margin: 0 auto;
+}
+.footer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 32px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 24px;
+}
+.footer-brand .fn {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 26px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--white);
+  margin-bottom: 4px;
+}
+.footer-brand .ft {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+}
+.footer-cols {
+  display: flex;
+  gap: 56px;
+}
+.footer-col-head {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 12px;
+}
+.footer-col a {
+  display: block;
+  font-family: 'Barlow', sans-serif;
+  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+  text-decoration: none;
+  margin-bottom: 7px;
+  transition: color 0.12s;
+}
+.footer-col a:hover { color: var(--white); }
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Barlow', sans-serif;
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+}
+.footer-smiley {
+  font-size: 18px;
+  opacity: 0.4;
+}
+</style>
+</head>
+<body>
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="smiley">
+      <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="21" cy="21" r="19" stroke="#1A0FCC" stroke-width="2.2" fill="none"/>
+        <line x1="15" y1="13" x2="15" y2="19.5" stroke="#1A0FCC" stroke-width="2.2" stroke-linecap="round"/>
+        <line x1="21" y1="11" x2="21" y2="17.5" stroke="#1A0FCC" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M12.5 27 Q21 34 29.5 27" stroke="#1A0FCC" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+      </svg>
+    </div>
+    <div class="logo-lockup">
+      <div class="logo-name">Halifax-Now.ca</div>
+      <div class="logo-tag">Do Stuff. Have Fun.</div>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#">Events</a></li>
+    <li><a href="#">This Weekend</a></li>
+    <li><a href="#">Free</a></li>
+    <li><a href="#">Venues</a></li>
+    <li class="cta"><a href="#">Submit Event</a></li>
+  </ul>
+</nav>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">Halifax, Nova Scotia</div>
+    <h1>Find your<br>next<br>thing.</h1>
+    <p class="hero-desc">Halifax's most comprehensive event calendar. No Instagram scrolling, no FOMO — just everything happening near you.</p>
+    <div class="search-bar">
+      <input type="text" placeholder="Search events, venues, artists...">
+      <button>Search</button>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="picks-label">⭐ Best This Weekend</div>
+    <div class="pick-card top">
+      <div>
+        <div class="pc-cat">Live Music</div>
+        <div class="pc-title">Jazz in the Garden with the HFX Quartet</div>
+        <div class="pc-meta">Sat Mar 22 · 7:00 PM · The Carleton · Free</div>
+      </div>
+      <div class="pc-tag">Editor's Pick</div>
+    </div>
+    <div class="pick-card">
+      <div>
+        <div class="pc-cat">Comedy</div>
+        <div class="pc-title">Halifax Comedy Night</div>
+        <div class="pc-meta">Fri Mar 21 · 9:00 PM · Yuk Yuk's · $15</div>
+      </div>
+    </div>
+    <div class="pick-card">
+      <div>
+        <div class="pc-cat">Community</div>
+        <div class="pc-title">North End Farmers Market Opening Weekend</div>
+        <div class="pc-meta">Sat–Sun · 9 AM–1 PM · Halifax Forum · Free</div>
+      </div>
+      <div class="pc-tag">Family</div>
+    </div>
+    <div class="pick-card">
+      <div>
+        <div class="pc-cat">Film</div>
+        <div class="pc-title">Carbon Arc: Cult Classics Night</div>
+        <div class="pc-meta">Thu Mar 20 · 8:00 PM · Carbon Arc · $12</div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <span class="filter-bar-label">Filter:</span>
+  <button class="chip on">All</button>
+  <button class="chip">This Weekend</button>
+  <button class="chip">Free</button>
+  <button class="chip">Music</button>
+  <button class="chip">Arts & Culture</button>
+  <button class="chip">Comedy</button>
+  <button class="chip">Community</button>
+  <button class="chip">Food & Drink</button>
+  <button class="chip">Outdoors</button>
+  <button class="chip">Sports</button>
+  <button class="chip">Family</button>
+  <button class="chip">Film</button>
+</div>
+<!-- PAGE BODY -->
+<div class="page">
+  <div class="sec-head">
+    <div class="sec-title">Happening This Week</div>
+    <a href="#" class="sec-link">View All →</a>
+  </div>
+  <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
+    <div class="view-toggle">
+      <button class="vt on">Grid</button>
+      <button class="vt">List</button>
+      <button class="vt">Calendar</button>
+    </div>
+  </div>
+  <!-- GRID -->
+  <div class="event-grid">
+    <div class="ec wide">
+      <div class="ec-when">Saturday, March 22</div>
+      <div class="ec-cat">Live Music</div>
+      <div class="ec-title">Halifax Jazz Festival<br>Opening Night</div>
+      <div class="ec-footer">
+        <span class="ec-venue">The Carleton, Argyle St</span>
+        <span class="badge white">Free · 7:00 PM</span>
+      </div>
+    </div>
+    <div class="ec">
+      <div class="ec-when">Friday, March 21</div>
+      <div class="ec-cat">Comedy</div>
+      <div class="ec-title">Stand-Up Showcase</div>
+      <div class="ec-footer">
+        <span class="ec-venue">Yuk Yuk's · 9 PM</span>
+        <span class="badge paid">$15</span>
+      </div>
+    </div>
+    <div class="ec">
+      <div class="ec-when">Saturday, March 22</div>
+      <div class="ec-cat">Arts</div>
+      <div class="ec-title">AGNS First Fridays Opening</div>
+      <div class="ec-footer">
+        <span class="ec-venue">Art Gallery of NS · 6 PM</span>
+        <span class="badge free">Free</span>
+      </div>
+    </div>
+    <div class="ec">
+      <div class="ec-when">Sunday, March 23</div>
+      <div class="ec-cat">Outdoors</div>
+      <div class="ec-title">Point Pleasant Run Club</div>
+      <div class="ec-footer">
+        <span class="ec-venue">Point Pleasant · 9 AM</span>
+        <span class="badge free">Free</span>
+      </div>
+    </div>
+    <div class="ec">
+      <div class="ec-when">Saturday, March 22</div>
+      <div class="ec-cat">Food & Drink</div>
+      <div class="ec-title">Propeller Brewery Tap Takeover</div>
+      <div class="ec-footer">
+        <span class="ec-venue">Propeller Brewing · 2 PM</span>
+        <span class="badge free">Free Entry</span>
+      </div>
+    </div>
+    <div class="ec">
+      <div class="ec-when">Thursday, March 20</div>
+      <div class="ec-cat">Film</div>
+      <div class="ec-title">Carbon Arc: Cult Classics Night</div>
+      <div class="ec-footer">
+        <span class="ec-venue">Carbon Arc · 8 PM</span>
+        <span class="badge paid">$12</span>
+      </div>
+    </div>
+  </div>
+  <!-- COMING UP -->
+  <div class="sec-head">
+    <div class="sec-title">Coming Up</div>
+    <a href="#" class="sec-link">Full Calendar →</a>
+  </div>
+  <div class="event-list">
+    <div class="eli">
+      <div class="eli-date">
+        <div class="eli-day">24</div>
+        <div class="eli-mon">Mar</div>
+      </div>
+      <div>
+        <div class="eli-title">Neptune Theatre — Spring Production Opening</div>
+        <div class="eli-meta">
+          <span>7:30 PM</span><span class="dot"></span>
+          <span>Neptune Theatre</span><span class="dot"></span>
+          <span>Theatre</span>
+        </div>
+      </div>
+      <div class="eli-cost">$25–$65</div>
+    </div>
+    <div class="eli">
+      <div class="eli-date">
+        <div class="eli-day">25</div>
+        <div class="eli-mon">Mar</div>
+      </div>
+      <div>
+        <div class="eli-title">Bearly's House of Blues — Tuesday Blues Jam</div>
+        <div class="eli-meta">
+          <span>9:00 PM</span><span class="dot"></span>
+          <span>Bearly's</span><span class="dot"></span>
+          <span>Live Music</span>
+        </div>
+      </div>
+      <div class="eli-cost">Free</div>
+    </div>
+    <div class="eli">
+      <div class="eli-date">
+        <div class="eli-day">27</div>
+        <div class="eli-mon">Mar</div>
+      </div>
+      <div>
+        <div class="eli-title">2037 Gottingen — Community Gathering & Open Mic</div>
+        <div class="eli-meta">
+          <span>6:00 PM</span><span class="dot"></span>
+          <span>2037 Gottingen St</span><span class="dot"></span>
+          <span>Community</span>
+        </div>
+      </div>
+      <div class="eli-cost">Free</div>
+    </div>
+    <div class="eli">
+      <div class="eli-date">
+        <div class="eli-day">28</div>
+        <div class="eli-mon">Mar</div>
+      </div>
+      <div>
+        <div class="eli-title">Dal Art Gallery — Artist Talk & Reception</div>
+        <div class="eli-meta">
+          <span>5:00 PM</span><span class="dot"></span>
+          <span>Dal Art Gallery</span><span class="dot"></span>
+          <span>Arts</span>
+        </div>
+      </div>
+      <div class="eli-cost">Free</div>
+    </div>
+    <div class="eli">
+      <div class="eli-date">
+        <div class="eli-day">29</div>
+        <div class="eli-mon">Mar</div>
+      </div>
+      <div>
+        <div class="eli-title">Good Robot Brewing — Trivia Night</div>
+        <div class="eli-meta">
+          <span>7:00 PM</span><span class="dot"></span>
+          <span>Good Robot</span><span class="dot"></span>
+          <span>Food & Drink</span>
+        </div>
+      </div>
+      <div class="eli-cost">Free</div>
+    </div>
+  </div>
+</div>
+<!-- MARQUEE -->
+<div class="marquee-band">
+  <div class="marquee-track">
+    <span class="marquee-item">Do Stuff <span class="star">★</span></span>
+    <span class="marquee-item">Have Fun <span class="star">★</span></span>
+    <span class="marquee-item">Halifax Events <span class="star">★</span></span>
+    <span class="marquee-item">700+ Events Listed <span class="star">★</span></span>
+    <span class="marquee-item">No Instagram Required <span class="star">★</span></span>
+    <span class="marquee-item">Free & Paid <span class="star">★</span></span>
+    <span class="marquee-item">Updated Daily <span class="star">★</span></span>
+    <span class="marquee-item">Do Stuff <span class="star">★</span></span>
+    <span class="marquee-item">Have Fun <span class="star">★</span></span>
+    <span class="marquee-item">Halifax Events <span class="star">★</span></span>
+    <span class="marquee-item">700+ Events Listed <span class="star">★</span></span>
+    <span class="marquee-item">No Instagram Required <span class="star">★</span></span>
+    <span class="marquee-item">Free & Paid <span class="star">★</span></span>
+    <span class="marquee-item">Updated Daily <span class="star">★</span></span>
+  </div>
+</div>
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="fn">Halifax-Now.ca</div>
+        <div class="ft">Do Stuff. Have Fun.</div>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <div class="footer-col-head">Browse</div>
+          <a href="#">All Events</a>
+          <a href="#">This Weekend</a>
+          <a href="#">Free Events</a>
+          <a href="#">By Category</a>
+          <a href="#">By Venue</a>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-head">Info</div>
+          <a href="#">Submit an Event</a>
+          <a href="#">About Halifax Now</a>
+          <a href="#">Contact</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Halifax-Now.ca — Built for Haligonians, by Haligonians</span>
+      <span class="footer-smiley">☺</span>
+    </div>
+  </div>
+</footer>
+<script>
+  document.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', function() {
+      document.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+      this.classList.add('on');
+    });
+  });
+  document.querySelectorAll('.vt').forEach(b => {
+    b.addEventListener('click', function() {
+      document.querySelectorAll('.vt').forEach(x => x.classList.remove('on'));
+      this.classList.add('on');
+    });
+  });
+</script>
+</body>
+</html>
