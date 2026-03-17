@@ -48,14 +48,15 @@ if ( $has_tribe ) {
 
   <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
     <div class="view-toggle">
-      <button class="vt on">Grid</button>
-      <button class="vt">List</button>
-      <button class="vt">Calendar</button>
+      <button class="vt on" data-view="grid">Grid</button>
+      <button class="vt" data-view="list">List</button>
     </div>
   </div>
 
+  <div id="events-container">
+
   <?php if ( ! empty( $this_week ) ) : ?>
-    <div class="event-grid">
+    <div class="event-grid" data-view-target="grid">
       <?php foreach ( $this_week as $i => $event ) :
         $wide = ( 0 === $i ); // first card is the featured wide card
         get_template_part( 'template-parts/event-card', null, array(
@@ -64,10 +65,17 @@ if ( $has_tribe ) {
         ) );
       endforeach; ?>
     </div>
+    <div class="event-list" data-view-target="list" style="display:none">
+      <?php foreach ( $this_week as $event ) :
+        get_template_part( 'template-parts/event-list-item', null, array(
+          'event' => $event,
+        ) );
+      endforeach; ?>
+    </div>
   <?php else : ?>
     <?php /* Static fallback grid (design mockup data) */ ?>
-    <div class="event-grid">
-      <div class="ec wide">
+    <div class="event-grid" data-view-target="grid">
+      <div class="ec wide" data-category="music" data-cost="free">
         <div class="ec-when">Saturday, March 22</div>
         <div class="ec-cat">Live Music</div>
         <div class="ec-title">Halifax Jazz Festival<br>Opening Night</div>
@@ -76,7 +84,7 @@ if ( $has_tribe ) {
           <span class="badge white">Free &middot; 7:00 PM</span>
         </div>
       </div>
-      <div class="ec">
+      <div class="ec" data-category="comedy" data-cost="paid">
         <div class="ec-when">Friday, March 21</div>
         <div class="ec-cat">Comedy</div>
         <div class="ec-title">Stand-Up Showcase</div>
@@ -85,7 +93,7 @@ if ( $has_tribe ) {
           <span class="badge paid">$15</span>
         </div>
       </div>
-      <div class="ec">
+      <div class="ec" data-category="arts &amp; culture" data-cost="free">
         <div class="ec-when">Saturday, March 22</div>
         <div class="ec-cat">Arts</div>
         <div class="ec-title">AGNS First Fridays Opening</div>
@@ -94,7 +102,7 @@ if ( $has_tribe ) {
           <span class="badge free">Free</span>
         </div>
       </div>
-      <div class="ec">
+      <div class="ec" data-category="outdoors" data-cost="free">
         <div class="ec-when">Sunday, March 23</div>
         <div class="ec-cat">Outdoors</div>
         <div class="ec-title">Point Pleasant Run Club</div>
@@ -103,7 +111,7 @@ if ( $has_tribe ) {
           <span class="badge free">Free</span>
         </div>
       </div>
-      <div class="ec">
+      <div class="ec" data-category="food &amp; drink" data-cost="free">
         <div class="ec-when">Saturday, March 22</div>
         <div class="ec-cat">Food &amp; Drink</div>
         <div class="ec-title">Propeller Brewery Tap Takeover</div>
@@ -112,7 +120,7 @@ if ( $has_tribe ) {
           <span class="badge free">Free Entry</span>
         </div>
       </div>
-      <div class="ec">
+      <div class="ec" data-category="film" data-cost="paid">
         <div class="ec-when">Thursday, March 20</div>
         <div class="ec-cat">Film</div>
         <div class="ec-title">Carbon Arc: Cult Classics Night</div>
@@ -122,7 +130,47 @@ if ( $has_tribe ) {
         </div>
       </div>
     </div>
+    <div class="event-list" data-view-target="list" style="display:none">
+      <div class="eli" data-category="music" data-cost="free">
+        <div class="eli-date"><div class="eli-day">22</div><div class="eli-mon">Mar</div></div>
+        <div><div class="eli-title">Halifax Jazz Festival Opening Night</div>
+        <div class="eli-meta"><span>7:00 PM</span><span class="dot"></span><span>The Carleton</span><span class="dot"></span><span>Live Music</span></div></div>
+        <div class="eli-cost">Free</div>
+      </div>
+      <div class="eli" data-category="comedy" data-cost="paid">
+        <div class="eli-date"><div class="eli-day">21</div><div class="eli-mon">Mar</div></div>
+        <div><div class="eli-title">Stand-Up Showcase</div>
+        <div class="eli-meta"><span>9:00 PM</span><span class="dot"></span><span>Yuk Yuk's</span><span class="dot"></span><span>Comedy</span></div></div>
+        <div class="eli-cost">$15</div>
+      </div>
+      <div class="eli" data-category="arts &amp; culture" data-cost="free">
+        <div class="eli-date"><div class="eli-day">22</div><div class="eli-mon">Mar</div></div>
+        <div><div class="eli-title">AGNS First Fridays Opening</div>
+        <div class="eli-meta"><span>6:00 PM</span><span class="dot"></span><span>Art Gallery of NS</span><span class="dot"></span><span>Arts</span></div></div>
+        <div class="eli-cost">Free</div>
+      </div>
+      <div class="eli" data-category="outdoors" data-cost="free">
+        <div class="eli-date"><div class="eli-day">23</div><div class="eli-mon">Mar</div></div>
+        <div><div class="eli-title">Point Pleasant Run Club</div>
+        <div class="eli-meta"><span>9:00 AM</span><span class="dot"></span><span>Point Pleasant</span><span class="dot"></span><span>Outdoors</span></div></div>
+        <div class="eli-cost">Free</div>
+      </div>
+      <div class="eli" data-category="food &amp; drink" data-cost="free">
+        <div class="eli-date"><div class="eli-day">22</div><div class="eli-mon">Mar</div></div>
+        <div><div class="eli-title">Propeller Brewery Tap Takeover</div>
+        <div class="eli-meta"><span>2:00 PM</span><span class="dot"></span><span>Propeller Brewing</span><span class="dot"></span><span>Food &amp; Drink</span></div></div>
+        <div class="eli-cost">Free</div>
+      </div>
+      <div class="eli" data-category="film" data-cost="paid">
+        <div class="eli-date"><div class="eli-day">20</div><div class="eli-mon">Mar</div></div>
+        <div><div class="eli-title">Carbon Arc: Cult Classics Night</div>
+        <div class="eli-meta"><span>8:00 PM</span><span class="dot"></span><span>Carbon Arc</span><span class="dot"></span><span>Film</span></div></div>
+        <div class="eli-cost">$12</div>
+      </div>
+    </div>
   <?php endif; ?>
+
+  </div><!-- #events-container -->
 
   <!-- ── Coming Up ── -->
   <div class="sec-head">

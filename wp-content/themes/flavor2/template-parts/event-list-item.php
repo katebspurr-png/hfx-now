@@ -22,8 +22,9 @@ $time      = $has_tribe ? tribe_get_start_date( $event->ID, false, 'g:i A' ) : '
 $venue     = $has_tribe ? tribe_get_venue( $event->ID ) : '';
 $cost      = $has_tribe ? tribe_get_cost( $event->ID, true ) : '';
 $permalink = get_permalink( $event );
+$is_free   = ( stripos( $cost, 'free' ) !== false || empty( $cost ) );
 ?>
-<a href="<?php echo esc_url( $permalink ); ?>" class="eli">
+<a href="<?php echo esc_url( $permalink ); ?>" class="eli" data-category="<?php echo esc_attr( strtolower( $cat ) ); ?>" data-cost="<?php echo $is_free ? 'free' : 'paid'; ?>">
   <div class="eli-date">
     <div class="eli-day"><?php echo esc_html( $day ); ?></div>
     <div class="eli-mon"><?php echo esc_html( $month ); ?></div>

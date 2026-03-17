@@ -42,7 +42,7 @@ if ( ! $wide && $time ) {
 	$venue_label .= ' &middot; ' . $time;
 }
 ?>
-<a href="<?php echo esc_url( $permalink ); ?>" class="ec<?php echo $wide ? ' wide' : ''; ?>">
+<a href="<?php echo esc_url( $permalink ); ?>" class="ec<?php echo $wide ? ' wide' : ''; ?>" data-category="<?php echo esc_attr( strtolower( $cat ) ); ?>" data-cost="<?php echo $is_free ? 'free' : 'paid'; ?>">
   <div class="ec-when"><?php echo esc_html( $when ); ?></div>
   <?php if ( $cat ) : ?>
     <div class="ec-cat"><?php echo esc_html( $cat ); ?></div>

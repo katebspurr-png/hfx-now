@@ -25,6 +25,10 @@
     </div>
   </a>
 
+  <button class="nav-toggle" aria-label="Menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+
   <?php if ( has_nav_menu( 'primary' ) ) : ?>
     <?php
     wp_nav_menu( array(

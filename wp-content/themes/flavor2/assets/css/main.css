@@ -386,6 +386,8 @@ nav {
   flex-direction: column;
   min-height: 168px;
   position: relative;
+  text-decoration: none;
+  color: inherit;
 }
 
 .ec:hover { background: var(--cream); }
@@ -482,6 +484,8 @@ nav {
   border-bottom: 1px solid var(--rule);
   cursor: pointer;
   transition: background 0.1s;
+  text-decoration: none;
+  color: inherit;
 }
 
 .eli:last-child { border-bottom: none; }
@@ -656,4 +660,127 @@ nav {
 .footer-smiley {
   font-size: 18px;
   opacity: 0.4;
+}
+
+/* ─── MOBILE NAV TOGGLE ─── */
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.nav-toggle span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--black);
+  margin: 5px 0;
+  transition: transform 0.25s, opacity 0.2s;
+}
+
+.nav-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-toggle.open span:nth-child(2) { opacity: 0; }
+.nav-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ─── RESPONSIVE — TABLET (≤ 900px) ─── */
+@media (max-width: 900px) {
+  /* Nav */
+  nav { padding: 0 20px; height: 58px; }
+
+  .nav-toggle { display: block; }
+
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 58px;
+    left: 0;
+    right: 0;
+    background: var(--white);
+    border-bottom: 1.5px solid var(--black);
+    flex-direction: column;
+    padding: 12px 0;
+    z-index: 199;
+  }
+
+  .nav-links.open { display: flex; }
+
+  .nav-links li a {
+    padding: 12px 24px;
+    font-size: 14px;
+    display: block;
+  }
+
+  .nav-links li.cta { padding: 8px 24px; }
+
+  .nav-links li.cta a {
+    display: inline-block;
+    margin-left: 0;
+  }
+
+  /* Hero — stack columns */
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    padding: 44px 20px 40px;
+  }
+
+  .hero h1 { font-size: 56px; }
+
+  .search-bar { max-width: 100%; }
+
+  /* Event grid — 2 columns */
+  .event-grid { grid-template-columns: repeat(2, 1fr); }
+  .ec.wide { grid-column: span 2; }
+  .ec.wide .ec-title { font-size: 24px; }
+
+  /* Page padding */
+  .page { padding: 32px 20px 48px; }
+
+  /* Filter bar */
+  .filter-bar { padding: 0 20px; }
+
+  /* Footer */
+  .site-footer { padding: 32px 20px 24px; }
+
+  .footer-top { flex-direction: column; gap: 28px; }
+}
+
+/* ─── RESPONSIVE — MOBILE (≤ 560px) ─── */
+@media (max-width: 560px) {
+  /* Hero */
+  .hero { padding: 32px 16px 32px; }
+  .hero h1 { font-size: 44px; margin-bottom: 16px; }
+  .hero-desc { font-size: 14px; margin-bottom: 20px; }
+
+  /* Picks — hide last card on small screens */
+  .pick-card:nth-child(n+4) { display: none; }
+
+  /* Event grid — single column */
+  .event-grid { grid-template-columns: 1fr; }
+  .ec.wide { grid-column: span 1; }
+  .ec.wide .ec-title { font-size: 22px; }
+  .ec { min-height: 140px; }
+
+  /* Event list */
+  .eli { grid-template-columns: 56px 1fr; gap: 12px; padding: 12px 14px; }
+  .eli-cost { grid-column: 2; font-size: 12px; margin-top: -4px; }
+  .eli-title { font-size: 16px; }
+
+  /* Section headings */
+  .sec-title { font-size: 22px; }
+
+  /* Page */
+  .page { padding: 24px 16px 40px; }
+
+  /* Filter bar */
+  .filter-bar { padding: 0 16px; gap: 5px; }
+  .chip { padding: 4px 10px; font-size: 11px; }
+
+  /* Footer columns stack */
+  .footer-cols { flex-direction: column; gap: 24px; }
+
+  .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
 }
