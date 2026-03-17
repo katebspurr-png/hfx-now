@@ -62,9 +62,9 @@ get_header();
     ) ); ?>
 
   <?php else : ?>
-    <div style="padding:60px 0; text-align:center;">
-      <div class="sec-title" style="border:none; margin-bottom:12px;">No results found</div>
-      <p style="color:var(--muted); margin-bottom:24px;">Try a different search term or browse all events.</p>
+    <div class="no-results">
+      <div class="sec-title">No results found</div>
+      <p>Try a different search term or browse all events.</p>
       <a href="<?php echo esc_url( home_url( '/events/' ) ); ?>" class="sec-link">Browse Events &rarr;</a>
     </div>
   <?php endif; ?>

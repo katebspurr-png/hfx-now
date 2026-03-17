@@ -16,9 +16,16 @@ define( 'FLAVOR2_VERSION', '1.0.0' );
  */
 function flavor2_enqueue_assets() {
 	wp_enqueue_style(
+		'flavor2-google-fonts',
+		'https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&family=Barlow:wght@400;500;600&display=swap',
+		array(),
+		null
+	);
+
+	wp_enqueue_style(
 		'flavor2-main',
 		get_theme_file_uri( 'assets/css/main.css' ),
-		array(),
+		array( 'flavor2-google-fonts' ),
 		FLAVOR2_VERSION
 	);
 

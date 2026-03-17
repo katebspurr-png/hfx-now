@@ -70,7 +70,7 @@ get_template_part( 'template-parts/filter-bar' );
     ) ); ?>
 
   <?php else : ?>
-    <p style="padding:40px 0; text-align:center; color:var(--muted);">No events found.</p>
+    <p class="no-events">No events found.</p>
   <?php endif; ?>
 
 </div>

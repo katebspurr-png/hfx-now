@@ -27,7 +27,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span>&copy; <?php echo esc_html( date( 'Y' ) ); ?> <?php bloginfo( 'name' ); ?> &mdash; Built for Haligonians, by Haligonians</span>
+      <span>&copy; <?php echo esc_html( wp_date( 'Y' ) ); ?> <?php bloginfo( 'name' ); ?> &mdash; Built for Haligonians, by Haligonians</span>
       <span class="footer-smiley">&#9786;</span>
     </div>
   </div>

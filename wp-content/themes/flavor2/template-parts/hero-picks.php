@@ -14,7 +14,7 @@ if ( $has_tribe ) {
 	$picks = tribe_get_events( array(
 		'posts_per_page' => 4,
 		'start_date'     => 'now',
-		'end_date'       => date( 'Y-m-d', strtotime( 'next Sunday 23:59' ) ),
+		'end_date'       => wp_date( 'Y-m-d', strtotime( 'next Sunday 23:59' ) ),
 		'orderby'        => 'event_date',
 		'order'          => 'ASC',
 	) );
@@ -35,7 +35,7 @@ if ( $has_tribe ) {
 		$time    = tribe_get_start_date( $pick->ID, false, 'g:i A' );
 		$meta    = implode( ' &middot; ', array_filter( array( $date, $time, $venue, $cost ) ) );
 	?>
-	<div class="pick-card<?php echo $is_top ? ' top' : ''; ?>">
+	<a href="<?php echo esc_url( get_permalink( $pick->ID ) ); ?>" class="pick-card<?php echo $is_top ? ' top' : ''; ?>">
 		<div>
 			<?php if ( $cat ) : ?>
 				<div class="pc-cat"><?php echo esc_html( $cat ); ?></div>
@@ -46,7 +46,7 @@ if ( $has_tribe ) {
 		<?php if ( $is_top ) : ?>
 			<div class="pc-tag">Editor's Pick</div>
 		<?php endif; ?>
-	</div>
+	</a>
 	<?php endforeach; ?>
 
 <?php else : ?>

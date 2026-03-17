@@ -80,10 +80,9 @@
     });
   });
 
-  /* ── View toggle (Grid / List) ── */
+  /* ── View toggle (Grid / List / Calendar) ── */
   var viewButtons = document.querySelectorAll('.vt[data-view]');
-  var gridView = document.querySelector('[data-view-target="grid"]');
-  var listView = document.querySelector('[data-view-target="list"]');
+  var viewTargets = document.querySelectorAll('[data-view-target]');
 
   viewButtons.forEach(function (btn) {
     btn.addEventListener('click', function () {
@@ -92,8 +91,13 @@
 
       var view = this.getAttribute('data-view');
 
-      if (gridView) gridView.style.display = (view === 'grid') ? '' : 'none';
-      if (listView) listView.style.display = (view === 'list') ? '' : 'none';
+      viewTargets.forEach(function (target) {
+        if (target.getAttribute('data-view-target') === view) {
+          target.removeAttribute('hidden');
+        } else {
+          target.setAttribute('hidden', '');
+        }
+      });
     });
   });
 
