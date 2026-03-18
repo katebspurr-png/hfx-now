@@ -42,6 +42,7 @@
     ?>
   <?php else : ?>
     <ul class="nav-links">
+      <li><a href="<?php echo esc_url( home_url( '/today/' ) ); ?>">Today</a></li>
       <li><a href="<?php echo esc_url( home_url( '/events/' ) ); ?>">Events</a></li>
       <li><a href="<?php echo esc_url( home_url( '/events/this-weekend/' ) ); ?>">This Weekend</a></li>
       <li><a href="<?php echo esc_url( home_url( '/events/category/free/' ) ); ?>">Free</a></li>

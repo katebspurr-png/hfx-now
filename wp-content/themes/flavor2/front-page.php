@@ -43,7 +43,10 @@ if ( $has_tribe ) {
   <!-- ── Happening This Week ── -->
   <div class="sec-head">
     <div class="sec-title">Happening This Week</div>
-    <a href="<?php echo esc_url( home_url( '/events/' ) ); ?>" class="sec-link">View All &rarr;</a>
+    <div class="sec-links">
+      <a href="<?php echo esc_url( home_url( '/today/' ) ); ?>" class="sec-link">Today &rarr;</a>
+      <a href="<?php echo esc_url( home_url( '/events/' ) ); ?>" class="sec-link">View All &rarr;</a>
+    </div>
   </div>
 
   <div class="view-toggle-wrap">

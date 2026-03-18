@@ -342,6 +342,8 @@ nav {
 
 .sec-link:hover { opacity: 1; }
 
+.sec-links { display: flex; gap: 20px; }
+
 .view-toggle {
   display: flex;
   border: 1.5px solid var(--rule);
@@ -946,6 +948,85 @@ a.cal-event:hover { background: rgba(26, 15, 204, 0.16); }
 }
 
 .btn-primary:hover { background: var(--blue-hover); }
+
+/* ─── TODAY PAGE ─── */
+.hero--today {
+  grid-template-columns: 1fr;
+  text-align: center;
+  padding: 48px 40px 40px;
+}
+
+.hero--today .hero-left { max-width: 560px; margin: 0 auto; }
+.hero--today .hero-eyebrow { margin-bottom: 12px; }
+.hero--today h1 { font-size: 72px; margin-bottom: 12px; }
+.hero--today .hero-desc { max-width: 100%; margin: 0 auto; opacity: 0.7; }
+
+.today-featured {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1.5px solid var(--black);
+  margin-bottom: 52px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.12s;
+}
+
+.today-featured:hover { background: var(--cream); }
+
+.today-featured-img {
+  overflow: hidden;
+  border-right: 1.5px solid var(--black);
+}
+
+.today-featured-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.today-featured-body {
+  padding: 28px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.today-featured-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 32px;
+  line-height: 1.05;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.today-featured-meta {
+  font-size: 13px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.today-featured .badge { align-self: flex-start; }
+
+@media (max-width: 900px) {
+  .hero--today h1 { font-size: 52px; }
+
+  .today-featured { grid-template-columns: 1fr; }
+  .today-featured-img { border-right: none; border-bottom: 1.5px solid var(--black); max-height: 260px; }
+}
+
+@media (max-width: 560px) {
+  .hero--today { padding: 32px 16px; }
+  .hero--today h1 { font-size: 40px; }
+
+  .today-featured-title { font-size: 24px; }
+  .today-featured-body { padding: 20px 16px 18px; }
+  .today-featured-img { max-height: 200px; }
+}
 
 /* ─── SEARCH / ARCHIVE EMPTY STATES ─── */
 .no-results {
