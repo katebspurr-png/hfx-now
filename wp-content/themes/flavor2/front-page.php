@@ -48,9 +48,9 @@ if ( $has_tribe ) {
 
   <div class="view-toggle-wrap">
     <div class="view-toggle">
-      <button class="vt on" data-view="grid">Grid</button>
-      <button class="vt" data-view="list">List</button>
-      <button class="vt" data-view="calendar">Calendar</button>
+      <button class="vt on" data-view="grid" aria-pressed="true">Grid</button>
+      <button class="vt" data-view="list" aria-pressed="false">List</button>
+      <button class="vt" data-view="calendar" aria-pressed="false">Calendar</button>
     </div>
   </div>
 

@@ -23,6 +23,6 @@ $categories = array(
 <div class="filter-bar">
   <span class="filter-bar-label">Filter:</span>
   <?php foreach ( $categories as $cat ) : ?>
-    <button class="chip<?php echo ( 'All' === $cat ) ? ' on' : ''; ?>"><?php echo esc_html( $cat ); ?></button>
+    <button class="chip<?php echo ( 'All' === $cat ) ? ' on' : ''; ?>" aria-pressed="<?php echo ( 'All' === $cat ) ? 'true' : 'false'; ?>"><?php echo esc_html( $cat ); ?></button>
   <?php endforeach; ?>
 </div>

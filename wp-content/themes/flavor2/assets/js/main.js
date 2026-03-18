@@ -74,8 +74,9 @@
 
   chips.forEach(function (chip) {
     chip.addEventListener('click', function () {
-      chips.forEach(function (c) { c.classList.remove('on'); });
+      chips.forEach(function (c) { c.classList.remove('on'); c.setAttribute('aria-pressed', 'false'); });
       this.classList.add('on');
+      this.setAttribute('aria-pressed', 'true');
       applyFilter(this.textContent.trim());
     });
   });
@@ -86,8 +87,9 @@
 
   viewButtons.forEach(function (btn) {
     btn.addEventListener('click', function () {
-      viewButtons.forEach(function (b) { b.classList.remove('on'); });
+      viewButtons.forEach(function (b) { b.classList.remove('on'); b.setAttribute('aria-pressed', 'false'); });
       this.classList.add('on');
+      this.setAttribute('aria-pressed', 'true');
 
       var view = this.getAttribute('data-view');
 

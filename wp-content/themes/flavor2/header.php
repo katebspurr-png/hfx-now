@@ -12,7 +12,7 @@
 <nav>
   <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="nav-logo">
     <div class="smiley">
-      <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
         <circle cx="21" cy="21" r="19" stroke="#1A0FCC" stroke-width="2.2" fill="none"/>
         <line x1="15" y1="13" x2="15" y2="19.5" stroke="#1A0FCC" stroke-width="2.2" stroke-linecap="round"/>
         <line x1="21" y1="11" x2="21" y2="17.5" stroke="#1A0FCC" stroke-width="2.2" stroke-linecap="round"/>
