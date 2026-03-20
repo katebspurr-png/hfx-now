@@ -10,6 +10,36 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // =============================================================================
+// 0. Fix Permissions-Policy header & PHP resource limits for 502 prevention
+//    - Removes unrecognized 'browsing-topics' feature from Permissions-Policy
+//    - Increases PHP memory and execution time to prevent 502 on uploads/AJAX
+// =============================================================================
+
+// Send a clean Permissions-Policy header (without browsing-topics)
+add_action( 'send_headers', 'hfxnow_fix_permissions_policy', 1 );
+
+function hfxnow_fix_permissions_policy() {
+	// Remove any existing Permissions-Policy header (e.g. from hosting provider)
+	if ( function_exists( 'header_remove' ) ) {
+		header_remove( 'Permissions-Policy' );
+	}
+	// Set a clean Permissions-Policy without the unrecognized browsing-topics
+	header( 'Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()' );
+}
+
+// Increase PHP limits to help prevent 502 on admin-ajax.php and async-upload.php
+if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+	@ini_set( 'memory_limit', '512M' );
+	@ini_set( 'max_execution_time', '300' );
+}
+if ( isset( $_SERVER['REQUEST_URI'] ) && strpos( $_SERVER['REQUEST_URI'], 'async-upload.php' ) !== false ) {
+	@ini_set( 'memory_limit', '512M' );
+	@ini_set( 'max_execution_time', '300' );
+	@ini_set( 'post_max_size', '64M' );
+	@ini_set( 'upload_max_filesize', '64M' );
+}
+
+// =============================================================================
 // 1. Dequeue Events Calendar scripts/styles on non-events pages
 //    Saves ~349 KiB of unused JS/CSS on every non-events page.
 // =============================================================================
