@@ -1,0 +1,779 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Halifax Now — Events Calendar Pro Integration Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Source+Serif+4:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;500;700&family=Anton&family=JetBrains+Mono:wght@400;500&display=swap"/>
+<style>
+  :root {
+    --paper: #f4efe6;
+    --ink: #0f0f0f;
+    --red: #c23a1e;
+    --acid: #e8ff00;
+    --soft: #e8d8cc;
+    --muted: #6b6459;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, serif;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    background: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.045) 1px, transparent 1.2px) 0 0 / 5px 5px;
+  }
+  .wrap { position: relative; z-index: 2; max-width: 1180px; margin: 0 auto; padding: 40px 32px 80px; }
+
+  /* MASTHEAD */
+  .mast {
+    border-bottom: 3px double var(--ink);
+    padding: 14px 0 18px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+  .mast-l {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.1em;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .mast-l .hot { color: var(--red); }
+  .mast-logo {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900; font-style: italic;
+    font-size: 44px; line-height: 0.9;
+    white-space: nowrap;
+  }
+  .mast-logo .comma { color: var(--red); font-style: normal; }
+  .mast-r {
+    text-align: right;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .mast-r .red { color: var(--red); }
+
+  /* TITLE */
+  .hero {
+    padding: 20px 0 50px;
+    border-bottom: 1px solid var(--ink);
+    margin-bottom: 48px;
+  }
+  .kicker {
+    display: inline-block;
+    background: var(--acid); color: var(--ink);
+    padding: 5px 12px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    transform: rotate(-1.5deg);
+    box-shadow: 3px 3px 0 var(--ink);
+    margin-bottom: 22px;
+  }
+  h1.title {
+    font-family: 'Anton', sans-serif;
+    font-weight: 400;
+    font-size: clamp(64px, 9vw, 128px);
+    line-height: 0.86;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    margin: 0 0 22px;
+  }
+  h1.title em { font-style: normal; color: var(--red); }
+  .lede {
+    font-family: 'Source Serif 4', serif;
+    font-size: 20px; line-height: 1.5;
+    max-width: 780px;
+    margin: 0;
+  }
+  .lede::first-letter {
+    font-family: 'Playfair Display', serif;
+    font-size: 54px; font-weight: 900;
+    font-style: italic;
+    color: var(--red);
+    float: left;
+    line-height: 0.85;
+    margin: 4px 10px 0 0;
+  }
+
+  /* SECTIONS */
+  section { margin-bottom: 64px; }
+  .sec-hd {
+    display: flex; align-items: baseline; justify-content: space-between;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 10px;
+    margin-bottom: 28px;
+  }
+  .sec-hd h2 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900; font-style: italic;
+    font-size: 48px; line-height: 1;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .sec-hd h2 em { color: var(--red); font-style: italic; }
+  .sec-hd .num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .sec-intro {
+    font-size: 17px; line-height: 1.55;
+    max-width: 780px;
+    margin-bottom: 28px;
+  }
+
+  /* MAPPING TABLE */
+  .map-row {
+    display: grid;
+    grid-template-columns: 280px 1fr 1fr;
+    gap: 24px;
+    padding: 22px 0;
+    border-bottom: 1px solid rgba(15,15,15,0.15);
+    align-items: start;
+  }
+  .map-row:last-child { border-bottom: 0; }
+  .map-row:hover { background: rgba(232,255,0,0.12); }
+
+  .ecp-field {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 8px 12px;
+    display: inline-block;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+  .ecp-field .hot { color: var(--acid); }
+  .ecp-field .sub {
+    display: block;
+    font-size: 11px;
+    opacity: 0.6;
+    margin-top: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .design-el {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 1.25;
+  }
+  .design-el em { color: var(--red); font-style: italic; }
+  .design-el .where {
+    display: block;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .notes {
+    font-family: 'Source Serif 4', serif;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .notes code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    background: var(--soft);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+
+  /* SPECIAL BOX */
+  .callout {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 28px 32px;
+    margin: 28px 0;
+    position: relative;
+    border-left: 8px solid var(--red);
+  }
+  .callout.acid { background: var(--acid); color: var(--ink); border-color: var(--ink); }
+  .callout h3 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900; font-style: italic;
+    font-size: 26px;
+    margin: 0 0 10px;
+  }
+  .callout p {
+    font-size: 16px; line-height: 1.5;
+    margin: 0 0 10px;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(255,255,255,0.12);
+    padding: 1px 6px;
+    font-size: 13px;
+    border-radius: 2px;
+  }
+  .callout.acid code { background: rgba(0,0,0,0.12); }
+
+  /* CUSTOM FIELDS GRID */
+  .custom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .custom-card {
+    border: 2.5px solid var(--ink);
+    background: var(--paper);
+    padding: 20px 22px;
+    box-shadow: 5px 5px 0 var(--ink);
+  }
+  .custom-card .key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: var(--ink);
+    color: var(--acid);
+    padding: 4px 8px;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+  .custom-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900; font-style: italic;
+    font-size: 22px;
+    margin: 0 0 8px;
+  }
+  .custom-card p {
+    font-size: 14.5px; line-height: 1.5;
+    margin: 0 0 8px;
+    color: var(--ink);
+  }
+  .custom-card .ex {
+    font-family: 'Source Serif 4', serif;
+    font-style: italic;
+    font-size: 13.5px;
+    color: var(--muted);
+    border-top: 1px dashed var(--ink);
+    padding-top: 8px;
+    margin-top: 10px;
+  }
+
+  /* CATEGORY HUE TABLE */
+  .hue-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 24px;
+  }
+  .hue-card {
+    border: 2px solid var(--ink);
+    overflow: hidden;
+  }
+  .hue-swatch {
+    height: 72px;
+    position: relative;
+    background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.85) 1px, transparent 1.4px);
+    background-size: 5px 5px;
+  }
+  .hue-body {
+    padding: 12px 14px;
+    background: var(--paper);
+  }
+  .hue-body .n {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900; font-style: italic;
+    font-size: 18px;
+    margin-bottom: 2px;
+  }
+  .hue-body .k {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* FLOW DIAGRAM */
+  .flow {
+    display: grid;
+    grid-template-columns: 1fr 40px 1fr 40px 1fr;
+    gap: 0;
+    align-items: stretch;
+    margin: 32px 0;
+  }
+  .flow-box {
+    border: 2.5px solid var(--ink);
+    padding: 20px;
+    background: var(--paper);
+    box-shadow: 5px 5px 0 var(--ink);
+    text-align: center;
+  }
+  .flow-box.red { background: var(--red); color: var(--paper); }
+  .flow-box.acid { background: var(--acid); }
+  .flow-box .n {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin-bottom: 6px;
+  }
+  .flow-box .t {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900; font-style: italic;
+    font-size: 22px;
+    margin-bottom: 8px;
+  }
+  .flow-box .s {
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .flow-arrow {
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 24px; font-weight: 700;
+    color: var(--ink);
+  }
+
+  /* PLUGIN LIST */
+  .plugin-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .plugin-list li {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(15,15,15,0.15);
+    align-items: start;
+  }
+  .plugin-list li:last-child { border-bottom: 0; }
+  .plugin-list .num {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900; font-style: italic;
+    font-size: 28px;
+    color: var(--red);
+    line-height: 0.9;
+  }
+  .plugin-list .body strong {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 18px;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .plugin-list .body {
+    font-size: 14.5px; line-height: 1.5;
+  }
+  .plugin-list .body code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--soft);
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-size: 12.5px;
+  }
+
+  /* FOOTER */
+  .foot {
+    background: var(--ink); color: var(--paper);
+    padding: 42px 32px 26px;
+    margin-top: 80px;
+    border-top: 6px solid var(--red);
+    position: relative; z-index: 2;
+  }
+  .foot-wrap { max-width: 1180px; margin: 0 auto; }
+  .foot-big {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900; font-style: italic;
+    font-size: clamp(56px, 8vw, 112px);
+    line-height: 0.85;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+  .foot-big .comma { color: var(--red); font-style: normal; }
+  .foot-big .acid { color: var(--acid); }
+  .foot-bot {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    opacity: 0.55;
+    display: flex; justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+  }
+
+  @media (max-width: 820px) {
+    .map-row { grid-template-columns: 1fr; gap: 10px; }
+    .custom-grid { grid-template-columns: 1fr; }
+    .hue-grid { grid-template-columns: 1fr 1fr; }
+    .flow { grid-template-columns: 1fr; }
+    .flow-arrow { padding: 6px 0; transform: rotate(90deg); }
+    .mast { grid-template-columns: 1fr; text-align: center; gap: 10px; }
+    .mast-l, .mast-r { text-align: center; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- MASTHEAD -->
+  <header class="mast">
+    <div class="mast-l">
+      Specification<br/>
+      <span class="hot">Document · 001</span>
+    </div>
+    <div class="mast-logo">Halifax<span class="comma">,</span> Now</div>
+    <div class="mast-r">
+      Events Calendar Pro<br/>
+      <span class="red">Integration Map</span>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="kicker">★ Developer Handoff · v1.0</div>
+    <h1 class="title">Where the <em>data</em><br/>meets the <em>design</em>.</h1>
+    <p class="lede">This document maps every field in <strong>The Events Calendar Pro</strong> and its <strong>Event Aggregator</strong> add-on to a specific element in the Halifax Now design. It's the contract between WordPress and the front-end — what lives where, what we need that ECP doesn't give us out of the box, and how to handle the tricky parts (moods, critic's picks, neighbourhoods).</p>
+  </section>
+
+  <!-- 01 CORE FIELDS -->
+  <section>
+    <div class="sec-hd">
+      <h2>The Core <em>Fields</em></h2>
+      <span class="num">§ 01 · Out of the box</span>
+    </div>
+    <p class="sec-intro">These fields ship with Events Calendar Pro. Every one maps cleanly to the design — no configuration needed beyond the plugin's standard setup.</p>
+
+    <div class="map-row" style="border-top: 2px solid var(--ink); font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);">
+      <div>ECP Field</div>
+      <div>Design Element</div>
+      <div>Notes</div>
+    </div>
+
+    <div class="map-row">
+      <div><span class="ecp-field">post_title<span class="sub">tribe_events</span></span></div>
+      <div class="design-el">Event title<span class="where">Card · Feature · Detail H1 · Mast carousel</span></div>
+      <div class="notes">Displayed verbatim. No truncation on cards — title sets its own row height.</div>
+    </div>
+
+    <div class="map-row">
+      <div><span class="ecp-field">_EventStartDate<span class="sub">_EventEndDate</span></span></div>
+      <div class="design-el">Date + time chips<span class="where">Everywhere</span></div>
+      <div class="notes">Used for Tonight / Tomorrow / Weekend filters. Rendered as <code>"Fri · 8:00pm"</code> on cards, <code>"Friday, April 24 · 8–11:30pm"</code> on detail page.</div>
+    </div>
+
+    <div class="map-row">
+      <div><span class="ecp-field">post_content<span class="sub">post_excerpt</span></span></div>
+      <div class="design-el">Event blurb<span class="where">Card · Detail page</span></div>
+      <div class="notes"><code>post_excerpt</code> → card blurb (truncated ~80 chars). <code>post_content</code> → full detail page. If excerpt is empty, auto-generate from first sentence.</div>
+    </div>
+
+    <div class="map-row">
+      <div><span class="ecp-field">_thumbnail_id<span class="sub">featured image</span></span></div>
+      <div class="design-el">Event image<span class="where">Card · Feature · Detail hero</span></div>
+      <div class="notes">Any aspect ratio, any quality. Front-end applies the halftone / duotone / neon treatment via CSS filters. <strong>Submitters don't need to match a style</strong> — the system normalizes them.</div>
+    </div>
+
+    <div class="map-row">
+      <div><span class="ecp-field">tribe_venue<span class="sub">Venue post type</span></span></div>
+      <div class="design-el">Venue name + address<span class="where">Every card meta row · Venue page</span></div>
+      <div class="notes">Link to <code>/venue/[slug]</code>. Venue page is a filtered listing of that venue's upcoming events + description + map pin.</div>
+    </div>
+
+    <div class="map-row">
+      <div><span class="ecp-field">tribe_organizer</span></div>
+      <div class="design-el">Presented by<span class="where">Detail page (small)</span></div>
+      <div class="notes">Optional. Shown on detail page under the venue block. Skip on cards.</div>
+    </div>
+
+    <div class="map-row">
+      <div><span class="ecp-field">_EventCost<span class="sub">_EventCurrencySymbol</span></span></div>
+      <div class="design-el">Price tag<span class="where">Card · Detail</span></div>
+      <div class="notes">If blank → show <code>"Free"</code>. If range → <code>"$25–$65"</code>. "Free" gets a special paper-tag style; paid gets outlined.</div>
+    </div>
+
+    <div class="map-row">
+      <div><span class="ecp-field">tribe_events_cat<span class="sub">taxonomy</span></span></div>
+      <div class="design-el">Category label + hue<span class="where">Card kicker · Filter bar</span></div>
+      <div class="notes">Category determines the image treatment hue. See §04 for the colour table. Multiple categories: first one wins for hue, all shown on detail page.</div>
+    </div>
+
+    <div class="map-row">
+      <div><span class="ecp-field">_EventRecurrence<span class="sub">ECP Pro only</span></span></div>
+      <div class="design-el">"Every Sunday" tag<span class="where">Card · Detail page</span></div>
+      <div class="notes">If recurrence is set, card gets a small <code>"Recurring · Weekly"</code> ribbon. Run clubs and weekly markets lean on this.</div>
+    </div>
+
+    <div class="map-row">
+      <div><span class="ecp-field">_EventURL<span class="sub">external link</span></span></div>
+      <div class="design-el">"Tickets" button<span class="where">Detail page CTA</span></div>
+      <div class="notes">If present, detail page shows big <code>"Get tickets →"</code> button. If blank, no CTA (just date + venue).</div>
+    </div>
+
+    <div class="map-row">
+      <div><span class="ecp-field">_EventShowMap<span class="sub">_VenueLat / _VenueLng</span></span></div>
+      <div class="design-el">Mini map + Map page<span class="where">Sidebar · /map</span></div>
+      <div class="notes">Requires venue geocoding (ECP Pro does this). Map uses all upcoming events' lat/lng.</div>
+    </div>
+  </section>
+
+  <!-- 02 EVENT AGGREGATOR -->
+  <section>
+    <div class="sec-hd">
+      <h2>The <em>Aggregator</em></h2>
+      <span class="num">§ 02 · Import sources</span>
+    </div>
+    <p class="sec-intro">Event Aggregator imports from external sources. Each source has a reliability profile — know which fields arrive clean and which need manual cleanup before publish.</p>
+
+    <ul class="plugin-list">
+      <li>
+        <div class="num">1</div>
+        <div class="body">
+          <strong>iCal / Google Calendar</strong>
+          Reliable: <code>SUMMARY → title</code>, <code>DTSTART/DTEND</code>, <code>LOCATION → venue</code>, <code>DESCRIPTION → content</code>.
+          <br/><em>Missing:</em> featured image, category, price. <strong>Queue for editor review</strong> before publish.
+        </div>
+      </li>
+      <li>
+        <div class="num">2</div>
+        <div class="body">
+          <strong>Eventbrite</strong>
+          Reliable: title, dates, venue, price, image, URL (tickets). <em>Maps well.</em>
+          <br/>Category mapping needs rules — Eventbrite's taxonomy is flatter than ours. Set a default per import source.
+        </div>
+      </li>
+      <li>
+        <div class="num">3</div>
+        <div class="body">
+          <strong>Meetup</strong>
+          Reliable: title, dates, venue, group name (→ organizer). Usually no featured image.
+          <br/>Group name is valuable — map to <code>tribe_organizer</code> so "North End Run Crew" shows on the card.
+        </div>
+      </li>
+      <li>
+        <div class="num">4</div>
+        <div class="body">
+          <strong>Facebook Events</strong>
+          Scheduled deprecated by Meta, but still works via URL import. Treat as <em>lossy</em> — expect to hand-edit everything.
+        </div>
+      </li>
+      <li>
+        <div class="num">5</div>
+        <div class="body">
+          <strong>CSV / manual submission</strong>
+          From the public Submit form (Community Events add-on). Moderate before publish. This is the primary path for small local events.
+        </div>
+      </li>
+    </ul>
+
+    <div class="callout">
+      <h3>The moderation rule.</h3>
+      <p>Every imported event lands in <code>pending</code> state. An editor approves it, adds the <code>mood</code>, <code>neighbourhood</code>, and (optionally) the <code>critic</code> flag. Nothing hits the front-end without a human touch. <strong>Halifax Now's voice depends on it.</strong></p>
+    </div>
+  </section>
+
+  <!-- 03 CUSTOM FIELDS -->
+  <section>
+    <div class="sec-hd">
+      <h2>What ECP <em>doesn't</em> give us.</h2>
+      <span class="num">§ 03 · Custom fields</span>
+    </div>
+    <p class="sec-intro">These are the fields the design needs that aren't in ECP. Add them via Advanced Custom Fields (ACF) on the <code>tribe_events</code> post type. All optional except where noted.</p>
+
+    <div class="custom-grid">
+      <div class="custom-card">
+        <span class="key">hfx_moods (acf checkbox)</span>
+        <h3>Moods</h3>
+        <p>Multi-select from a fixed list. Drives the mood chip filter bar.</p>
+        <div class="ex">Values: chill, rowdy, date, kids, solo, crew, free, rainy</div>
+      </div>
+
+      <div class="custom-card">
+        <span class="key">hfx_neighbourhood (acf select)</span>
+        <h3>Neighbourhood</h3>
+        <p>Single-select. Required if venue doesn't already have one attached. Drives the hood filter.</p>
+        <div class="ex">Values: North End, Downtown, South End, West End, Dartmouth, Bedford, Quinpool, Spring Garden</div>
+      </div>
+
+      <div class="custom-card">
+        <span class="key">hfx_critic_pick (acf true/false)</span>
+        <h3>Critic's Pick</h3>
+        <p>Editorial flag. If true, card gets a <code>★ Pick</code> stamp; event is eligible for the homepage Critic's Picks block.</p>
+        <div class="ex">~5–10% of weekly events. Editors set this during moderation.</div>
+      </div>
+
+      <div class="custom-card">
+        <span class="key">hfx_short_blurb (acf text)</span>
+        <h3>Short blurb</h3>
+        <p>One-liner for cards. Max 90 chars. If blank, card falls back to <code>post_excerpt</code> truncated. Worth writing by hand for picks.</p>
+        <div class="ex">"Six comics, one hour, two-drink minimum."</div>
+      </div>
+
+      <div class="custom-card">
+        <span class="key">hfx_editor_blurb (acf textarea)</span>
+        <h3>Editor's blurb</h3>
+        <p>The opinionated 2–3 sentence voice of the site. Shown in hero feature + detail page callout. Required on critic's picks.</p>
+        <div class="ex">"The Carleton kicks off ten days of jazz…"</div>
+      </div>
+
+      <div class="custom-card">
+        <span class="key">hfx_hue (computed)</span>
+        <h3>Image hue</h3>
+        <p><strong>Don't edit manually.</strong> Computed server-side from primary category. See §04 for the mapping.</p>
+        <div class="ex">music → 220 · comedy → 14 · arts → 280 …</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 CATEGORY HUES -->
+  <section>
+    <div class="sec-hd">
+      <h2>The <em>Palette</em></h2>
+      <span class="num">§ 04 · Category → hue</span>
+    </div>
+    <p class="sec-intro">Each category has a hue value (0–360, OKLCH). The front-end uses it to tint the halftone / duotone overlay on every event image. Consistent category = consistent colour, regardless of what the submitter uploads.</p>
+
+    <div class="hue-grid">
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 220);"></div><div class="hue-body"><div class="n">Live Music</div><div class="k">music · 220</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 14);"></div><div class="hue-body"><div class="n">Comedy</div><div class="k">comedy · 14</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 280);"></div><div class="hue-body"><div class="n">Arts &amp; Culture</div><div class="k">arts · 280</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 40);"></div><div class="hue-body"><div class="n">Food &amp; Drink</div><div class="k">food · 40</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 140);"></div><div class="hue-body"><div class="n">Outdoors</div><div class="k">outdoors · 140</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 20);"></div><div class="hue-body"><div class="n">Film</div><div class="k">film · 20</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 340);"></div><div class="hue-body"><div class="n">Theatre</div><div class="k">theatre · 340</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 120);"></div><div class="hue-body"><div class="n">Community</div><div class="k">community · 120</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 0);"></div><div class="hue-body"><div class="n">Sports</div><div class="k">sports · 0</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 190);"></div><div class="hue-body"><div class="n">Family</div><div class="k">family · 190</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 300);"></div><div class="hue-body"><div class="n">Nightlife</div><div class="k">nightlife · 300</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 90);"></div><div class="hue-body"><div class="n">Markets</div><div class="k">market · 90</div></div></div>
+    </div>
+  </section>
+
+  <!-- 05 FLOW -->
+  <section>
+    <div class="sec-hd">
+      <h2>The <em>Flow</em></h2>
+      <span class="num">§ 05 · Request → render</span>
+    </div>
+    <p class="sec-intro">Everything front-end hits the REST API — no PHP templates. Headless WordPress gives us the design system freedom. Here's the pipeline:</p>
+
+    <div class="flow">
+      <div class="flow-box">
+        <div class="n">01 · Source</div>
+        <div class="t">WordPress</div>
+        <div class="s">ECP + ACF custom fields. Editor-moderated.</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box red">
+        <div class="n">02 · API</div>
+        <div class="t">REST /events</div>
+        <div class="s">Normalizes ECP + ACF into a flat JSON shape the front-end expects.</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box acid">
+        <div class="n">03 · Render</div>
+        <div class="t">Front-end</div>
+        <div class="s">React component library applies treatments. Shown here in Halifax Now colours.</div>
+      </div>
+    </div>
+
+    <div class="callout acid">
+      <h3>The event JSON contract.</h3>
+      <p>The front-end expects this shape per event. Everything is nullable except <code>id</code>, <code>title</code>, <code>date</code>, <code>venue</code>, <code>category</code>.</p>
+      <p><code>{ id, title, short, blurb, date, time, endTime, venue, address, hood, category, mood[], image, hue, price, priceLabel, critic, recurring, url }</code></p>
+    </div>
+  </section>
+
+  <!-- 06 THE GAPS -->
+  <section>
+    <div class="sec-hd">
+      <h2>The <em>Gaps</em></h2>
+      <span class="num">§ 06 · Known shortfalls</span>
+    </div>
+    <p class="sec-intro">Things ECP doesn't do well that we'll need to handle elsewhere.</p>
+
+    <ul class="plugin-list">
+      <li>
+        <div class="num">⚠</div>
+        <div class="body">
+          <strong>Event images are inconsistent by default.</strong>
+          ECP doesn't enforce a minimum size or aspect ratio. Our treatment masks most of this, but tiny images (&lt; 400×300) still pixelate. <em>Fix:</em> upload validation on Submit form + resizing filter on import.
+        </div>
+      </li>
+      <li>
+        <div class="num">⚠</div>
+        <div class="body">
+          <strong>Multiple-day events need special handling.</strong>
+          A three-day festival is one post with one start + end. The front-end splits it visually (showing Fri, Sat, Sun cards) but deep-links to the same detail page. Check that card rendering handles this cleanly.
+        </div>
+      </li>
+      <li>
+        <div class="num">⚠</div>
+        <div class="body">
+          <strong>Recurring events don't generate post IDs per occurrence.</strong>
+          "Every Sunday Run Club" is one post. Calendar heatmap and filter logic need to expand occurrences on the fly. <em>Performance note:</em> cache this.
+        </div>
+      </li>
+      <li>
+        <div class="num">⚠</div>
+        <div class="body">
+          <strong>Cancellations aren't a first-class concept.</strong>
+          ECP has <code>post_status: trash</code> or unpublish — neither tells the user "this was cancelled." <em>Fix:</em> add <code>hfx_status</code> ACF with values <code>active · cancelled · postponed</code>. Cancelled events stay visible with a strike-through for 48 hours.
+        </div>
+      </li>
+      <li>
+        <div class="num">⚠</div>
+        <div class="body">
+          <strong>No built-in "editor's note."</strong>
+          If the critic wants to update a pick mid-week ("new opening act confirmed"), ECP has no concept of this. <em>Fix:</em> <code>hfx_update_note</code> ACF, shown as a small yellow banner above the blurb on the detail page.
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- 07 CHECKLIST -->
+  <section>
+    <div class="sec-hd">
+      <h2>The <em>Checklist</em></h2>
+      <span class="num">§ 07 · Dev handoff</span>
+    </div>
+    <div class="callout">
+      <h3>Before front-end development starts.</h3>
+      <p>1. ACF installed &amp; custom fields registered on <code>tribe_events</code> (§03)</p>
+      <p>2. REST endpoint <code>/wp-json/hfx/v1/events</code> returning normalized JSON (§05)</p>
+      <p>3. Category slugs locked to the 12 in §04 (hue mapping is slug-based)</p>
+      <p>4. Moderation workflow live — imports land in <code>pending</code>, editors approve with moods + hood</p>
+      <p>5. Venue geocoding enabled (ECP Pro setting) — required for map</p>
+      <p>6. Upload min-size validation on Community Events submit form</p>
+    </div>
+  </section>
+
+</div>
+
+<footer class="foot">
+  <div class="foot-wrap">
+    <div class="foot-big">Halifax<span class="comma">,</span><br/><span class="acid">Now.</span></div>
+    <div class="foot-bot">
+      <span>Spec · v1.0 · April 2026</span>
+      <span>Do stuff. Have fun.</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

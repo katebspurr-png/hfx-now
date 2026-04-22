@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Halifax Now — Developer Handoff</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Source+Serif+4:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;500;700&family=Anton&family=JetBrains+Mono:wght@400;500&display=swap"/>
+<style>
+  :root {
+    --paper: #f4efe6;
+    --ink: #0f0f0f;
+    --red: #c23a1e;
+    --acid: #e8ff00;
+    --soft: #e8d8cc;
+    --muted: #6b6459;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); font-family: 'Source Serif 4', Georgia, serif; }
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.045) 1px, transparent 1.2px) 0 0 / 5px 5px;
+  }
+
+  /* LAYOUT */
+  .wrap { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 32px 120px; }
+
+  /* MASTHEAD */
+  .mast {
+    border-bottom: 3px double var(--ink);
+    padding: 16px 0 14px;
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    align-items: center; gap: 24px; margin-bottom: 56px;
+  }
+  .mast-l { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: var(--muted); line-height: 1.5; }
+  .mast-l .hot { color: var(--red); }
+  .mast-logo { font-family: 'Playfair Display', serif; font-weight: 900; font-style: italic; font-size: 44px; line-height: 0.9; text-align: center; white-space: nowrap; }
+  .mast-logo .comma { color: var(--red); font-style: normal; }
+  .mast-r { text-align: right; font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); line-height: 1.6; }
+  .mast-r .red { color: var(--red); }
+
+  /* HERO */
+  .hero { padding: 0 0 56px; border-bottom: 1px solid var(--ink); margin-bottom: 72px; }
+  .kicker { display: inline-block; background: var(--acid); color: var(--ink); padding: 5px 12px; font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; transform: rotate(-1.5deg); box-shadow: 3px 3px 0 var(--ink); margin-bottom: 22px; }
+  h1.title { font-family: 'Anton', sans-serif; font-weight: 400; font-size: clamp(56px, 8vw, 112px); line-height: 0.86; letter-spacing: -0.01em; text-transform: uppercase; margin: 0 0 22px; }
+  h1.title em { font-style: normal; color: var(--red); }
+  .lede { font-family: 'Source Serif 4', serif; font-size: 20px; line-height: 1.5; max-width: 820px; margin: 0; }
+
+  /* SECTIONS */
+  section { margin-bottom: 80px; }
+  .sec-hd { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 2px solid var(--ink); padding-bottom: 10px; margin-bottom: 32px; }
+  .sec-hd h2 { font-family: 'Playfair Display', serif; font-weight: 900; font-style: italic; font-size: 48px; line-height: 1; margin: 0; }
+  .sec-hd h2 em { color: var(--red); font-style: italic; }
+  .sec-hd .num { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+  .intro { font-size: 18px; line-height: 1.6; max-width: 820px; margin-bottom: 32px; }
+
+  /* CODE */
+  code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--soft); padding: 2px 7px; border-radius: 2px; }
+  pre { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; background: var(--ink); color: var(--paper); padding: 22px 24px; overflow-x: auto; margin: 16px 0 24px; border: 0; }
+  pre .c { color: rgba(255,255,255,0.35); }
+  pre .k { color: var(--acid); }
+  pre .s { color: #ff9d6e; }
+  pre .n { color: #a0d8ff; }
+  pre .v { color: #b3ff9d; }
+
+  /* CALLOUT */
+  .callout { background: var(--ink); color: var(--paper); padding: 28px 32px; margin: 28px 0; border-left: 8px solid var(--red); }
+  .callout.acid { background: var(--acid); color: var(--ink); border-color: var(--ink); }
+  .callout.red { background: var(--red); color: var(--paper); border-color: var(--ink); }
+  .callout h3 { font-family: 'Playfair Display', serif; font-weight: 900; font-style: italic; font-size: 26px; margin: 0 0 10px; }
+  .callout p { font-size: 16px; line-height: 1.5; margin: 0 0 10px; }
+  .callout p:last-child { margin: 0; }
+  .callout code { background: rgba(255,255,255,0.15); }
+  .callout.acid code { background: rgba(0,0,0,0.12); }
+
+  /* TOKENS TABLE */
+  .token-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 24px 0; }
+  .token-card { border: 2.5px solid var(--ink); overflow: hidden; box-shadow: 4px 4px 0 var(--ink); }
+  .token-swatch { height: 64px; }
+  .token-body { padding: 10px 12px; background: var(--paper); }
+  .token-name { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+  .token-val { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  /* TYPE SPECIMEN */
+  .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin: 24px 0; }
+  .type-card { border: 2.5px solid var(--ink); padding: 22px; box-shadow: 5px 5px 0 var(--ink); }
+  .type-card .sample { line-height: 1; margin-bottom: 10px; }
+  .type-card .meta { font-family: 'Space Grotesk', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding-top: 10px; border-top: 1px solid rgba(15,15,15,0.15); }
+
+  /* ROUTE TABLE */
+  .route-table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+  .route-table th { font-family: 'Space Grotesk', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; padding: 10px 14px; background: var(--ink); color: var(--paper); text-align: left; }
+  .route-table td { padding: 13px 14px; border-bottom: 1px solid rgba(15,15,15,0.12); font-size: 15px; line-height: 1.4; vertical-align: top; }
+  .route-table tr:hover td { background: rgba(232,255,0,0.1); }
+  .route-table td code { font-size: 12px; }
+
+  /* HUE GRID */
+  .hue-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 24px 0; }
+  .hue-card { border: 2px solid var(--ink); overflow: hidden; }
+  .hue-swatch { height: 56px; position: relative; background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.85) 1px, transparent 1.4px); background-size: 5px 5px; }
+  .hue-body { padding: 10px 12px; }
+  .hue-name { font-family: 'Playfair Display', serif; font-weight: 700; font-style: italic; font-size: 16px; }
+  .hue-val { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
+
+  /* COMPONENT LIST */
+  .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 24px 0; }
+  .comp-card { border: 2.5px solid var(--ink); padding: 20px 22px; box-shadow: 5px 5px 0 var(--ink); }
+  .comp-card .tag { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--ink); color: var(--acid); padding: 4px 8px; display: inline-block; margin-bottom: 10px; }
+  .comp-card h3 { font-family: 'Playfair Display', serif; font-weight: 900; font-style: italic; font-size: 22px; margin: 0 0 8px; }
+  .comp-card p { font-size: 14.5px; line-height: 1.5; margin: 0 0 8px; }
+  .comp-card .props { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--muted); line-height: 1.7; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--ink); }
+
+  /* CHECKLIST */
+  .checklist { list-style: none; padding: 0; margin: 0; }
+  .checklist li { display: grid; grid-template-columns: 32px 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(15,15,15,0.12); align-items: start; font-size: 16px; line-height: 1.5; }
+  .checklist li:last-child { border-bottom: 0; }
+  .checklist .box { width: 22px; height: 22px; border: 2.5px solid var(--ink); background: var(--paper); flex-shrink: 0; margin-top: 1px; box-shadow: 2px 2px 0 var(--ink); }
+  .checklist li strong { font-family: 'Playfair Display', serif; font-weight: 700; display: block; font-size: 18px; margin-bottom: 2px; }
+
+  /* FOOTER */
+  .foot { background: var(--ink); color: var(--paper); padding: 52px 32px 28px; border-top: 6px solid var(--red); margin-top: 80px; }
+  .foot-wrap { max-width: 1200px; margin: 0 auto; }
+  .foot-big { font-family: 'Playfair Display', serif; font-weight: 900; font-style: italic; font-size: clamp(56px, 8vw, 108px); line-height: 0.85; letter-spacing: -0.02em; margin-bottom: 16px; }
+  .foot-big .comma { color: var(--red); font-style: normal; }
+  .foot-big .acid { color: var(--acid); }
+  .foot-bot { font-family: 'Space Grotesk', sans-serif; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.45; display: flex; justify-content: space-between; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.12); }
+
+  @media (max-width: 820px) {
+    .mast { grid-template-columns: 1fr; text-align: center; gap: 10px; }
+    .mast-l, .mast-r { text-align: center; }
+    .token-grid, .hue-grid { grid-template-columns: 1fr 1fr; }
+    .type-grid, .comp-grid { grid-template-columns: 1fr; }
+    .wrap { padding: 0 18px 80px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <div class="mast-l">Developer Handoff<br/><span class="hot">Document · v1.0 · April 2026</span></div>
+    <div class="mast-logo">Halifax<span class="comma">,</span> Now</div>
+    <div class="mast-r">For Claude Code<br/><span class="red">& Cursor</span></div>
+  </header>
+
+  <section class="hero">
+    <div class="kicker">★ Complete implementation spec</div>
+    <h1 class="title">Build this. <em>Right.</em></h1>
+    <p class="lede">Everything a developer needs to implement the Halifax Now redesign: design tokens, typography, image treatments, component specs, page routing, WordPress/Events Calendar Pro integration, and a step-by-step checklist. Read it in order. Reference it when stuck.</p>
+  </section>
+
+  <!-- 01 OVERVIEW -->
+  <section>
+    <div class="sec-hd"><h2>The <em>Project</em></h2><span class="num">§ 01</span></div>
+    <p class="intro">Halifax Now is an event discovery site for Halifax, Nova Scotia. It aggregates events from multiple sources via <strong>The Events Calendar Pro</strong> + <strong>Event Aggregator</strong> on WordPress. The frontend is a custom theme (or headless React app) that renders events in the <strong>Broadsheet</strong> design direction — a hybrid of editorial magazine discipline and gig-poster energy.</p>
+    <div class="callout acid">
+      <h3>The design direction.</h3>
+      <p>The active design is called <strong>Broadsheet</strong>. It combines:</p>
+      <p>• <strong>Editorial shell</strong> — Playfair Display serif masthead, Source Serif 4 body, critic's picks voice, NY Mag–style blurbs</p>
+      <p>• <strong>Poster energy</strong> — Anton display type for headlines, acid-yellow (#e8ff00) accents, black drop-shadows on cards, halftone image treatment, bold section banners</p>
+    </div>
+  </section>
+
+  <!-- 02 DESIGN TOKENS -->
+  <section>
+    <div class="sec-hd"><h2>Design <em>Tokens</em></h2><span class="num">§ 02</span></div>
+    <p class="intro">Define these as CSS custom properties on <code>:root</code>. Use nowhere else — everything references the token.</p>
+
+    <div class="token-grid">
+      <div class="token-card"><div class="token-swatch" style="background:#f4efe6"></div><div class="token-body"><div class="token-name">Paper</div><div class="token-val">--paper: #f4efe6</div></div></div>
+      <div class="token-card"><div class="token-swatch" style="background:#0f0f0f"></div><div class="token-body"><div class="token-name">Ink</div><div class="token-val">--ink: #0f0f0f</div></div></div>
+      <div class="token-card"><div class="token-swatch" style="background:#c23a1e"></div><div class="token-body"><div class="token-name">Red</div><div class="token-val">--red: #c23a1e</div></div></div>
+      <div class="token-card"><div class="token-swatch" style="background:#e8ff00; border:1px solid #ccc"></div><div class="token-body"><div class="token-name">Acid</div><div class="token-val">--acid: #e8ff00</div></div></div>
+      <div class="token-card"><div class="token-swatch" style="background:#e8d8cc"></div><div class="token-body"><div class="token-name">Soft</div><div class="token-val">--soft: #e8d8cc</div></div></div>
+      <div class="token-card"><div class="token-swatch" style="background:#6b6459"></div><div class="token-body"><div class="token-name">Muted</div><div class="token-val">--muted: #6b6459</div></div></div>
+      <div class="token-card"><div class="token-swatch" style="background:#0f0f0f"></div><div class="token-body"><div class="token-name">Rule</div><div class="token-val">--rule: #0f0f0f</div></div></div>
+      <div class="token-card"><div class="token-swatch" style="background:radial-gradient(circle at 1px 1px, rgba(0,0,0,0.045) 1px, transparent 1.2px) 0 0 / 5px 5px, #f4efe6"></div><div class="token-body"><div class="token-name">Dot BG</div><div class="token-val">5px dot pattern</div></div></div>
+    </div>
+
+    <pre><span class="c">/* CSS custom properties — add to :root */</span>
+:root {
+  <span class="k">--paper</span>: <span class="s">#f4efe6</span>;   <span class="c">/* warm off-white, main background */</span>
+  <span class="k">--ink</span>: <span class="s">#0f0f0f</span>;     <span class="c">/* near-black, text + borders */</span>
+  <span class="k">--red</span>: <span class="s">#c23a1e</span>;     <span class="c">/* accent red — editorial, CTAs */</span>
+  <span class="k">--acid</span>: <span class="s">#e8ff00</span>;    <span class="c">/* acid yellow — highlights, picks */</span>
+  <span class="k">--soft</span>: <span class="s">#e8d8cc</span>;    <span class="c">/* warm beige — code bg, soft fills */</span>
+  <span class="k">--muted</span>: <span class="s">#6b6459</span>;  <span class="c">/* warm grey — secondary text */</span>
+  <span class="k">--rule</span>: <span class="s">#0f0f0f</span>;    <span class="c">/* border color — same as ink */</span>
+}</pre>
+
+    <div class="callout">
+      <h3>The dot pattern.</h3>
+      <p>Every page has a subtle halftone dot texture over the background. Apply it as a <code>::before</code> pseudo-element on <code>body</code> or the page wrapper — <code>position: fixed; inset: 0; pointer-events: none; z-index: 0</code> with this background:</p>
+      <p><code>radial-gradient(circle at 1px 1px, rgba(0,0,0,0.045) 1px, transparent 1.2px) 0 0 / 5px 5px</code></p>
+    </div>
+  </section>
+
+  <!-- 03 TYPOGRAPHY -->
+  <section>
+    <div class="sec-hd"><h2><em>Typography</em></h2><span class="num">§ 03</span></div>
+    <p class="intro">Three font families. Load all three from Google Fonts. Never substitute with system fonts.</p>
+
+    <div class="type-grid">
+      <div class="type-card">
+        <div class="sample" style="font-family:'Playfair Display',serif; font-weight:900; font-style:italic; font-size:52px;">Playfair</div>
+        <div class="meta">Playfair Display · 700, 900 · Italic<br/>Display headings, section titles, masthead logo, pullquotes, drop-caps, event titles</div>
+      </div>
+      <div class="type-card">
+        <div class="sample" style="font-family:'Anton',sans-serif; font-size:52px;">ANTON</div>
+        <div class="meta">Anton · 400 only · All-caps<br/>Hero headlines, CTA buttons, page titles, the big "DO STUFF. HAVE FUN." moments</div>
+      </div>
+      <div class="type-card">
+        <div class="sample" style="font-family:'Source Serif 4',serif; font-size:24px; line-height:1.3;">Source Serif 4 — body text reads here, editorial voice.</div>
+        <div class="meta">Source Serif 4 · 400, 700<br/>Body copy, blurbs, lede paragraphs, descriptions. The reading voice.</div>
+      </div>
+      <div class="type-card">
+        <div class="sample" style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px; letter-spacing:0.14em; text-transform:uppercase;">SPACE GROTESK LABELS</div>
+        <div class="meta">Space Grotesk · 400, 500, 700<br/>UI labels, chips, category tags, nav, metadata, kickers. Always uppercase + tracked when used for labels.</div>
+      </div>
+    </div>
+
+    <pre><span class="c">/* Google Fonts import */</span>
+@import url(<span class="s">'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Source+Serif+4:ital,wght@0,400;0,700;1,400&family=Anton&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap'</span>);
+
+<span class="c">/* Usage hierarchy */</span>
+<span class="n">h1</span>, <span class="n">.headline</span>        { font-family: <span class="s">'Anton'</span>, sans-serif; text-transform: uppercase; }
+<span class="n">h2</span>, <span class="n">.section-title</span>   { font-family: <span class="s">'Playfair Display'</span>, serif; font-weight: 900; font-style: italic; }
+<span class="n">h3</span>, <span class="n">.event-title</span>     { font-family: <span class="s">'Playfair Display'</span>, serif; font-weight: 700; }
+<span class="n">body</span>, <span class="n">.blurb</span>         { font-family: <span class="s">'Source Serif 4'</span>, serif; }
+<span class="n">.label</span>, <span class="n">.tag</span>, nav   { font-family: <span class="s">'Space Grotesk'</span>, sans-serif; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+<span class="n">code</span>, <span class="n">.mono</span>          { font-family: <span class="s">'JetBrains Mono'</span>, monospace; }</pre>
+  </section>
+
+  <!-- 04 IMAGE TREATMENT -->
+  <section>
+    <div class="sec-hd"><h2>Image <em>Treatments</em></h2><span class="num">§ 04</span></div>
+    <p class="intro">Every event image is normalized through a CSS filter + blend-mode stack. Submitters upload anything — the treatment makes it look like it belongs. No server-side processing. No canvas. Pure CSS layers.</p>
+
+    <div class="callout acid">
+      <h3>The core principle.</h3>
+      <p>Image sits as <code>background-image</code> on a positioned container. Two absolutely-positioned overlay <code>div</code>s stack on top with <code>mix-blend-mode</code>. The <strong>hue value</strong> (0–360) comes from the event's primary category and is the only variable per event.</p>
+    </div>
+
+    <h3 style="font-family:'Playfair Display',serif; font-weight:900; font-style:italic; font-size:32px; margin:32px 0 16px;">Treatment 1 — <em>Halftone</em></h3>
+    <p style="font-size:16px; margin-bottom:16px;">Used on the Broadsheet homepage, event cards, event detail hero, venue hero, map popup. This is the <strong>primary treatment</strong>.</p>
+    <pre><span class="c">/* Container */</span>
+<span class="n">.event-image</span> {
+  position: relative;
+  overflow: hidden;
+  background: <span class="s">#000</span>;
+}
+
+<span class="c">/* Layer 1: the photo — grayscale + contrast boost */</span>
+<span class="n">.event-image__photo</span> {
+  position: absolute; inset: 0;
+  background-image: url(photo.jpg);
+  background-size: cover;
+  background-position: center;
+  filter: <span class="v">grayscale(1) contrast(1.35) brightness(0.95)</span>;
+}
+
+<span class="c">/* Layer 2: category colour tint */</span>
+<span class="n">.event-image__tint</span> {
+  position: absolute; inset: 0;
+  background: <span class="v">oklch(62% 0.22 {HUE})</span>; <span class="c">/* HUE from category */</span>
+  mix-blend-mode: multiply;
+}
+
+<span class="c">/* Layer 3: halftone dot pattern */</span>
+<span class="n">.event-image__dots</span> {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.85) 1px, transparent 1.4px) 0 0 / 5px 5px;
+  mix-blend-mode: multiply;
+  opacity: 0.55;
+}</pre>
+
+    <h3 style="font-family:'Playfair Display',serif; font-weight:900; font-style:italic; font-size:32px; margin:32px 0 16px;">Treatment 2 — <em>Duotone</em></h3>
+    <p style="font-size:16px; margin-bottom:16px;">Used in the Listings/NY Mag variant. Softer, more editorial.</p>
+    <pre><span class="c">/* Layer 1: soft sepia photo */</span>
+<span class="n">.event-image__photo</span> {
+  filter: <span class="v">grayscale(1) contrast(1.05) brightness(1.05) sepia(0.15)</span>;
+  mix-blend-mode: multiply;
+}
+<span class="c">/* Layer 2: warm gradient tint */</span>
+<span class="n">.event-image__tint</span> {
+  background: linear-gradient(160deg,
+    oklch(92% 0.04 <span class="v">{HUE}</span>) 0%,
+    oklch(78% 0.08 <span class="v">{HUE}</span>) 100%
+  );
+  mix-blend-mode: multiply;
+  opacity: 0.85;
+}</pre>
+
+    <h3 style="font-family:'Playfair Display',serif; font-weight:900; font-style:italic; font-size:32px; margin:32px 0 16px;">Treatment 3 — <em>Neon</em></h3>
+    <p style="font-size:16px; margin-bottom:16px;">Used in the Tonight Board variant. Dark and moody.</p>
+    <pre><span class="c">/* Layer 1: dark photo */</span>
+<span class="n">.event-image__photo</span> { filter: <span class="v">grayscale(1) contrast(1.3) brightness(0.55)</span>; }
+<span class="c">/* Layer 2: radial colour bloom */</span>
+<span class="n">.event-image__tint</span> {
+  background: radial-gradient(circle at 70% 30%, oklch(65% 0.28 <span class="v">{HUE}</span>) 0%, transparent 55%);
+  mix-blend-mode: screen; opacity: 0.9;
+}
+<span class="c">/* Layer 3: bottom vignette */</span>
+<span class="n">.event-image__vignette</span> {
+  background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.6) 100%);
+}</pre>
+
+    <div class="callout">
+      <h3>The hue table.</h3>
+      <p>The HUE value is set server-side from the event's primary category slug. Store it on the event post or compute it in the REST API response.</p>
+    </div>
+
+    <div class="hue-grid">
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 220);"></div><div class="hue-body"><div class="hue-name">Live Music</div><div class="hue-val">music · 220</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 14);"></div><div class="hue-body"><div class="hue-name">Comedy</div><div class="hue-val">comedy · 14</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 280);"></div><div class="hue-body"><div class="hue-name">Arts & Culture</div><div class="hue-val">arts · 280</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 40);"></div><div class="hue-body"><div class="hue-name">Food & Drink</div><div class="hue-val">food · 40</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 140);"></div><div class="hue-body"><div class="hue-name">Outdoors</div><div class="hue-val">outdoors · 140</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 20);"></div><div class="hue-body"><div class="hue-name">Film</div><div class="hue-val">film · 20</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 340);"></div><div class="hue-body"><div class="hue-name">Theatre</div><div class="hue-val">theatre · 340</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 120);"></div><div class="hue-body"><div class="hue-name">Community</div><div class="hue-val">community · 120</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 0);"></div><div class="hue-body"><div class="hue-name">Sports</div><div class="hue-val">sports · 0</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 190);"></div><div class="hue-body"><div class="hue-name">Family</div><div class="hue-val">family · 190</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 300);"></div><div class="hue-body"><div class="hue-name">Nightlife</div><div class="hue-val">nightlife · 300</div></div></div>
+      <div class="hue-card"><div class="hue-swatch" style="background-color: oklch(62% 0.22 90);"></div><div class="hue-body"><div class="hue-name">Markets</div><div class="hue-val">market · 90</div></div></div>
+    </div>
+  </section>
+
+  <!-- 05 SHADOW BOXES -->
+  <section>
+    <div class="sec-hd"><h2>Shadow <em>Boxes</em></h2><span class="num">§ 05</span></div>
+    <p class="intro">Cards, buttons, and containers use an offset drop shadow — not a CSS <code>box-shadow</code> blur, but a hard offset using a solid color. This is the poster/print-inspired detail that makes the design feel physical.</p>
+    <pre><span class="c">/* Standard card */</span>
+<span class="n">.card</span> {
+  border: 2.5px solid var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);  <span class="c">/* hard offset, no blur */</span>
+  background: var(--paper);
+}
+<span class="n">.card</span>:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0 var(--ink);  <span class="c">/* offset increases on hover */</span>
+}
+
+<span class="c">/* CTA button */</span>
+<span class="n">.cta-btn</span> {
+  border: 3px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+  background: var(--red); color: var(--paper);
+}
+<span class="n">.cta-btn</span>:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 9px 9px 0 var(--ink);
+}
+<span class="n">.cta-btn</span>:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 var(--ink);  <span class="c">/* presses in on click */</span>
+}
+
+<span class="c">/* Small chip / tag */</span>
+<span class="n">.chip</span> {
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+<span class="n">.chip.on</span> {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--ink);  <span class="c">/* selected state depresses */</span>
+}</pre>
+  </section>
+
+  <!-- 06 COMPONENTS -->
+  <section>
+    <div class="sec-hd"><h2><em>Components</em></h2><span class="num">§ 06</span></div>
+    <p class="intro">Build these as reusable components. Every page is composed from them.</p>
+    <div class="comp-grid">
+      <div class="comp-card">
+        <span class="tag">&lt;EventCard /&gt;</span>
+        <h3>Event Card</h3>
+        <p>Poster-style card with halftone image, category kicker, Playfair title, venue/time meta, price tag. Used in Wall grid and Browse grid.</p>
+        <div class="props">props: event, onClick, variant?<br/>variants: wide (spans 2 cols), red, acid, ink<br/>Image: 16/10 aspect ratio, halftone treatment</div>
+      </div>
+      <div class="comp-card">
+        <span class="tag">&lt;EventListItem /&gt;</span>
+        <h3>Event List Row</h3>
+        <p>Date box (ink bg) + category kicker + Playfair title + blurb snippet + meta + price tag. Used in Browse list view and sidebar.</p>
+        <div class="props">props: event, onClick<br/>Date box: ink bg, white text, shadow box<br/>Price tag: acid (free) or red (paid)</div>
+      </div>
+      <div class="comp-card">
+        <span class="tag">&lt;Masthead /&gt;</span>
+        <h3>Masthead</h3>
+        <p>3-column header: rotated date-stamp left, "Halifax, Now" Playfair italic centre, tag right. Double-rule bottom border.</p>
+        <div class="props">props: date, issue, tagline<br/>Logo: Playfair 900 italic, red comma<br/>Border: 3px double var(--rule)</div>
+      </div>
+      <div class="comp-card">
+        <span class="tag">&lt;Nav /&gt;</span>
+        <h3>Navigation Bar</h3>
+        <p>Full-width ink bar, Space Grotesk all-caps links with pipe separators. "+ Submit" CTA in acid-yellow on far right.</p>
+        <div class="props">props: currentPage, onNavigate<br/>Hover: red background on link<br/>CTA: acid bg, transitions to red on hover</div>
+      </div>
+      <div class="comp-card">
+        <span class="tag">&lt;FilterBand /&gt;</span>
+        <h3>Filter Band</h3>
+        <p>Dark sticky strip with scrollable chip groups: When / Category / Mood / Neighbourhood. "Clear" button appears when filters active.</p>
+        <div class="props">props: state, onChange<br/>Active chip: acid bg, ink text<br/>Sticky: top:0, z-index:10</div>
+      </div>
+      <div class="comp-card">
+        <span class="tag">&lt;CriticsPicksPanel /&gt;</span>
+        <h3>Critics' Picks</h3>
+        <p>Panel with ink header "Critics' Picks" in Playfair italic acid yellow. List of starred events with category, title, meta, price.</p>
+        <div class="props">props: events (filtered to critic:true)<br/>Star: ★ in red, 22px<br/>Hover row: acid background</div>
+      </div>
+      <div class="comp-card">
+        <span class="tag">&lt;Heatmap /&gt;</span>
+        <h3>Calendar Heatmap</h3>
+        <p>14-day strip. Each day is a cell — darker means more events. Clicking navigates to that day's browse view.</p>
+        <div class="props">props: events, onDayClick<br/>Cell size: 28×28px<br/>Opacity: linear scale 0.15–1.0</div>
+      </div>
+      <div class="comp-card">
+        <span class="tag">&lt;LeafletMap /&gt;</span>
+        <h3>Event Map</h3>
+        <p>Leaflet.js with CartoDB Positron tiles. Custom div markers: round pins coloured by category hue, acid ★ for critic's picks. Popup card on click.</p>
+        <div class="props">props: events, onEventClick<br/>Tile URL: cartocdn.com/light_all<br/>Pin size: 22px (28px for picks)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 PAGES -->
+  <section>
+    <div class="sec-hd"><h2>Pages &amp; <em>Routes</em></h2><span class="num">§ 07</span></div>
+    <p class="intro">Six pages. All share the Masthead + Nav. Sub-pages scroll independently; Map is full-viewport.</p>
+    <table class="route-table">
+      <thead><tr><th>Route</th><th>Component</th><th>Key features</th><th>Data needed</th></tr></thead>
+      <tbody>
+        <tr><td><code>/</code></td><td>Homepage</td><td>Hero + quick filters + Critics' Picks panel + Tonight section + Wall grid + Weekend list + sidebar (heatmap, map, neighbourhoods)</td><td>All upcoming events, critic picks</td></tr>
+        <tr><td><code>/events</code></td><td>Browse</td><td>Sticky filter band (When/Cat/Mood/Hood), results count, List/Grid toggle, events grouped by day in list view</td><td>All events, filterable</td></tr>
+        <tr><td><code>/events/{slug}</code></td><td>Event Detail</td><td>Anton headline, Playfair lede + drop-cap, halftone 16:9 hero, 2-col layout (body + Details sidebar), pullquote, mini map, related events grid</td><td>Single event + related by category/hood</td></tr>
+        <tr><td><code>/venues/{slug}</code></td><td>Venue</td><td>Full-bleed halftone hero with venue name overlaid, stat bar (cap/upcoming/hood/free), editorial lede, upcoming events list, sidebar (details + map + submit CTA)</td><td>Venue post + its upcoming events</td></tr>
+        <tr><td><code>/map</code></td><td>Map</td><td>Full-viewport, compact dark top bar, scrollable sidebar list, Leaflet map right, click-to-popup</td><td>All events with lat/lng</td></tr>
+        <tr><td><code>/submit</code></td><td>Submit</td><td>Anton headline, 3-column rules band, shadow-box form fields, category + neighbourhood chips, success screen</td><td>Category + neighbourhood lists; posts to WP</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 08 DATA -->
+  <section>
+    <div class="sec-hd"><h2>The Data <em>Contract</em></h2><span class="num">§ 08</span></div>
+    <p class="intro">The front-end expects a flat JSON shape per event. Build a REST endpoint at <code>/wp-json/hfx/v1/events</code> that returns this. Nullable fields are optional.</p>
+    <pre>{
+  <span class="k">id</span>:          <span class="s">"e1"</span>,                    <span class="c">// WP post ID (required)</span>
+  <span class="k">title</span>:       <span class="s">"Halifax Jazz Fest"</span>,      <span class="c">// post_title (required)</span>
+  <span class="k">short</span>:       <span class="s">"One-liner for cards"</span>,    <span class="c">// hfx_short_blurb ACF</span>
+  <span class="k">blurb</span>:       <span class="s">"2–3 sentence editorial"</span>, <span class="c">// hfx_editor_blurb ACF</span>
+  <span class="k">date</span>:        <span class="s">"2026-04-24"</span>,            <span class="c">// _EventStartDate (required)</span>
+  <span class="k">time</span>:        <span class="s">"20:00"</span>,                 <span class="c">// _EventStartDate time part</span>
+  <span class="k">endTime</span>:     <span class="s">"23:30"</span>,                 <span class="c">// _EventEndDate time part</span>
+  <span class="k">venue</span>:       <span class="s">"The Carleton"</span>,          <span class="c">// tribe_venue name (required)</span>
+  <span class="k">address</span>:     <span class="s">"1685 Argyle St"</span>,        <span class="c">// tribe_venue address</span>
+  <span class="k">hood</span>:        <span class="s">"Downtown"</span>,              <span class="c">// hfx_neighbourhood ACF</span>
+  <span class="k">category</span>:    <span class="s">"music"</span>,                 <span class="c">// tribe_events_cat slug (required)</span>
+  <span class="k">mood</span>:        <span class="s">["chill","crew","date"]</span>, <span class="c">// hfx_moods ACF (array)</span>
+  <span class="k">image</span>:       <span class="s">"https://..."</span>,           <span class="c">// featured image URL (nullable)</span>
+  <span class="k">hue</span>:         <span class="v">220</span>,                     <span class="c">// computed from category slug</span>
+  <span class="k">price</span>:       <span class="s">"free"</span>,                  <span class="c">// "free" | "paid" (required)</span>
+  <span class="k">priceLabel</span>:  <span class="s">"Free"</span>,                  <span class="c">// display string (required)</span>
+  <span class="k">critic</span>:      <span class="v">true</span>,                    <span class="c">// hfx_critic_pick ACF</span>
+  <span class="k">recurring</span>:   <span class="s">"Every Sunday"</span>,          <span class="c">// _EventRecurrence (nullable)</span>
+  <span class="k">url</span>:         <span class="s">"https://..."</span>            <span class="c">// _EventURL / tickets link</span>
+}</pre>
+
+    <div class="callout">
+      <h3>Custom ACF fields needed.</h3>
+      <p>These don't come from ECP — register them via Advanced Custom Fields on the <code>tribe_events</code> post type:</p>
+      <p><code>hfx_short_blurb</code> (text, 90 char max) · <code>hfx_editor_blurb</code> (textarea) · <code>hfx_critic_pick</code> (true/false) · <code>hfx_moods</code> (checkbox: chill/rowdy/date/kids/solo/crew/free/rainy) · <code>hfx_neighbourhood</code> (select: 8 Halifax areas)</p>
+    </div>
+  </section>
+
+  <!-- 09 MAP -->
+  <section>
+    <div class="sec-hd"><h2>The <em>Map</em></h2><span class="num">§ 09</span></div>
+    <p class="intro">Use <strong>Leaflet.js 1.9.4</strong> with CartoDB Positron tiles. Custom div markers. No API key needed.</p>
+    <pre><span class="c">// Tile layer</span>
+L.tileLayer(<span class="s">'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'</span>, {
+  subdomains: <span class="s">'abcd'</span>, maxZoom: <span class="v">19</span>
+}).addTo(map);
+
+<span class="c">// Custom pin (div icon)</span>
+const icon = L.divIcon({
+  className: <span class="s">''</span>,
+  html: <span class="s">`&lt;div style="
+    width: 22px; height: 22px;
+    background: oklch(62% 0.22 ${hue});
+    border: 2.5px solid #0f0f0f;
+    box-shadow: 3px 3px 0 #0f0f0f;
+    border-radius: 50%;
+  "&gt;&lt;/div&gt;`</span>,
+  iconSize: [<span class="v">22</span>, <span class="v">22</span>], iconAnchor: [<span class="v">11</span>, <span class="v">11</span>]
+});
+
+<span class="c">// Critic's pick pin — acid yellow + star</span>
+<span class="c">// Same but background: #e8ff00, add ★ text inside</span>
+
+<span class="c">// Initial map center + zoom</span>
+center: [<span class="v">44.649</span>, <span class="v">-63.575</span>], zoom: <span class="v">13</span></pre>
+  </section>
+
+  <!-- 10 WORDPRESS -->
+  <section>
+    <div class="sec-hd"><h2>WordPress <em>Setup</em></h2><span class="num">§ 10</span></div>
+    <p class="intro">Required plugins and settings before front-end work starts.</p>
+    <ul class="checklist">
+      <li><div class="box"></div><div><strong>The Events Calendar Pro</strong> — main plugin. Enables recurring events, venue geocoding, REST API endpoints.</div></li>
+      <li><div class="box"></div><div><strong>Event Aggregator</strong> — imports from Eventbrite, iCal, Meetup, Facebook, CSV. Set imported events to <code>pending</code> status so editors must approve before publish.</div></li>
+      <li><div class="box"></div><div><strong>Advanced Custom Fields (ACF)</strong> — register all <code>hfx_*</code> fields on <code>tribe_events</code> post type. Export the field group as JSON for version control.</div></li>
+      <li><div class="box"></div><div><strong>REST API endpoint</strong> — build <code>/wp-json/hfx/v1/events</code> returning normalized JSON per the contract in §08. Cache aggressively (60s transient minimum).</div></li>
+      <li><div class="box"></div><div><strong>Category slugs locked</strong> — the 12 slugs in §04 must match exactly. The hue mapping is slug-based on the front-end. Renaming a slug breaks colour.</div></li>
+      <li><div class="box"></div><div><strong>Venue geocoding on</strong> — ECP Pro setting. Required for map page lat/lng. Enable "Google Maps" under Events → Settings → Maps.</div></li>
+      <li><div class="box"></div><div><strong>Moderation workflow</strong> — imported events and public submissions land in <code>pending</code>. Editor adds moods + neighbourhood + critic flag, then publishes.</div></li>
+      <li><div class="box"></div><div><strong>Image size</strong> — add a custom image size at 800×600 (crop). Validate minimum dimensions on the submit form — images smaller than 400px wide degrade through the halftone.</div></li>
+    </ul>
+  </section>
+
+  <!-- 11 FILTERS -->
+  <section>
+    <div class="sec-hd"><h2>Filter <em>Logic</em></h2><span class="num">§ 11</span></div>
+    <p class="intro">The browse/filter system has 4 dimensions. All are <code>AND</code> logic — filters narrow, they don't expand.</p>
+    <pre><span class="c">// Quick filter (time-based)</span>
+tonight:  events where date === today
+tomorrow: events where date === tomorrow
+weekend:  events where date is Sat or Sun of current week
+free:     events where price === "free"
+
+<span class="c">// Category filter (multi-select, OR within dimension)</span>
+cats: ["music","comedy"] → events where category IN cats
+
+<span class="c">// Mood filter (multi-select, OR within dimension)</span>
+moods: ["chill","date"] → events where event.mood intersects moods
+
+<span class="c">// Neighbourhood filter (multi-select, OR within dimension)</span>
+hoods: ["North End","Downtown"] → events where hood IN hoods
+
+<span class="c">// Combined: all 4 dimensions are AND'd together</span>
+filtered = events
+  .filter(e => !quick || matchesQuick(e, quick))
+  .filter(e => !cats.length || cats.includes(e.category))
+  .filter(e => !moods.length || e.mood?.some(m => moods.includes(m)))
+  .filter(e => !hoods.length || hoods.includes(e.hood))</pre>
+  </section>
+
+  <!-- 12 GOTCHAS -->
+  <section>
+    <div class="sec-hd"><h2>Known <em>Gotchas</em></h2><span class="num">§ 12</span></div>
+    <ul class="checklist">
+      <li><div class="box"></div><div><strong>Container queries for responsive layout</strong> — the Broadsheet layout uses CSS <code>@container</code> queries, not <code>@media</code> queries. This means responsive behaviour triggers based on the parent container's width, not the viewport. Set <code>container-type: inline-size</code> on the page wrapper. This is intentional — it makes the layout work inside iframes and embedded contexts too.</div></li>
+      <li><div class="box"></div><div><strong>oklch() colour function</strong> — the image treatment hue system uses <code>oklch()</code>. Supported in all modern browsers (Chrome 111+, Safari 15.4+, Firefox 113+). For older browser support, provide an <code>rgb()</code> fallback per category.</div></li>
+      <li><div class="box"></div><div><strong>Leaflet tiles need internet</strong> — the CartoDB tile layer requires a network connection. The site doesn't work fully offline. For a PWA, consider caching tiles with a service worker.</div></li>
+      <li><div class="box"></div><div><strong>Recurring events expand client-side</strong> — ECP's recurring events are one post with many occurrences. The heatmap and filter logic need to expand occurrences. Cache this computation — it's expensive on large event sets.</div></li>
+      <li><div class="box"></div><div><strong>Mix-blend-mode on images needs black background</strong> — the halftone treatment uses <code>mix-blend-mode: multiply</code>. The container div must have <code>background: #000</code> so the blend works correctly before the image loads. Missing this causes a white flash.</div></li>
+      <li><div class="box"></div><div><strong>Playfair Display italic is a separate font</strong> — load <code>ital,wght@1,700;1,900</code> in the Google Fonts URL. Missing the italic subset makes all italic text fall back to synthetic slant, which looks wrong.</div></li>
+      <li><div class="box"></div><div><strong>Anton is all-caps by design</strong> — always pair with <code>text-transform: uppercase</code>. Lowercase Anton looks unintentional.</div></li>
+    </ul>
+  </section>
+
+  <!-- 13 CHECKLIST -->
+  <section>
+    <div class="sec-hd"><h2>Launch <em>Checklist</em></h2><span class="num">§ 13</span></div>
+    <ul class="checklist">
+      <li><div class="box"></div><div><strong>Design tokens set</strong> — all 7 CSS vars on <code>:root</code></div></li>
+      <li><div class="box"></div><div><strong>Fonts loading</strong> — Playfair Display (with italic), Anton, Source Serif 4, Space Grotesk, JetBrains Mono</div></li>
+      <li><div class="box"></div><div><strong>Dot pattern applied</strong> — <code>::before</code> on body/wrapper, fixed position, pointer-events none</div></li>
+      <li><div class="box"></div><div><strong>Image treatment working</strong> — halftone renders on event cards, correct hue per category</div></li>
+      <li><div class="box"></div><div><strong>Shadow boxes rendering</strong> — <code>box-shadow: Npx Npx 0 var(--ink)</code> on all cards, hover states increase offset</div></li>
+      <li><div class="box"></div><div><strong>Map initialising</strong> — Leaflet loading, CartoDB tiles visible, pins plotted at correct Halifax coordinates</div></li>
+      <li><div class="box"></div><div><strong>All 6 pages built</strong> — Home, Browse, Event Detail, Venue, Map, Submit</div></li>
+      <li><div class="box"></div><div><strong>Filter logic correct</strong> — all 4 dimensions (when/cat/mood/hood) AND together, Clear button resets all</div></li>
+      <li><div class="box"></div><div><strong>ECP REST endpoint live</strong> — returns correct JSON shape per §08</div></li>
+      <li><div class="box"></div><div><strong>ACF fields registered</strong> — all 5 hfx_ fields on tribe_events</div></li>
+      <li><div class="box"></div><div><strong>Moderation workflow</strong> — imports land in pending, editors approve with moods + hood</div></li>
+      <li><div class="box"></div><div><strong>Mobile tested</strong> — container queries firing at ≤720px, filter band scrolls, cards stack to 2-col</div></li>
+      <li><div class="box"></div><div><strong>Submit form posts to WP</strong> — Community Events add-on or custom endpoint, lands in pending</div></li>
+      <li><div class="box"></div><div><strong>Critic's picks surfaced</strong> — hfx_critic_pick=true events appear in homepage panel + get ★ stamp</div></li>
+    </ul>
+  </section>
+
+</div>
+
+<footer class="foot">
+  <div class="foot-wrap">
+    <div class="foot-big">Halifax<span class="comma">,</span><br/><span class="acid">Now.</span></div>
+    <div class="foot-bot">
+      <span>Developer Handoff · v1.0 · April 2026</span>
+      <span>Do stuff. Have fun.</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
