@@ -275,8 +275,7 @@ def collect_event_links(page):
 def scrape_event(page, url: str):
     print("Scraping Showpass event:", url)
     page.goto(url)
-    page.wait_for_load_state("networkidle", timeout=10000)
-    page.wait_for_timeout(2000)
+    page.wait_for_timeout(3000)
 
     # Title
     title_el = page.locator("h1").first
