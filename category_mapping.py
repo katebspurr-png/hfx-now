@@ -5,7 +5,7 @@ Maps various raw category strings to canonical categories.
 
 CANONICAL_CATEGORIES = [
     "Live Music",
-    "Comedy", 
+    "Comedy",
     "Theatre & Performance",
     "Arts & Culture",
     "Film & Cinema",
@@ -21,6 +21,7 @@ CANONICAL_CATEGORIES = [
     "Talks & Lectures",
     "Outdoors & Nature",
     "Dance",
+    "LGBTQ+",
 ]
 
 # Map various raw category strings to canonical categories
@@ -115,6 +116,10 @@ CATEGORY_MAP = {
     "sports": "Sports",
     "sports & recreation": "Sports",
     "sports / hockey / minor league": "Sports",
+    "sports / soccer / soccer": "Sports",
+    "sports / basketball / nba": "Sports",
+    "sports / football / nfl": "Sports",
+    "sports / baseball / mlb": "Sports",
     "hockey": "Sports",
     "basketball": "Sports",
     "football": "Sports",
@@ -196,6 +201,55 @@ CATEGORY_MAP = {
     "contemporary dance": "Dance",
     "salsa": "Dance",
     "swing": "Dance",
+
+    # LGBTQ+
+    "lgbtq+": "LGBTQ+",
+    "lgbtq": "LGBTQ+",
+    "pride": "LGBTQ+",
+    "queer": "LGBTQ+",
+
+    # Festivals & Markets (distinct from Festivals & Events)
+    "festivals & markets": "Festivals & Events",
+    "markets": "Festivals & Events",
+    "market": "Festivals & Events",
+    "farmers market": "Festivals & Events",
+    "craft fair": "Festivals & Events",
+
+    # Ticketmaster slash-format: Music
+    "music / rock / pop": "Live Music",
+    "music / rock / alternative rock": "Live Music",
+    "music / rock / rock": "Live Music",
+    "music / pop / pop": "Live Music",
+    "music / pop / teen pop": "Live Music",
+    "music / country / country": "Live Music",
+    "music / country / alternative country": "Live Music",
+    "music / folk / indie folk": "Live Music",
+    "music / folk / folk": "Live Music",
+    "music / jazz / jazz": "Live Music",
+    "music / blues / blues": "Live Music",
+    "music / classical / classical": "Live Music",
+    "music / world / world": "Live Music",
+    "music / metal / metal": "Live Music",
+    "music / metal / nu-metal": "Live Music",
+    "music / r&b / r&b": "Live Music",
+    "music / hip-hop/rap / rap": "Live Music",
+    "music / electronic / electronic": "Live Music",
+    "music / reggae / reggae": "Live Music",
+
+    # Ticketmaster slash-format: Arts & Theatre
+    "arts & theatre / comedy / comedy": "Comedy",
+    "arts & theatre / comedy / stand-up comedy": "Comedy",
+    "arts & theatre / theatre / theatre": "Theatre & Performance",
+    "arts & theatre / theatre / broadway": "Theatre & Performance",
+    "arts & theatre / spectacular / spectacular": "Theatre & Performance",
+    "arts & theatre / family / family": "Family & Kids",
+    "arts & theatre / dance / dance": "Dance",
+    "arts & theatre / magic / magic": "Theatre & Performance",
+
+    # Ticketmaster undefined/catch-all
+    "undefined": "",
+    "miscellaneous / undefined / undefined": "",
+    "miscellaneous": "",
 }
 
 
@@ -231,8 +285,8 @@ def normalize_categories(raw_categories_str: str) -> str:
             # Keep as-is if not mapped (might be a new category)
             canonical = raw
         
-        # Add if not seen
-        if canonical not in seen:
+        # Add if not seen and not empty
+        if canonical and canonical not in seen:
             seen.add(canonical)
             canonical_list.append(canonical)
     

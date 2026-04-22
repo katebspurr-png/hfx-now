@@ -209,18 +209,18 @@ def collect_event_links(page):
     print(f"🔎 Loading Showpass Halifax search: {SEARCH_URL}")
     page.goto(SEARCH_URL)
     # Let initial JS load
-    page.wait_for_timeout(4000)
+    page.wait_for_timeout(2000)
 
     # Scroll to bottom a few times to trigger infinite scroll
     last_height = 0
-    for i in range(20):
+    for i in range(10):
         current_height = page.evaluate("document.body.scrollHeight")
         if current_height == last_height:
             print(f"   • Scroll pass {i+1}: no further growth, stopping.")
             break
         print(f"   • Scroll pass {i+1}: height {current_height}")
         page.mouse.wheel(0, 2500)
-        page.wait_for_timeout(2000)
+        page.wait_for_timeout(1500)
         last_height = current_height
 
     links = set()
@@ -275,7 +275,8 @@ def collect_event_links(page):
 def scrape_event(page, url: str):
     print("Scraping Showpass event:", url)
     page.goto(url)
-    page.wait_for_timeout(8000)  # let JS render full event view
+    page.wait_for_load_state("networkidle", timeout=10000)
+    page.wait_for_timeout(2000)
 
     # Title
     title_el = page.locator("h1").first
