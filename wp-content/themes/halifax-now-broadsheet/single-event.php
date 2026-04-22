@@ -75,11 +75,36 @@ $event = hfx_event_to_payload(get_the_ID());
 				if ($ticket && filter_var($ticket, FILTER_VALIDATE_URL)) :
 					?>
 					<a class="bed-cta" href="<?php echo esc_url($ticket); ?>" rel="noopener noreferrer" target="_blank"><?php esc_html_e('Get Tickets ->', 'halifax-now-broadsheet'); ?></a>
-				<?php elseif ('paid' === $event['price']) : ?>
-					<a class="bed-cta" href="<?php echo esc_url(get_permalink()); ?>"><?php esc_html_e('Get Tickets ->', 'halifax-now-broadsheet'); ?></a>
 				<?php endif; ?>
-				<a class="bed-cta alt" href="#"><?php esc_html_e('+ Add to Calendar', 'halifax-now-broadsheet'); ?></a>
-				<a class="bed-cta ghost" href="#"><?php esc_html_e('Share', 'halifax-now-broadsheet'); ?></a>
+				<?php
+				$gcal_url = '';
+				if ( ! empty( $event['date'] ) ) {
+					$t_start  = strtotime( $event['date'] . ' ' . ( $event['time'] ?: '00:00' ) );
+					$t_end    = ! empty( $event['endTime'] )
+						? strtotime( $event['date'] . ' ' . $event['endTime'] )
+						: $t_start + 2 * HOUR_IN_SECONDS;
+					$gcal_url = add_query_arg(
+						array(
+							'action'   => 'TEMPLATE',
+							'text'     => rawurlencode( $event['title'] ),
+							'dates'    => gmdate( 'Ymd\THis\Z', $t_start ) . '/' . gmdate( 'Ymd\THis\Z', $t_end ),
+							'details'  => rawurlencode( $event['blurb'] ),
+							'location' => rawurlencode( trim( $event['venue'] . ' ' . $event['address'] ) ),
+						),
+						'https://calendar.google.com/calendar/render'
+					);
+				}
+				if ( $gcal_url ) :
+					?>
+					<a class="bed-cta alt" href="<?php echo esc_url( $gcal_url ); ?>" rel="noopener noreferrer" target="_blank"><?php esc_html_e('+ Add to Calendar', 'halifax-now-broadsheet'); ?></a>
+				<?php endif; ?>
+				<button
+					class="bed-cta ghost"
+					type="button"
+					data-hfx-share
+					data-share-url="<?php echo esc_attr( get_permalink() ); ?>"
+					data-share-title="<?php echo esc_attr( $event['title'] ); ?>"
+				><?php esc_html_e('Share', 'halifax-now-broadsheet'); ?></button>
 			</aside>
 		</div>
 	</section>

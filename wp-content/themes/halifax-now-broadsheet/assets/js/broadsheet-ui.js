@@ -131,13 +131,29 @@
     if (!input || !button) return;
 
     button.addEventListener("click", function () {
-      const q = input.value.trim();
-      const base = `${window.location.origin}/browse/`;
-      if (!q) {
-        window.location.href = base;
-        return;
-      }
-      window.location.href = `${base}?s=${encodeURIComponent(q)}`;
+      const q    = input.value.trim();
+      const base = data.browseUrl || (window.location.origin + "/browse/");
+      window.location.href = q ? base + "?s=" + encodeURIComponent(q) : base;
+    });
+  }
+
+  function bindShareButtons() {
+    document.querySelectorAll("[data-hfx-share]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        const url   = btn.dataset.shareUrl   || window.location.href;
+        const title = btn.dataset.shareTitle || document.title;
+        if (navigator.share) {
+          navigator.share({ title: title, url: url }).catch(function () {});
+        } else {
+          navigator.clipboard.writeText(url).then(function () {
+            const orig = btn.textContent;
+            btn.textContent = "Copied!";
+            setTimeout(function () { btn.textContent = orig; }, 2000);
+          }).catch(function () {
+            window.prompt("Copy this link:", url);
+          });
+        }
+      });
     });
   }
 
@@ -173,5 +189,6 @@
     bindHeroSearch();
     applyBrowseFilters();
     renderMapPins();
+    bindShareButtons();
   });
 })();
