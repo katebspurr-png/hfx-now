@@ -86,8 +86,9 @@ function hfx_broadsheet_enqueue_assets() {
 		'hfx-broadsheet-ui',
 		'HFXThemeData',
 		array(
-			'events' => hfx_get_events_payload(120),
-			'now'    => current_time('mysql'),
+			'events'    => hfx_get_events_payload(120),
+			'now'       => current_time('mysql'),
+			'browseUrl' => home_url('/browse/'),
 		)
 	);
 }
