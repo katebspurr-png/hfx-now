@@ -320,6 +320,12 @@ def scrape_propeller() -> List[Dict[str, str]]:
     html = fetch_html(EVENTS_URL)
     lines = lines_from_page(html)
 
+    print(f"[Propeller] Fetched {len(lines)} text lines from {EVENTS_URL}")
+    venue_lines = [l for l in lines if any(v in l.upper() for v in ["BEDFORD", "GOTTINGEN", "QUINPOOL"])]
+    print(f"[Propeller] Venue header lines found: {len(venue_lines)} -> {venue_lines[:5]}")
+    date_lines = [l for l in lines if MONTH_RE.match(l)]
+    print(f"[Propeller] Date-prefixed lines found: {len(date_lines)} -> {date_lines[:5]}")
+
     events: List[Dict[str, str]] = []
     current_venue_key: Optional[str] = None
     current_section_time: Optional[tuple] = None  # (start, end, ampm) from section headers

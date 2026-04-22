@@ -75,7 +75,7 @@ def fetch_html(url: str) -> str:
             "Chrome/120.0 Safari/537.36"
         )
     }
-    resp = requests.get(url, headers=headers, timeout=30)
+    resp = requests.get(url, headers=headers, timeout=30, verify=False)
     resp.raise_for_status()
     return resp.text
 
