@@ -275,7 +275,7 @@ def collect_event_links(page):
 def scrape_event(page, url: str):
     print("Scraping Showpass event:", url)
     page.goto(url)
-    page.wait_for_timeout(3000)
+    page.wait_for_timeout(2000)
 
     # Title
     title_el = page.locator("h1").first
@@ -415,6 +415,11 @@ def main():
         page = browser.new_page()
 
         event_urls = collect_event_links(page)
+
+        MAX_EVENTS = 50
+        if len(event_urls) > MAX_EVENTS:
+            print(f"⚠️ Capping at {MAX_EVENTS} events (found {len(event_urls)})")
+            event_urls = event_urls[:MAX_EVENTS]
 
         for url in event_urls:
             try:
