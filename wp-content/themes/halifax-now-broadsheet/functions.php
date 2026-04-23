@@ -563,6 +563,26 @@ function hfx_is_valid_event_time( $value ) {
 }
 
 /**
+ * Build sortable date-time key for event payload rows.
+ *
+ * Undated rows are placed at the end.
+ *
+ * @param array<string, mixed> $event Event payload row.
+ * @return string
+ */
+function hfx_event_sort_key( $event ) {
+	$date = isset( $event['date'] ) ? trim( (string) $event['date'] ) : '';
+	$time = isset( $event['time'] ) ? trim( (string) $event['time'] ) : '';
+	if ( ! hfx_is_valid_event_date( $date ) ) {
+		return '9999-99-99 99:99';
+	}
+	if ( ! hfx_is_valid_event_time( $time ) ) {
+		$time = '23:59';
+	}
+	return $date . ' ' . $time;
+}
+
+/**
  * Category hue map shared across selection and rendering.
  *
  * @return array<string, int>
@@ -1096,6 +1116,19 @@ function hfx_get_events_payload($limit = 100) {
 		$payload = hfx_event_to_payload($post->ID);
 		$events[] = $payload;
 	}
+	usort(
+		$events,
+		static function ( $left, $right ) {
+			$left_key  = hfx_event_sort_key( (array) $left );
+			$right_key = hfx_event_sort_key( (array) $right );
+			if ( $left_key === $right_key ) {
+				$left_title  = isset( $left['title'] ) ? strtolower( (string) $left['title'] ) : '';
+				$right_title = isset( $right['title'] ) ? strtolower( (string) $right['title'] ) : '';
+				return strcmp( $left_title, $right_title );
+			}
+			return strcmp( $left_key, $right_key );
+		}
+	);
 
 	set_transient( $transient_key, $events, 5 * MINUTE_IN_SECONDS );
 	$cache[ $limit ] = $events;
