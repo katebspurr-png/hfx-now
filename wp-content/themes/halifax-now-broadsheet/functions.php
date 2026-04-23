@@ -1130,9 +1130,10 @@ function hfx_format_event_when( $date, $time, $today_ymd ) {
 
 	// Treat epoch/zero timestamps as missing — these come from events where
 	// _EventStartDate is empty or '0000-00-00', which resolves to Dec 31 1969
-	// in Atlantic time and would render as a nonsense "WED · DEC 31" label.
+	// in Atlantic time. Both the date AND the time are garbage in this case
+	// (20:00 = UTC-4 offset of epoch), so suppress everything.
 	if ( $event_ts <= 0 ) {
-		return $time_fmt;
+		return '';
 	}
 
 	$diff_days    = (int) round( ( $event_ts - $today_ts ) / DAY_IN_SECONDS );
