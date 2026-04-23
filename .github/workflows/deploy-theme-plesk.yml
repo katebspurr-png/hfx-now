@@ -1,1 +1,26 @@
+name: Deploy Theme to Plesk
 
+on:
+  push:
+    branches: [main]
+    paths:
+      - "wp-content/themes/halifax-now-broadsheet/**"
+      - ".github/workflows/deploy-theme-plesk.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy theme via rsync over SSH
+        uses: burnett01/rsync-deployments@7.0.2
+        with:
+          switches: -avzr --delete --exclude=".git" --exclude=".github"
+          path: wp-content/themes/halifax-now-broadsheet/
+          remote_path: ${{ secrets.PLESK_THEME_PATH }}/
+          remote_host: ${{ secrets.PLESK_SSH_HOST }}
+          remote_user: ${{ secrets.PLESK_SSH_USER }}
+          remote_key: ${{ secrets.PLESK_SSH_KEY }}
+          remote_port: ${{ secrets.PLESK_SSH_PORT }}
