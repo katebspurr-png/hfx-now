@@ -794,6 +794,23 @@ function hfx_event_image_e($image_url, $category, $alt, $classes = '', $hue_degr
  * @return array<int, array<string, mixed>>
  */
 function hfx_get_events_payload($limit = 100) {
+	static $cache = array();
+
+	$limit = (int) $limit;
+
+	// Return immediately if already fetched in this request.
+	if ( isset( $cache[ $limit ] ) ) {
+		return $cache[ $limit ];
+	}
+
+	// Try transient cache (5-minute TTL) to avoid thousands of DB queries per page load.
+	$transient_key = 'hfx_events_payload_' . $limit;
+	$cached        = get_transient( $transient_key );
+	if ( false !== $cached ) {
+		$cache[ $limit ] = $cached;
+		return $cached;
+	}
+
 	$posts  = hfx_get_event_posts($limit);
 	$events = array();
 
@@ -801,8 +818,23 @@ function hfx_get_events_payload($limit = 100) {
 		$events[] = hfx_event_to_payload($post->ID);
 	}
 
+	set_transient( $transient_key, $events, 5 * MINUTE_IN_SECONDS );
+	$cache[ $limit ] = $events;
 	return $events;
 }
+
+/**
+ * Clear all hfx_events_payload transients so the next request rebuilds from DB.
+ */
+function hfx_clear_events_payload_cache() {
+	foreach ( array( 100, 120, 200, 250, 300, 500 ) as $limit ) {
+		delete_transient( 'hfx_events_payload_' . $limit );
+	}
+}
+add_action( 'save_post_tribe_events', 'hfx_clear_events_payload_cache' );
+add_action( 'save_post',              'hfx_clear_events_payload_cache' );
+add_action( 'delete_post',            'hfx_clear_events_payload_cache' );
+add_action( 'transition_post_status', 'hfx_clear_events_payload_cache' );
 
 /**
  * Query var helper.
