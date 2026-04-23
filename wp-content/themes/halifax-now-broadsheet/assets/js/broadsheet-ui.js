@@ -60,6 +60,7 @@
     const clearButton = browseRoot.querySelector("[data-hfx-clear]");
 
     let activeQuick = browseRoot.dataset.quick || "";
+    let activeDate = browseRoot.dataset.dateFilter || "";
     let searchTerm = "";
 
     const render = function () {
@@ -70,8 +71,9 @@
         const venue = row.dataset.venue || "";
         const searchable = `${title} ${venue}`;
         const quickMatch = matchesQuickFilter(row, activeQuick, now);
+        const dateMatch = !activeDate || row.dataset.date === activeDate;
         const searchMatch = !searchTerm || searchable.includes(searchTerm);
-        const visible = quickMatch && searchMatch;
+        const visible = quickMatch && dateMatch && searchMatch;
         row.hidden = !visible;
         if (visible) visibleCount += 1;
       });
@@ -96,6 +98,7 @@
     if (clearButton) {
       clearButton.addEventListener("click", () => {
         activeQuick = "";
+        activeDate = "";
         searchTerm = "";
         if (searchInput) searchInput.value = "";
         render();
@@ -131,29 +134,14 @@
     if (!input || !button) return;
 
     button.addEventListener("click", function () {
-      const q    = input.value.trim();
-      const base = data.browseUrl || (window.location.origin + "/browse/");
-      window.location.href = q ? base + "?s=" + encodeURIComponent(q) : base;
-    });
-  }
-
-  function bindShareButtons() {
-    document.querySelectorAll("[data-hfx-share]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        const url   = btn.dataset.shareUrl   || window.location.href;
-        const title = btn.dataset.shareTitle || document.title;
-        if (navigator.share) {
-          navigator.share({ title: title, url: url }).catch(function () {});
-        } else {
-          navigator.clipboard.writeText(url).then(function () {
-            const orig = btn.textContent;
-            btn.textContent = "Copied!";
-            setTimeout(function () { btn.textContent = orig; }, 2000);
-          }).catch(function () {
-            window.prompt("Copy this link:", url);
-          });
-        }
-      });
+      const q = input.value.trim();
+      const base =
+        data.browseUrl || `${window.location.origin}/browse/`;
+      if (!q) {
+        window.location.href = base;
+        return;
+      }
+      window.location.href = `${base}?s=${encodeURIComponent(q)}`;
     });
   }
 
@@ -189,6 +177,5 @@
     bindHeroSearch();
     applyBrowseFilters();
     renderMapPins();
-    bindShareButtons();
   });
 })();

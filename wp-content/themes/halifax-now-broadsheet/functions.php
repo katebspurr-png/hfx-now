@@ -95,6 +95,39 @@ function hfx_broadsheet_enqueue_assets() {
 add_action('wp_enqueue_scripts', 'hfx_broadsheet_enqueue_assets');
 
 /**
+ * Render browse template when slug is requested but WP page mapping is missing.
+ *
+ * This keeps homepage heat-map links functional in environments where the
+ * Browse page has not been created/configured yet.
+ */
+function hfx_maybe_render_virtual_browse_page() {
+	if ( ! is_404() ) {
+		return;
+	}
+
+	$request_path = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+	$request_path = (string) parse_url( $request_path, PHP_URL_PATH );
+	$request_path = trim( $request_path, '/' );
+	$browse_path  = (string) parse_url( home_url( '/browse/' ), PHP_URL_PATH );
+	$browse_path  = trim( $browse_path, '/' );
+
+	if ( '' === $request_path || $request_path !== $browse_path ) {
+		return;
+	}
+
+	$template = locate_template( 'page-browse.php' );
+	if ( '' === $template ) {
+		return;
+	}
+
+	status_header( 200 );
+	nocache_headers();
+	include $template;
+	exit;
+}
+add_action( 'template_redirect', 'hfx_maybe_render_virtual_browse_page', 0 );
+
+/**
  * Handoff §08 — REST: normalized events for headless or external clients.
  */
 function hfx_register_rest_routes() {
@@ -294,6 +327,188 @@ function hfx_event_recurring_label( $post_id, $is_recurring ) {
 }
 
 /**
+ * Parse TEC datetime meta to a Unix timestamp.
+ *
+ * @param int              $post_id   Post ID.
+ * @param array<int,string> $meta_keys Ordered candidate meta keys.
+ * @return int|null
+ */
+function hfx_event_meta_timestamp( $post_id, $meta_keys ) {
+	$post_id = (int) $post_id;
+	foreach ( $meta_keys as $key ) {
+		$raw = (string) get_post_meta( $post_id, (string) $key, true );
+		if ( '' === trim( $raw ) ) {
+			continue;
+		}
+		$raw = html_entity_decode( wp_strip_all_tags( $raw ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		$raw = preg_replace( '/\s+/', ' ', trim( $raw ) );
+		if ( ! is_string( $raw ) || '' === $raw ) {
+			continue;
+		}
+
+		$ts = strtotime( $raw );
+		if ( false !== $ts ) {
+			return (int) $ts;
+		}
+
+		if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $raw ) ) {
+			$ts = strtotime( $raw . ' 00:00:00' );
+			if ( false !== $ts ) {
+				return (int) $ts;
+			}
+		}
+
+		if ( preg_match( '/^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})(:\d{2})?$/', $raw, $m ) ) {
+			$norm = $m[1] . ' ' . $m[2] . ( isset( $m[3] ) ? $m[3] : ':00' );
+			$ts   = strtotime( $norm );
+			if ( false !== $ts ) {
+				return (int) $ts;
+			}
+		}
+	}
+	return null;
+}
+
+/**
+ * Validate strict YYYY-MM-DD date format.
+ *
+ * @param string $value Date candidate.
+ * @return bool
+ */
+function hfx_is_valid_event_date( $value ) {
+	$value = is_string( $value ) ? trim( $value ) : '';
+	if ( '' === $value || 1 !== preg_match( '/^\d{4}-\d{2}-\d{2}$/', $value ) ) {
+		return false;
+	}
+	$dt = DateTimeImmutable::createFromFormat( '!Y-m-d', $value, wp_timezone() );
+	return ( $dt instanceof DateTimeImmutable ) && $dt->format( 'Y-m-d' ) === $value;
+}
+
+/**
+ * Validate strict HH:MM time format.
+ *
+ * @param string $value Time candidate.
+ * @return bool
+ */
+function hfx_is_valid_event_time( $value ) {
+	$value = is_string( $value ) ? trim( $value ) : '';
+	if ( '' === $value || 1 !== preg_match( '/^\d{2}:\d{2}$/', $value ) ) {
+		return false;
+	}
+	$dt = DateTimeImmutable::createFromFormat( 'H:i', $value, wp_timezone() );
+	return ( $dt instanceof DateTimeImmutable ) && $dt->format( 'H:i' ) === $value;
+}
+
+/**
+ * Category hue map shared across selection and rendering.
+ *
+ * @return array<string, int>
+ */
+function hfx_event_category_hue_map() {
+	return array(
+		'music'            => 220,
+		'live-music'       => 220,
+		'comedy'           => 14,
+		'arts'             => 280,
+		'arts-culture'     => 280,
+		'arts-and-culture' => 280,
+		'food'             => 40,
+		'food-drink'       => 40,
+		'outdoors'         => 140,
+		'film'             => 20,
+		'theatre'          => 340,
+		'community'        => 120,
+		'sports'           => 0,
+		'family'           => 190,
+		'nightlife'        => 300,
+		'market'           => 90,
+		'markets'          => 90,
+	);
+}
+
+/**
+ * Detect generic category slugs that collapse color variety.
+ *
+ * @param string $slug Category slug.
+ * @return bool
+ */
+function hfx_event_is_generic_category_slug( $slug ) {
+	$slug = sanitize_title( (string) $slug );
+	if ( '' === $slug ) {
+		return true;
+	}
+	$generic = array(
+		'events',
+		'event',
+		'all-events',
+		'general',
+		'misc',
+		'miscellaneous',
+		'other',
+		'uncategorized',
+	);
+	return in_array( $slug, $generic, true );
+}
+
+/**
+ * Choose the best category term for display and color seeding.
+ *
+ * @param array<int, WP_Term|object> $terms Candidate terms.
+ * @return array{label: string, slug: string}
+ */
+function hfx_pick_event_category_term( $terms ) {
+	$empty = array(
+		'label' => '',
+		'slug'  => '',
+	);
+	if ( ! is_array( $terms ) || empty( $terms ) ) {
+		return $empty;
+	}
+
+	$candidates = array();
+	foreach ( $terms as $term ) {
+		$label = '';
+		$slug  = '';
+		if ( is_object( $term ) ) {
+			if ( isset( $term->name ) && is_string( $term->name ) ) {
+				$label = trim( $term->name );
+			}
+			if ( isset( $term->slug ) && is_string( $term->slug ) ) {
+				$slug = sanitize_title( $term->slug );
+			}
+		}
+		if ( '' === $slug && '' !== $label ) {
+			$slug = sanitize_title( $label );
+		}
+		if ( '' === $slug && '' === $label ) {
+			continue;
+		}
+		$candidates[] = array(
+			'label' => $label,
+			'slug'  => $slug,
+		);
+	}
+
+	if ( empty( $candidates ) ) {
+		return $empty;
+	}
+
+	$hue_map = hfx_event_category_hue_map();
+	foreach ( $candidates as $candidate ) {
+		if ( ! hfx_event_is_generic_category_slug( $candidate['slug'] ) && isset( $hue_map[ $candidate['slug'] ] ) ) {
+			return $candidate;
+		}
+	}
+	foreach ( $candidates as $candidate ) {
+		if ( ! hfx_event_is_generic_category_slug( $candidate['slug'] ) ) {
+			return $candidate;
+		}
+	}
+
+	return $candidates[0];
+}
+
+/**
  * Convert event post to frontend payload (aligns with Halifax ECP spec / JSON contract).
  *
  * @param int $post_id Post ID.
@@ -311,8 +526,9 @@ function hfx_event_to_payload($post_id) {
 		$terms = get_the_terms($post_id, 'category');
 	}
 	if (is_array($terms) && !empty($terms)) {
-		$category      = $terms[0]->name;
-		$category_slug = $terms[0]->slug;
+		$chosen        = hfx_pick_event_category_term( $terms );
+		$category      = (string) $chosen['label'];
+		$category_slug = (string) $chosen['slug'];
 	}
 
 	$venue   = get_post_meta($post_id, '_EventVenueID', true);
@@ -333,23 +549,32 @@ function hfx_event_to_payload($post_id) {
 		$hood = trim($hood_acf);
 	}
 
-	$start_meta = get_post_meta($post_id, '_EventStartDate', true);
-	$end_meta   = get_post_meta($post_id, '_EventEndDate', true);
-	$time       = '';
-	$end_time   = '';
-	$date       = '';
-	if ($start_meta) {
-		$timestamp = strtotime($start_meta);
-		$date      = $timestamp ? gmdate('Y-m-d', $timestamp) : '';
-		$time      = $timestamp ? gmdate('H:i', $timestamp) : '';
-	} else {
-		$date = get_the_date('Y-m-d', $post_id);
+	$time     = '';
+	$end_time = '';
+	$date     = '';
+	$post_type = get_post_type( $post_id );
+	$start_ts = hfx_event_meta_timestamp( $post_id, array( '_EventStartDate', '_EventStartDateUTC' ) );
+	if ( null !== $start_ts ) {
+		$date = function_exists( 'wp_date' ) ? wp_date( 'Y-m-d', $start_ts, wp_timezone() ) : gmdate( 'Y-m-d', $start_ts );
+		$time = function_exists( 'wp_date' ) ? wp_date( 'H:i', $start_ts, wp_timezone() ) : gmdate( 'H:i', $start_ts );
+	} elseif ( 'tribe_events' !== $post_type ) {
+		$date = get_post_time( 'Y-m-d', false, $post_id );
+		$time = get_post_time( 'H:i', false, $post_id );
 	}
-	if (!empty($end_meta)) {
-		$e_ts = strtotime($end_meta);
-		if ($e_ts) {
-			$end_time = gmdate('H:i', $e_ts);
-		}
+	$end_ts = hfx_event_meta_timestamp( $post_id, array( '_EventEndDate', '_EventEndDateUTC' ) );
+	if ( null !== $end_ts ) {
+		$end_time = function_exists( 'wp_date' ) ? wp_date( 'H:i', $end_ts, wp_timezone() ) : gmdate( 'H:i', $end_ts );
+	}
+
+	// Guardrails: malformed source values must not appear as valid schedule data.
+	if ( ! hfx_is_valid_event_date( (string) $date ) ) {
+		$date = '';
+	}
+	if ( ! hfx_is_valid_event_time( (string) $time ) ) {
+		$time = '';
+	}
+	if ( ! hfx_is_valid_event_time( (string) $end_time ) ) {
+		$end_time = '';
 	}
 
 	$price = '';
@@ -386,7 +611,7 @@ function hfx_event_to_payload($post_id) {
 
 	$cat_label = $category ? $category : __( 'Events', 'halifax-now-broadsheet' );
 	$cat_key   = $category_slug ? (string) $category_slug : ( $category ? sanitize_title( (string) $category ) : 'events' );
-	$hue        = hfx_event_category_hue( $cat_key, $cat_label );
+	$hue       = hfx_event_category_hue( $cat_key, $cat_label, (string) $post_id );
 	$short_acf  = hfx_get_event_field($post_id, 'hfx_short_blurb');
 	$excerpt_p  = (string) get_post_field('post_excerpt', $post_id);
 	$excerpt    = get_the_excerpt($post_id);
@@ -479,28 +704,11 @@ function hfx_event_to_payload($post_id) {
  *
  * @param string $slug   Primary `tribe_events_cat` term slug.
  * @param string $label  Term name (used when slug is empty or unmapped).
+ * @param string $seed   Deterministic seed for generic fallback variation.
  * @return int Degrees 0–359.
  */
-function hfx_event_category_hue($slug, $label = '') {
-	$map = array(
-		'music'            => 220,
-		'live-music'       => 220,
-		'comedy'           => 14,
-		'arts'             => 280,
-		'arts-culture'     => 280,
-		'arts-and-culture' => 280,
-		'food'             => 40,
-		'food-drink'       => 40,
-		'outdoors'         => 140,
-		'film'             => 20,
-		'theatre'          => 340,
-		'community'        => 120,
-		'sports'           => 0,
-		'family'           => 190,
-		'nightlife'        => 300,
-		'market'           => 90,
-		'markets'          => 90,
-	);
+function hfx_event_category_hue($slug, $label = '', $seed = '') {
+	$map = hfx_event_category_hue_map();
 	$try = array();
 	if (is_string($slug) && '' !== trim($slug)) {
 		$try[] = sanitize_title($slug);
@@ -519,6 +727,9 @@ function hfx_event_category_hue($slug, $label = '') {
 	}
 	$base = (string) ( $try[0] ?? ( is_string( $label ) ? $label : 'events' ) );
 	$base = $base !== '' ? $base : 'events';
+	if ( hfx_event_is_generic_category_slug( $base ) && '' !== trim( (string) $seed ) ) {
+		$base .= '|' . trim( (string) $seed );
+	}
 	return (int) (hexdec( substr( md5( $base ), 0, 6) ) % 360);
 }
 
