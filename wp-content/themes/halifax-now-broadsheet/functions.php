@@ -451,6 +451,40 @@ function hfx_event_is_generic_category_slug( $slug ) {
 }
 
 /**
+ * Priority score for choosing the most informative category term.
+ *
+ * Higher score wins.
+ *
+ * @param string $slug Category slug.
+ * @return int
+ */
+function hfx_event_category_priority( $slug ) {
+	$slug = sanitize_title( (string) $slug );
+	$priority = array(
+		'live-music'       => 90,
+		'music'            => 90,
+		'comedy'           => 88,
+		'theatre'          => 86,
+		'film'             => 84,
+		'food-drink'       => 82,
+		'food'             => 82,
+		'outdoors'         => 80,
+		'community'        => 78,
+		'sports'           => 76,
+		'family'           => 74,
+		'nightlife'        => 72,
+		'market'           => 70,
+		'markets'          => 70,
+		'arts-and-culture' => 20,
+		'arts-culture'     => 20,
+		'arts'             => 20,
+		'events'           => 10,
+		'event'            => 10,
+	);
+	return (int) ( $priority[ $slug ] ?? 50 );
+}
+
+/**
  * Choose the best category term for display and color seeding.
  *
  * @param array<int, WP_Term|object> $terms Candidate terms.
@@ -494,17 +528,25 @@ function hfx_pick_event_category_term( $terms ) {
 	}
 
 	$hue_map = hfx_event_category_hue_map();
+	$best    = null;
+	$best_score = -100000;
 	foreach ( $candidates as $candidate ) {
-		if ( ! hfx_event_is_generic_category_slug( $candidate['slug'] ) && isset( $hue_map[ $candidate['slug'] ] ) ) {
-			return $candidate;
+		$slug = (string) $candidate['slug'];
+		$score = hfx_event_category_priority( $slug );
+		if ( isset( $hue_map[ $slug ] ) ) {
+			$score += 20;
+		}
+		if ( hfx_event_is_generic_category_slug( $slug ) ) {
+			$score -= 30;
+		}
+		if ( $score > $best_score ) {
+			$best_score = $score;
+			$best = $candidate;
 		}
 	}
-	foreach ( $candidates as $candidate ) {
-		if ( ! hfx_event_is_generic_category_slug( $candidate['slug'] ) ) {
-			return $candidate;
-		}
+	if ( is_array( $best ) ) {
+		return $best;
 	}
-
 	return $candidates[0];
 }
 
