@@ -86,6 +86,7 @@ $wall    = array_slice($upcoming, 0, 10);
 
 $lead_tonight = !empty($tonight) ? $tonight[0] : null;
 $rest_tonight = count($tonight) > 1 ? array_slice($tonight, 1) : array();
+$hfx_debug_hue = isset( $_GET['hfx_debug_hue'] ) && '1' === (string) wp_unslash( $_GET['hfx_debug_hue'] );
 $max_heat = 1;
 $total_heat_count = 0;
 foreach ($heat_days as $day) {
@@ -279,6 +280,22 @@ $has_heat_data = $total_heat_count > 0;
 			<div class="h"><?php esc_html_e('The Wall', 'halifax-now-broadsheet'); ?><span class="count">+ <?php echo esc_html(count($wall)); ?> <?php esc_html_e('upcoming', 'halifax-now-broadsheet'); ?></span></div>
 			<a class="l" href="<?php echo esc_url($browse_url); ?>"><?php esc_html_e('All listings', 'halifax-now-broadsheet'); ?></a>
 		</div>
+		<?php if ( $hfx_debug_hue ) : ?>
+			<div style="margin: 0 0 12px; padding: 10px 12px; border: 2px solid #111; background: #fff; font: 12px/1.5 monospace;">
+				<strong>HUE DEBUG (first <?php echo esc_html( (string) count( $wall ) ); ?> wall cards)</strong><br>
+				<?php foreach ( $wall as $debug_idx => $debug_event ) : ?>
+					<?php
+					$debug_cat = hfx_event_category_label( $debug_event ) ?: ( $debug_event['category'] ?? '' );
+					$debug_hue = array_key_exists( 'hue', $debug_event ) ? (string) (int) $debug_event['hue'] : 'null';
+					?>
+					<?php echo esc_html( sprintf( '#%d', $debug_idx + 1 ) ); ?> -
+					<?php echo esc_html( (string) ( $debug_event['title'] ?? '' ) ); ?> -
+					cat: <?php echo esc_html( (string) $debug_cat ); ?> -
+					slug: <?php echo esc_html( (string) ( $debug_event['category'] ?? '' ) ); ?> -
+					hue: <?php echo esc_html( $debug_hue ); ?><br>
+				<?php endforeach; ?>
+			</div>
+		<?php endif; ?>
 		<div class="v4-wall">
 			<?php foreach ($wall as $index => $event) : ?>
 				<a class="v4-card <?php echo $index === 0 ? 'wide' : ''; ?>" href="<?php echo esc_url($event['url']); ?>">
