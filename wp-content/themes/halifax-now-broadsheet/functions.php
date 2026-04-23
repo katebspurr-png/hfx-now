@@ -813,6 +813,18 @@ function hfx_get_events_payload($limit = 100) {
 		$events[] = hfx_event_to_payload($post->ID);
 	}
 
+	// Sort by event start date ASC (soonest first); events with no valid date go last.
+	usort( $events, static function ( $a, $b ) {
+		$da = isset( $a['date'] ) && '' !== $a['date'] ? $a['date'] : '9999-12-31';
+		$db = isset( $b['date'] ) && '' !== $b['date'] ? $b['date'] : '9999-12-31';
+		if ( $da === $db ) {
+			$ta = isset( $a['time'] ) ? $a['time'] : '';
+			$tb = isset( $b['time'] ) ? $b['time'] : '';
+			return strcmp( $ta, $tb );
+		}
+		return strcmp( $da, $db );
+	} );
+
 	set_transient( $transient_key, $events, 5 * MINUTE_IN_SECONDS );
 	$cache[ $limit ] = $events;
 	return $events;
