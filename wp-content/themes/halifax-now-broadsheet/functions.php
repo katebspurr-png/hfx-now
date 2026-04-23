@@ -847,6 +847,82 @@ function hfx_qs($key) {
 }
 
 /**
+ * Weekly edition settings — issue number, volume, editorial blurb.
+ * Editable at Settings → Halifax Now in WP Admin.
+ */
+function hfx_register_weekly_settings() {
+	register_setting( 'hfx_weekly_group', 'hfx_issue_number',  array( 'sanitize_callback' => 'absint' ) );
+	register_setting( 'hfx_weekly_group', 'hfx_volume_number', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+	register_setting( 'hfx_weekly_group', 'hfx_weekly_blurb',  array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
+
+	add_settings_section( 'hfx_weekly_section', 'Weekly Edition', '__return_false', 'hfx-settings' );
+
+	add_settings_field(
+		'hfx_issue_number',
+		'Issue number',
+		static function () {
+			$val = get_option( 'hfx_issue_number', '' );
+			echo '<input type="number" name="hfx_issue_number" value="' . esc_attr( (string) $val ) . '" min="1" style="width:80px"> ';
+			echo '<p class="description">Shows as <strong>NO 117</strong> in the masthead stamp.</p>';
+		},
+		'hfx-settings',
+		'hfx_weekly_section'
+	);
+
+	add_settings_field(
+		'hfx_volume_number',
+		'Volume (Roman numeral)',
+		static function () {
+			$val = get_option( 'hfx_volume_number', '' );
+			echo '<input type="text" name="hfx_volume_number" value="' . esc_attr( (string) $val ) . '" class="regular-text" placeholder="e.g. III"> ';
+			echo '<p class="description">Shows as <strong>VOL III</strong> in the masthead stamp.</p>';
+		},
+		'hfx-settings',
+		'hfx_weekly_section'
+	);
+
+	add_settings_field(
+		'hfx_weekly_blurb',
+		"This week's intro",
+		static function () {
+			$val = get_option( 'hfx_weekly_blurb', '' );
+			echo '<textarea name="hfx_weekly_blurb" rows="4" class="large-text">' . esc_textarea( (string) $val ) . '</textarea>';
+			echo '<p class="description">Editorial intro on the homepage hero. Update every week. Plain text only.</p>';
+		},
+		'hfx-settings',
+		'hfx_weekly_section'
+	);
+}
+add_action( 'admin_init', 'hfx_register_weekly_settings' );
+
+function hfx_add_settings_menu() {
+	add_options_page(
+		'Halifax Now',
+		'Halifax Now',
+		'manage_options',
+		'hfx-settings',
+		'hfx_settings_page_html'
+	);
+}
+add_action( 'admin_menu', 'hfx_add_settings_menu' );
+
+function hfx_settings_page_html() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+	?>
+	<div class="wrap">
+		<h1><?php esc_html_e( 'Halifax Now — Weekly Settings', 'halifax-now-broadsheet' ); ?></h1>
+		<form method="post" action="options.php">
+			<?php settings_fields( 'hfx_weekly_group' ); ?>
+			<?php do_settings_sections( 'hfx-settings' ); ?>
+			<?php submit_button( 'Save' ); ?>
+		</form>
+	</div>
+	<?php
+}
+
+/**
  * Register ACF field group for HFX event metadata.
  * Fields: critic pick, moods, neighbourhood, short blurb, editor blurb.
  */

@@ -7,12 +7,15 @@
 
 get_header();
 
-$events       = hfx_get_events_payload(120);
-$tz           = wp_timezone();
-$now          = current_datetime();
-$today_ymd    = $now->format('Y-m-d');
-$today_start  = DateTimeImmutable::createFromFormat('!Y-m-d', $today_ymd, $tz);
-$upcoming     = array();
+$events        = hfx_get_events_payload(120);
+$tz            = wp_timezone();
+$now           = current_datetime();
+$today_ymd     = $now->format('Y-m-d');
+$today_start   = DateTimeImmutable::createFromFormat('!Y-m-d', $today_ymd, $tz);
+$hfx_issue     = (int) get_option( 'hfx_issue_number', 0 );
+$hfx_volume    = (string) get_option( 'hfx_volume_number', '' );
+$hfx_blurb     = (string) get_option( 'hfx_weekly_blurb', '' );
+$upcoming      = array();
 $tonight      = array();
 $weekend      = array();
 $picks        = array_values(array_filter($events, static function ($event) {
@@ -95,7 +98,13 @@ $has_heat_data = $total_heat_count > 0;
 ?>
 <div class="v4-root">
 	<header class="v4-mast">
-		<div class="v4-datestamp"><?php echo esc_html(date_i18n('D · M j')); ?><br><span class="hot"><?php esc_html_e('Halifax Now', 'halifax-now-broadsheet'); ?></span></div>
+		<div class="v4-datestamp"><?php echo esc_html(date_i18n('D · M j')); ?><br><span class="hot"><?php
+			if ( $hfx_volume && $hfx_issue ) {
+				echo esc_html( 'VOL ' . $hfx_volume . ' · NO ' . $hfx_issue );
+			} else {
+				esc_html_e( 'Halifax Now', 'halifax-now-broadsheet' );
+			}
+		?></span></div>
 		<div class="v4-logo">Halifax<span class="amp">,</span> Now</div>
 		<div class="v4-tag"><?php esc_html_e('The city, weekly.', 'halifax-now-broadsheet'); ?><br><span class="red"><?php esc_html_e('Do stuff. Have fun.', 'halifax-now-broadsheet'); ?></span></div>
 	</header>
@@ -112,9 +121,15 @@ $has_heat_data = $total_heat_count > 0;
 
 	<section class="v4-hero">
 		<div>
-			<div class="v4-hero-stamp"><?php esc_html_e('Broadsheet Edition', 'halifax-now-broadsheet'); ?></div>
+			<div class="v4-hero-stamp"><?php
+				if ( $hfx_issue ) {
+					echo esc_html( '★ ISSUE ' . $hfx_issue . ' · THE WEEK OF ' . date_i18n( 'F j' ) );
+				} else {
+					esc_html_e( 'Broadsheet Edition', 'halifax-now-broadsheet' );
+				}
+			?></div>
 			<h1>Do <span class="lean"><em>stuff.</em></span><br>Have <span class="knock">fun.</span></h1>
-			<p class="v4-hero-lede"><?php esc_html_e('The best of Halifax this week, rebuilt as a living broadsheet. Editorial picks up top, full listings below, and a map when you need to move fast.', 'halifax-now-broadsheet'); ?></p>
+			<p class="v4-hero-lede"><?php echo esc_html( $hfx_blurb ?: __( 'The best of Halifax this week. Do stuff. Have fun.', 'halifax-now-broadsheet' ) ); ?></p>
 			<div class="v4-quick">
 				<a class="v4-qchip" href="<?php echo esc_url($browse_url . '?quick=tonight'); ?>"><?php esc_html_e('Tonight', 'halifax-now-broadsheet'); ?></a>
 				<a class="v4-qchip" href="<?php echo esc_url($browse_url . '?quick=tomorrow'); ?>"><?php esc_html_e('Tomorrow', 'halifax-now-broadsheet'); ?></a>
