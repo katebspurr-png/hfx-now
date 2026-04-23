@@ -1063,6 +1063,14 @@ function hfx_format_event_when( $date, $time, $today_ymd ) {
 	$today_ts     = (int) strtotime( $today_ymd );
 	$tomorrow_ymd = gmdate( 'Y-m-d', $today_ts + DAY_IN_SECONDS );
 	$event_ts     = (int) strtotime( $date );
+
+	// Treat epoch/zero timestamps as missing — these come from events where
+	// _EventStartDate is empty or '0000-00-00', which resolves to Dec 31 1969
+	// in Atlantic time and would render as a nonsense "WED · DEC 31" label.
+	if ( $event_ts <= 0 ) {
+		return $time_fmt;
+	}
+
 	$diff_days    = (int) round( ( $event_ts - $today_ts ) / DAY_IN_SECONDS );
 
 	if ( $date === $today_ymd ) {
