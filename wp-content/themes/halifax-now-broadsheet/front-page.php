@@ -82,7 +82,7 @@ foreach ($events as $event) {
 
 $tonight = array_slice($tonight, 0, 8);
 $weekend = array_slice($weekend, 0, 8);
-$wall    = array_slice($upcoming, 0, 10);
+$wall    = array_slice($events, 0, 10);
 
 $lead_tonight = !empty($tonight) ? $tonight[0] : null;
 $rest_tonight = count($tonight) > 1 ? array_slice($tonight, 1) : array();
@@ -277,7 +277,7 @@ $has_heat_data = $total_heat_count > 0;
 
 	<section class="v4-sec">
 		<div class="v4-sec-hd">
-			<div class="h"><?php esc_html_e('The Wall', 'halifax-now-broadsheet'); ?><span class="count">+ <?php echo esc_html(count($wall)); ?> <?php esc_html_e('upcoming', 'halifax-now-broadsheet'); ?></span></div>
+			<div class="h"><?php esc_html_e('The Wall', 'halifax-now-broadsheet'); ?><span class="count"><?php echo esc_html(count($wall)); ?> <?php esc_html_e('events', 'halifax-now-broadsheet'); ?></span></div>
 			<a class="l" href="<?php echo esc_url($browse_url); ?>"><?php esc_html_e('All listings', 'halifax-now-broadsheet'); ?></a>
 		</div>
 		<?php if ( $hfx_debug_hue ) : ?>
