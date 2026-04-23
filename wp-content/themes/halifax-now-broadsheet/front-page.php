@@ -119,16 +119,16 @@ $has_heat_data = $total_heat_count > 0;
 				<a class="v4-qchip" href="<?php echo esc_url($browse_url . '?quick=tonight'); ?>"><?php esc_html_e('Tonight', 'halifax-now-broadsheet'); ?></a>
 				<a class="v4-qchip" href="<?php echo esc_url($browse_url . '?quick=tomorrow'); ?>"><?php esc_html_e('Tomorrow', 'halifax-now-broadsheet'); ?></a>
 				<a class="v4-qchip" href="<?php echo esc_url($browse_url . '?quick=weekend'); ?>"><?php esc_html_e('Weekend', 'halifax-now-broadsheet'); ?></a>
-				<a class="v4-qchip" href="<?php echo esc_url($browse_url . '?quick=free'); ?>"><?php esc_html_e('Free', 'halifax-now-broadsheet'); ?></a>
+				<a class="v4-qchip" href="<?php echo esc_url($browse_url . '?quick=free'); ?>"><?php esc_html_e('FREE / $0', 'halifax-now-broadsheet'); ?></a>
 				<button class="v4-qchip surprise" data-hfx-surprise><?php esc_html_e('Surprise me', 'halifax-now-broadsheet'); ?></button>
 			</div>
 			<div class="v4-search">
-				<input type="search" placeholder="<?php esc_attr_e('Search events...', 'halifax-now-broadsheet'); ?>" data-hfx-search>
+				<input type="search" placeholder="<?php esc_attr_e('Search venues, artists, things to do...', 'halifax-now-broadsheet'); ?>" data-hfx-search>
 				<button type="button" data-hfx-search-submit><?php esc_html_e('Go', 'halifax-now-broadsheet'); ?></button>
 			</div>
 		</div>
 		<div class="v4-picks">
-			<div class="v4-picks-hd"><span class="t"><?php esc_html_e('Critics Picks', 'halifax-now-broadsheet'); ?></span><span class="s"><?php esc_html_e('This Week', 'halifax-now-broadsheet'); ?></span></div>
+			<div class="v4-picks-hd"><span class="t"><?php esc_html_e("Critics' Picks", 'halifax-now-broadsheet'); ?></span><span class="s"><?php esc_html_e('This Week', 'halifax-now-broadsheet'); ?></span></div>
 			<?php foreach ($picks as $pick) : ?>
 				<a class="v4-pick" href="<?php echo esc_url($pick['url']); ?>">
 					<div class="v4-pick-star">★</div>
@@ -159,7 +159,7 @@ $has_heat_data = $total_heat_count > 0;
 		<div class="v4-page">
 			<main>
 				<div class="v4-sec-hd">
-					<div class="h"><?php esc_html_e('Tonight in Halifax', 'halifax-now-broadsheet'); ?><span class="count"><?php echo esc_html(count($tonight)); ?> <?php esc_html_e('events', 'halifax-now-broadsheet'); ?></span></div>
+					<div class="h"><?php esc_html_e('Tonight in Halifax', 'halifax-now-broadsheet'); ?><span class="count"><?php echo esc_html(count($tonight)); ?> <?php esc_html_e('things', 'halifax-now-broadsheet'); ?></span></div>
 					<a class="l" href="<?php echo esc_url($browse_url . '?quick=tonight'); ?>"><?php esc_html_e('See all', 'halifax-now-broadsheet'); ?></a>
 				</div>
 				<?php if ($lead_tonight) : ?>
@@ -261,7 +261,7 @@ $has_heat_data = $total_heat_count > 0;
 
 	<section class="v4-sec">
 		<div class="v4-sec-hd">
-			<div class="h"><?php esc_html_e('The Wall', 'halifax-now-broadsheet'); ?><span class="count"><?php echo esc_html(count($wall)); ?></span></div>
+			<div class="h"><?php esc_html_e('The Wall', 'halifax-now-broadsheet'); ?><span class="count">+ <?php echo esc_html(count($wall)); ?> <?php esc_html_e('this week', 'halifax-now-broadsheet'); ?></span></div>
 			<a class="l" href="<?php echo esc_url($browse_url); ?>"><?php esc_html_e('All listings', 'halifax-now-broadsheet'); ?></a>
 		</div>
 		<div class="v4-wall">
@@ -277,7 +277,7 @@ $has_heat_data = $total_heat_count > 0;
 					);
 					?>
 					<div class="v4-card-body">
-						<div class="v4-card-when"><?php echo esc_html($event['date'] . ' · ' . $event['time']); ?></div>
+						<div class="v4-card-when"><?php echo esc_html( hfx_format_event_when( $event['date'] ?? '', $event['time'] ?? '', $today_ymd ) ); ?></div>
 						<div class="v4-card-title"><?php echo esc_html($event['title']); ?></div>
 						<div class="v4-card-b"><?php echo esc_html($event['short']); ?></div>
 						<div class="v4-card-meta"><span><?php echo esc_html($event['venue']); ?></span><span class="price"><?php echo esc_html($event['priceLabel']); ?></span></div>
