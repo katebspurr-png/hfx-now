@@ -6,6 +6,40 @@
  */
 
 get_header();
+$category_choices = array(
+	'music' => __('Live Music', 'halifax-now-broadsheet'),
+	'comedy' => __('Comedy', 'halifax-now-broadsheet'),
+	'arts' => __('Arts & Culture', 'halifax-now-broadsheet'),
+	'food' => __('Food & Drink', 'halifax-now-broadsheet'),
+	'outdoors' => __('Outdoors', 'halifax-now-broadsheet'),
+	'film' => __('Film', 'halifax-now-broadsheet'),
+	'theatre' => __('Theatre', 'halifax-now-broadsheet'),
+	'community' => __('Community', 'halifax-now-broadsheet'),
+	'sports' => __('Sports', 'halifax-now-broadsheet'),
+	'family' => __('Family', 'halifax-now-broadsheet'),
+	'nightlife' => __('Nightlife', 'halifax-now-broadsheet'),
+	'markets' => __('Markets', 'halifax-now-broadsheet'),
+);
+$hood_choices = array(
+	'Downtown',
+	'North End',
+	'South End',
+	'West End',
+	'Quinpool',
+	'Spring Garden',
+	'Dartmouth',
+	'Bedford',
+);
+$mood_choices = array(
+	'chill' => '🌙 ' . __('Chill', 'halifax-now-broadsheet'),
+	'rowdy' => '🔥 ' . __('Rowdy', 'halifax-now-broadsheet'),
+	'date' => '💋 ' . __('Date Night', 'halifax-now-broadsheet'),
+	'kids' => '🧃 ' . __('Kid-friendly', 'halifax-now-broadsheet'),
+	'solo' => '👤 ' . __('Solo OK', 'halifax-now-broadsheet'),
+	'crew' => '👯 ' . __('Bring a crew', 'halifax-now-broadsheet'),
+	'free' => '🪙 ' . __('Broke-friendly', 'halifax-now-broadsheet'),
+	'rainy' => '☔ ' . __('Rainy-day', 'halifax-now-broadsheet'),
+);
 ?>
 <div class="v4-root bsub-root">
 	<section class="v4-sec bsub-wrap">
@@ -66,7 +100,36 @@ get_header();
 							<span><?php esc_html_e('Price', 'halifax-now-broadsheet'); ?></span>
 							<input class="bsub-input" type="text" name="event_price" placeholder="<?php esc_attr_e('Free / $15 / $25-$45', 'halifax-now-broadsheet'); ?>">
 						</label>
+						<label>
+							<span><?php esc_html_e('Category', 'halifax-now-broadsheet'); ?> <strong><?php esc_html_e('Required', 'halifax-now-broadsheet'); ?></strong></span>
+							<select class="bsub-input" name="event_category" required>
+								<option value=""><?php esc_html_e('Select category', 'halifax-now-broadsheet'); ?></option>
+								<?php foreach ($category_choices as $value => $label) : ?>
+									<option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($label); ?></option>
+								<?php endforeach; ?>
+							</select>
+						</label>
+						<label>
+							<span><?php esc_html_e('Neighbourhood', 'halifax-now-broadsheet'); ?> <strong><?php esc_html_e('Required', 'halifax-now-broadsheet'); ?></strong></span>
+							<select class="bsub-input" name="event_neighbourhood" required>
+								<option value=""><?php esc_html_e('Select neighbourhood', 'halifax-now-broadsheet'); ?></option>
+								<?php foreach ($hood_choices as $label) : ?>
+									<option value="<?php echo esc_attr($label); ?>"><?php echo esc_html($label); ?></option>
+								<?php endforeach; ?>
+							</select>
+						</label>
 					</div>
+					<fieldset class="bsub-moods">
+						<legend><?php esc_html_e('Mood (select all that apply)', 'halifax-now-broadsheet'); ?></legend>
+						<div class="bsub-mood-grid">
+							<?php foreach ($mood_choices as $value => $label) : ?>
+								<label class="bsub-mood-chip">
+									<input type="checkbox" name="event_moods[]" value="<?php echo esc_attr($value); ?>">
+									<span><?php echo esc_html($label); ?></span>
+								</label>
+							<?php endforeach; ?>
+						</div>
+					</fieldset>
 
 					<label>
 						<span><?php esc_html_e('Tell us about it', 'halifax-now-broadsheet'); ?></span>

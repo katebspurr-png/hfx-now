@@ -12,16 +12,45 @@ $quick      = hfx_qs('quick');
 $date_qs    = hfx_qs('date');
 $hood_qs    = hfx_qs('hood');
 $mood_qs    = hfx_qs('mood');
-$browse_url = home_url('/browse/');
+$cat_qs     = hfx_qs('cat');
+$browse_url = hfx_events_base_url();
 $tz         = wp_timezone();
 $now        = current_datetime();
 $today_ymd  = $now->format('Y-m-d');
 $tomorrow   = $now->modify('+1 day')->format('Y-m-d');
+$active_cats = array_values(array_filter(array_map('sanitize_title', array_map('trim', explode(',', $cat_qs)))));
+$active_moods = array_values(array_filter(array_map('sanitize_title', array_map('trim', explode(',', $mood_qs)))));
+$active_hoods = array_values(array_filter(array_map('sanitize_text_field', array_map('trim', explode(',', $hood_qs)))));
+
+$available_categories = array();
+$available_moods = array();
+$available_hoods = array();
+foreach ($events as $ev_scan) {
+	if (!empty($ev_scan['category']) && is_string($ev_scan['category'])) {
+		$key = sanitize_title((string) $ev_scan['category']);
+		$available_categories[$key] = hfx_event_category_label($ev_scan);
+	}
+	if (!empty($ev_scan['hood']) && is_string($ev_scan['hood'])) {
+		$hkey = trim((string) $ev_scan['hood']);
+		$available_hoods[$hkey] = $hkey;
+	}
+	if (!empty($ev_scan['mood']) && is_array($ev_scan['mood'])) {
+		foreach ($ev_scan['mood'] as $mood_key) {
+			$mood_slug = sanitize_title((string) $mood_key);
+			if ($mood_slug !== '') {
+				$available_moods[$mood_slug] = ucfirst(str_replace('-', ' ', $mood_slug));
+			}
+		}
+	}
+}
+ksort($available_categories);
+ksort($available_moods);
+ksort($available_hoods);
 
 $events = array_values(
 	array_filter(
 		$events,
-		static function ($event) use ($quick, $date_qs, $hood_qs, $mood_qs, $today_ymd, $tomorrow, $tz) {
+		static function ($event) use ($quick, $date_qs, $active_hoods, $active_moods, $active_cats, $today_ymd, $tomorrow, $tz) {
 			$event_date = isset($event['date']) ? (string) $event['date'] : '';
 			$event_time = isset($event['time']) && hfx_is_valid_event_time((string) $event['time']) ? (string) $event['time'] : '00:00';
 
@@ -31,19 +60,40 @@ $events = array_values(
 				}
 			}
 
-			if ($hood_qs !== '') {
+			if (!empty($active_hoods)) {
 				$event_hood = isset($event['hood']) ? (string) $event['hood'] : '';
-				if (0 !== strcasecmp(trim($event_hood), trim($hood_qs))) {
+				$hood_match = false;
+				foreach ($active_hoods as $hood_key) {
+					if (0 === strcasecmp(trim($event_hood), trim($hood_key))) {
+						$hood_match = true;
+						break;
+					}
+				}
+				if (!$hood_match) {
 					return false;
 				}
 			}
 
-			if ($mood_qs !== '') {
+			if (!empty($active_moods)) {
 				$moods = isset($event['mood']) && is_array($event['mood']) ? array_map('strval', $event['mood']) : array();
 				$moods = array_map(static function ($v) {
 					return sanitize_title($v);
 				}, $moods);
-				if (!in_array(sanitize_title($mood_qs), $moods, true)) {
+				$mood_match = false;
+				foreach ($active_moods as $mood_key) {
+					if (in_array($mood_key, $moods, true)) {
+						$mood_match = true;
+						break;
+					}
+				}
+				if (!$mood_match) {
+					return false;
+				}
+			}
+
+			if (!empty($active_cats)) {
+				$event_cat = isset($event['category']) ? sanitize_title((string) $event['category']) : '';
+				if (!in_array($event_cat, $active_cats, true)) {
 					return false;
 				}
 			}
@@ -85,11 +135,14 @@ if ( $date_qs !== '' && hfx_is_valid_event_date( $date_qs ) ) {
 if ( $quick !== '' ) {
 	$active_filters[] = sprintf( __( 'Quick: %s', 'halifax-now-broadsheet' ), ucfirst( $quick ) );
 }
-if ( $hood_qs !== '' ) {
-	$active_filters[] = sprintf( __( 'Neighbourhood: %s', 'halifax-now-broadsheet' ), $hood_qs );
+if ( ! empty( $active_cats ) ) {
+	$active_filters[] = sprintf( __( 'Category: %s', 'halifax-now-broadsheet' ), implode( ', ', $active_cats ) );
 }
-if ( $mood_qs !== '' ) {
-	$active_filters[] = sprintf( __( 'Mood: %s', 'halifax-now-broadsheet' ), $mood_qs );
+if ( ! empty( $active_hoods ) ) {
+	$active_filters[] = sprintf( __( 'Neighbourhood: %s', 'halifax-now-broadsheet' ), implode( ', ', $active_hoods ) );
+}
+if ( ! empty( $active_moods ) ) {
+	$active_filters[] = sprintf( __( 'Mood: %s', 'halifax-now-broadsheet' ), implode( ', ', $active_moods ) );
 }
 ?>
 <div class="v4-root bbr-root hfx-browse" data-hfx-browse data-quick="<?php echo esc_attr($quick); ?>" data-date-filter="<?php echo esc_attr($date_qs); ?>">
@@ -107,6 +160,24 @@ if ( $mood_qs !== '' ) {
 			<button class="bbr-chip" data-hfx-quick="weekend"><?php esc_html_e('Weekend', 'halifax-now-broadsheet'); ?></button>
 			<button class="bbr-chip" data-hfx-quick="free"><?php esc_html_e('Free', 'halifax-now-broadsheet'); ?></button>
 			<button class="bbr-chip" data-hfx-clear><?php esc_html_e('Clear', 'halifax-now-broadsheet'); ?></button>
+		</div>
+		<div class="bbr-filter-section" data-hfx-filter-group="category">
+			<span class="bbr-filter-label"><?php esc_html_e('Category', 'halifax-now-broadsheet'); ?></span>
+			<?php foreach ($available_categories as $cat_key => $cat_label) : ?>
+				<button class="bbr-chip<?php echo in_array($cat_key, $active_cats, true) ? ' on' : ''; ?>" type="button" data-hfx-filter="category" data-value="<?php echo esc_attr($cat_key); ?>"><?php echo esc_html($cat_label); ?></button>
+			<?php endforeach; ?>
+		</div>
+		<div class="bbr-filter-section" data-hfx-filter-group="mood">
+			<span class="bbr-filter-label"><?php esc_html_e('Mood', 'halifax-now-broadsheet'); ?></span>
+			<?php foreach ($available_moods as $mood_key => $mood_label) : ?>
+				<button class="bbr-chip<?php echo in_array($mood_key, $active_moods, true) ? ' on' : ''; ?>" type="button" data-hfx-filter="mood" data-value="<?php echo esc_attr($mood_key); ?>"><?php echo esc_html($mood_label); ?></button>
+			<?php endforeach; ?>
+		</div>
+		<div class="bbr-filter-section" data-hfx-filter-group="hood">
+			<span class="bbr-filter-label"><?php esc_html_e('Neighbourhood', 'halifax-now-broadsheet'); ?></span>
+			<?php foreach ($available_hoods as $hood_key) : ?>
+				<button class="bbr-chip<?php echo in_array($hood_key, $active_hoods, true) ? ' on' : ''; ?>" type="button" data-hfx-filter="hood" data-value="<?php echo esc_attr($hood_key); ?>"><?php echo esc_html($hood_key); ?></button>
+			<?php endforeach; ?>
 		</div>
 		<div class="bbr-filter-section">
 			<span class="bbr-filter-label"><?php esc_html_e('Search', 'halifax-now-broadsheet'); ?></span>
@@ -144,6 +215,9 @@ if ( $mood_qs !== '' ) {
 					data-price="<?php echo esc_attr($event['price']); ?>"
 					data-title="<?php echo esc_attr(strtolower($event['title'])); ?>"
 					data-venue="<?php echo esc_attr(strtolower($event['venue'])); ?>"
+					data-category="<?php echo esc_attr(sanitize_title((string) ($event['category'] ?? ''))); ?>"
+					data-hood="<?php echo esc_attr((string) ($event['hood'] ?? '')); ?>"
+					data-moods="<?php echo esc_attr(implode(',', array_map('sanitize_title', is_array($event['mood']) ? $event['mood'] : array()))); ?>"
 				>
 					<div class="v4-item-date bbr-item-time">
 						<div class="n"><?php echo esc_html(date_i18n('j', strtotime($event['date']))); ?></div>

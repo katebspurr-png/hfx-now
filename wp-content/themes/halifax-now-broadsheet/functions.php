@@ -55,7 +55,7 @@ function hfx_event_category_label( array $e ) {
 function hfx_broadsheet_enqueue_assets() {
 	wp_enqueue_style(
 		'hfx-broadsheet-fonts',
-		'https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Source+Serif+4:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;500;700&display=swap',
+		'https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Source+Serif+4:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;500;700&display=swap',
 		array(),
 		null
 	);
@@ -88,11 +88,58 @@ function hfx_broadsheet_enqueue_assets() {
 		array(
 			'events'    => hfx_get_events_payload(120),
 			'now'       => current_time('mysql'),
-			'browseUrl' => home_url('/browse/'),
+			'browseUrl' => hfx_events_base_url(),
 		)
 	);
+
+	if ( is_page_template( 'page-map.php' ) || is_page( 'map' ) ) {
+		wp_enqueue_style(
+			'hfx-leaflet-css',
+			'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+			array(),
+			'1.9.4'
+		);
+		wp_enqueue_script(
+			'hfx-leaflet-js',
+			'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+			array(),
+			'1.9.4',
+			true
+		);
+	}
 }
 add_action('wp_enqueue_scripts', 'hfx_broadsheet_enqueue_assets');
+
+/**
+ * Canonical listing route.
+ *
+ * @return string
+ */
+function hfx_events_base_url() {
+	return home_url('/events/');
+}
+
+/**
+ * Canonicalize event URL to /events/{slug}.
+ *
+ * @param string $url Raw permalink.
+ * @return string
+ */
+function hfx_canonical_event_url( $url ) {
+	$url = is_string( $url ) ? $url : '';
+	return str_replace( '/event/', '/events/', $url );
+}
+
+/**
+ * Canonicalize venue URL to /venues/{slug}.
+ *
+ * @param string $url Raw permalink.
+ * @return string
+ */
+function hfx_canonical_venue_url( $url ) {
+	$url = is_string( $url ) ? $url : '';
+	return str_replace( '/venue/', '/venues/', $url );
+}
 
 /**
  * Render browse template when slug is requested but WP page mapping is missing.
@@ -108,10 +155,11 @@ function hfx_maybe_render_virtual_browse_page() {
 	$request_path = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
 	$request_path = (string) parse_url( $request_path, PHP_URL_PATH );
 	$request_path = trim( $request_path, '/' );
-	$browse_path  = (string) parse_url( home_url( '/browse/' ), PHP_URL_PATH );
-	$browse_path  = trim( $browse_path, '/' );
+	$browse_path  = trim( (string) parse_url( home_url( '/browse/' ), PHP_URL_PATH ), '/' );
+	$events_path  = trim( (string) parse_url( hfx_events_base_url(), PHP_URL_PATH ), '/' );
+	$known_paths = array_filter(array($browse_path, $events_path));
 
-	if ( '' === $request_path || $request_path !== $browse_path ) {
+	if ( '' === $request_path || ! in_array( $request_path, $known_paths, true ) ) {
 		return;
 	}
 
@@ -126,6 +174,75 @@ function hfx_maybe_render_virtual_browse_page() {
 	exit;
 }
 add_action( 'template_redirect', 'hfx_maybe_render_virtual_browse_page', 0 );
+
+/**
+ * Redirect legacy /browse/ route to canonical /events/.
+ */
+function hfx_redirect_legacy_browse_route() {
+	$request_path = isset($_SERVER['REQUEST_URI']) ? (string) wp_unslash($_SERVER['REQUEST_URI']) : '';
+	$request_path = (string) parse_url($request_path, PHP_URL_PATH);
+	if (trim($request_path, '/') !== 'browse') {
+		return;
+	}
+	$query = isset($_SERVER['QUERY_STRING']) && is_string($_SERVER['QUERY_STRING']) ? trim($_SERVER['QUERY_STRING']) : '';
+	$target = hfx_events_base_url();
+	if ($query !== '') {
+		$target .= '?' . $query;
+	}
+	wp_safe_redirect($target, 301);
+	exit;
+}
+add_action('template_redirect', 'hfx_redirect_legacy_browse_route', 1);
+
+/**
+ * Serve event/venue canonical routes without requiring rewrite flush.
+ */
+function hfx_maybe_render_virtual_entity_pages() {
+	if (!is_404()) {
+		return;
+	}
+	$request_path = isset($_SERVER['REQUEST_URI']) ? (string) wp_unslash($_SERVER['REQUEST_URI']) : '';
+	$request_path = trim((string) parse_url($request_path, PHP_URL_PATH), '/');
+	$parts = explode('/', $request_path);
+	if (count($parts) !== 2) {
+		return;
+	}
+	list($segment, $slug) = $parts;
+	$slug = sanitize_title($slug);
+	if ($slug === '') {
+		return;
+	}
+	$template = '';
+	$post_type = '';
+	if ($segment === 'events') {
+		$post_type = 'tribe_events';
+		$template = locate_template('single-event.php');
+	} elseif ($segment === 'venues') {
+		$post_type = 'tribe_venue';
+		$template = locate_template('single-tribe_venue.php');
+	}
+	if ($post_type === '' || $template === '') {
+		return;
+	}
+	$entity = get_page_by_path($slug, OBJECT, $post_type);
+	if (!$entity instanceof WP_Post) {
+		return;
+	}
+	global $post, $wp_query;
+	$post = $entity;
+	setup_postdata($post);
+	$wp_query->is_404 = false;
+	$wp_query->is_singular = true;
+	$wp_query->is_single = true;
+	$wp_query->queried_object = $post;
+	$wp_query->queried_object_id = (int) $post->ID;
+	status_header(200);
+	nocache_headers();
+	include $template;
+	wp_reset_postdata();
+	exit;
+}
+add_action('template_redirect', 'hfx_maybe_render_virtual_entity_pages', 2);
 
 /**
  * Handoff §08 — REST: normalized events for headless or external clients.
@@ -180,19 +297,56 @@ function hfx_handle_submit_event_form() {
 	$price = isset($_POST['event_price']) ? sanitize_text_field(wp_unslash($_POST['event_price'])) : '';
 	$blurb = isset($_POST['event_blurb']) ? sanitize_textarea_field(wp_unslash($_POST['event_blurb'])) : '';
 	$contact = isset($_POST['event_contact']) ? sanitize_text_field(wp_unslash($_POST['event_contact'])) : '';
+	$category = isset($_POST['event_category']) ? sanitize_title(wp_unslash($_POST['event_category'])) : '';
+	$hood = isset($_POST['event_neighbourhood']) ? sanitize_text_field(wp_unslash($_POST['event_neighbourhood'])) : '';
+	$moods = isset($_POST['event_moods']) && is_array($_POST['event_moods']) ? array_map('sanitize_title', array_map('wp_unslash', $_POST['event_moods'])) : array();
 
 	$admin_email = get_option('admin_email');
 	$subject     = sprintf(__('New Event Submission: %s', 'halifax-now-broadsheet'), $title);
 	$message     = sprintf(
-		"Title: %s\nVenue: %s\nDate: %s\nTime: %s\nPrice: %s\nContact: %s\n\nDetails:\n%s",
+		"Title: %s\nVenue: %s\nDate: %s\nTime: %s\nPrice: %s\nCategory: %s\nNeighbourhood: %s\nMoods: %s\nContact: %s\n\nDetails:\n%s",
 		$title,
 		$venue,
 		$date,
 		$time,
 		$price,
+		$category,
+		$hood,
+		implode(', ', $moods),
 		$contact,
 		$blurb
 	);
+
+	$post_type = post_type_exists('tribe_events') ? 'tribe_events' : 'post';
+	$new_post_id = wp_insert_post(
+		array(
+			'post_type' => $post_type,
+			'post_status' => 'pending',
+			'post_title' => $title,
+			'post_content' => $blurb,
+			'post_excerpt' => hfx_event_str_clip($blurb, 140),
+		),
+		true
+	);
+	if (!is_wp_error($new_post_id) && $new_post_id > 0) {
+		update_post_meta($new_post_id, 'hfx_neighbourhood', $hood);
+		update_post_meta($new_post_id, 'hfx_moods', $moods);
+		update_post_meta($new_post_id, 'hfx_short_blurb', hfx_event_str_clip($blurb, 90));
+		update_post_meta($new_post_id, 'hfx_editor_blurb', $blurb);
+		update_post_meta($new_post_id, '_hfx_submit_contact', $contact);
+		update_post_meta($new_post_id, '_hfx_submit_venue_name', $venue);
+		if ($date !== '') {
+			$start = trim($date . ' ' . ($time !== '' ? $time : '00:00') . ':00');
+			update_post_meta($new_post_id, '_EventStartDate', $start);
+			update_post_meta($new_post_id, '_EventEndDate', $start);
+		}
+		if ($price !== '') {
+			update_post_meta($new_post_id, '_EventCost', $price);
+		}
+		if ($category !== '' && taxonomy_exists('tribe_events_cat')) {
+			wp_set_object_terms($new_post_id, array($category), 'tribe_events_cat', false);
+		}
+	}
 
 	wp_mail($admin_email, $subject, $message);
 
@@ -377,6 +531,20 @@ function hfx_is_valid_event_date( $value ) {
 	}
 	$dt = DateTimeImmutable::createFromFormat( '!Y-m-d', $value, wp_timezone() );
 	return ( $dt instanceof DateTimeImmutable ) && $dt->format( 'Y-m-d' ) === $value;
+}
+
+/**
+ * Reject epoch-like / implausible dates in payload.
+ *
+ * @param string $value Date candidate.
+ * @return bool
+ */
+function hfx_is_plausible_event_date( $value ) {
+	if ( ! hfx_is_valid_event_date( $value ) ) {
+		return false;
+	}
+	$year = (int) substr( (string) $value, 0, 4 );
+	return $year >= 2000 && $year <= 2100;
 }
 
 /**
@@ -567,6 +735,50 @@ function hfx_event_apply_hue_variation( $hue, $seed = '' ) {
 }
 
 /**
+ * Best-effort latitude/longitude for an event.
+ *
+ * @param int $post_id Event post ID.
+ * @param int $venue_id Venue post ID.
+ * @return array{lat: float|null, lng: float|null}
+ */
+function hfx_event_lat_lng( $post_id, $venue_id = 0 ) {
+	$post_id = (int) $post_id;
+	$venue_id = (int) $venue_id;
+	$lat = null;
+	$lng = null;
+	$candidates = array_filter(array($post_id, $venue_id));
+	foreach ($candidates as $id) {
+		$maybe_lat = get_post_meta((int) $id, '_VenueLat', true);
+		$maybe_lng = get_post_meta((int) $id, '_VenueLng', true);
+		if ($maybe_lat === '' || $maybe_lat === null) {
+			$maybe_lat = get_post_meta((int) $id, '_EventLatitude', true);
+		}
+		if ($maybe_lng === '' || $maybe_lng === null) {
+			$maybe_lng = get_post_meta((int) $id, '_EventLongitude', true);
+		}
+		if (is_numeric($maybe_lat) && is_numeric($maybe_lng)) {
+			$lat = (float) $maybe_lat;
+			$lng = (float) $maybe_lng;
+			break;
+		}
+	}
+	if ($lat === null && function_exists('tribe_get_coordinates')) {
+		$coords = tribe_get_coordinates($post_id);
+		if (is_array($coords) && isset($coords['lat'], $coords['lng']) && is_numeric($coords['lat']) && is_numeric($coords['lng'])) {
+			$lat = (float) $coords['lat'];
+			$lng = (float) $coords['lng'];
+		}
+	}
+	if ($lat === null || $lng === null) {
+		return array('lat' => null, 'lng' => null);
+	}
+	if ($lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) {
+		return array('lat' => null, 'lng' => null);
+	}
+	return array('lat' => $lat, 'lng' => $lng);
+}
+
+/**
  * Convert event post to frontend payload (aligns with Halifax ECP spec / JSON contract).
  *
  * @param int $post_id Post ID.
@@ -575,7 +787,7 @@ function hfx_event_apply_hue_variation( $hue, $seed = '' ) {
 function hfx_event_to_payload($post_id) {
 	$post_id = (int) $post_id;
 	$title   = get_the_title($post_id);
-	$link    = get_permalink($post_id);
+	$link    = hfx_canonical_event_url((string) get_permalink($post_id));
 
 	$category     = '';
 	$category_slug = '';
@@ -597,6 +809,7 @@ function hfx_event_to_payload($post_id) {
 	if (!$venue_n && function_exists('tribe_get_venue')) {
 		$venue_n = tribe_get_venue($post_id);
 	}
+	$coords = hfx_event_lat_lng($post_id, (int) $venue);
 
 	$address = get_post_meta($post_id, '_EventVenueAddress', true);
 	$city    = get_post_meta($post_id, '_EventVenueCity', true);
@@ -625,13 +838,17 @@ function hfx_event_to_payload($post_id) {
 	}
 
 	// Guardrails: malformed source values must not appear as valid schedule data.
-	if ( ! hfx_is_valid_event_date( (string) $date ) ) {
+	if ( ! hfx_is_plausible_event_date( (string) $date ) ) {
 		$date = '';
 	}
 	if ( ! hfx_is_valid_event_time( (string) $time ) ) {
 		$time = '';
 	}
 	if ( ! hfx_is_valid_event_time( (string) $end_time ) ) {
+		$end_time = '';
+	}
+	if ($date === '') {
+		$time = '';
 		$end_time = '';
 	}
 
@@ -753,6 +970,8 @@ function hfx_event_to_payload($post_id) {
 		'mood'           => $moods,
 		'organizer'      => $organizer,
 		'ticketUrl'      => $ticket_url,
+		'lat'            => $coords['lat'],
+		'lng'            => $coords['lng'],
 	);
 
 	return $out;
@@ -874,7 +1093,8 @@ function hfx_get_events_payload($limit = 100) {
 	$events = array();
 
 	foreach ($posts as $post) {
-		$events[] = hfx_event_to_payload($post->ID);
+		$payload = hfx_event_to_payload($post->ID);
+		$events[] = $payload;
 	}
 
 	set_transient( $transient_key, $events, 5 * MINUTE_IN_SECONDS );

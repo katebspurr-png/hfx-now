@@ -58,10 +58,30 @@
       browseRoot.querySelectorAll("[data-hfx-quick]")
     );
     const clearButton = browseRoot.querySelector("[data-hfx-clear]");
+    const filterButtons = Array.from(
+      browseRoot.querySelectorAll("[data-hfx-filter]")
+    );
 
     let activeQuick = browseRoot.dataset.quick || "";
     let activeDate = browseRoot.dataset.dateFilter || "";
     let searchTerm = "";
+    const selected = {
+      category: new Set(
+        filterButtons
+          .filter((btn) => btn.classList.contains("on") && btn.dataset.hfxFilter === "category")
+          .map((btn) => (btn.dataset.value || "").toLowerCase())
+      ),
+      mood: new Set(
+        filterButtons
+          .filter((btn) => btn.classList.contains("on") && btn.dataset.hfxFilter === "mood")
+          .map((btn) => (btn.dataset.value || "").toLowerCase())
+      ),
+      hood: new Set(
+        filterButtons
+          .filter((btn) => btn.classList.contains("on") && btn.dataset.hfxFilter === "hood")
+          .map((btn) => btn.dataset.value || "")
+      ),
+    };
 
     const render = function () {
       const now = nowDate();
@@ -73,7 +93,26 @@
         const quickMatch = matchesQuickFilter(row, activeQuick, now);
         const dateMatch = !activeDate || row.dataset.date === activeDate;
         const searchMatch = !searchTerm || searchable.includes(searchTerm);
-        const visible = quickMatch && dateMatch && searchMatch;
+        const cat = (row.dataset.category || "").toLowerCase();
+        const hood = row.dataset.hood || "";
+        const rowMoods = (row.dataset.moods || "")
+          .split(",")
+          .map((m) => m.trim().toLowerCase())
+          .filter(Boolean);
+        const categoryMatch =
+          selected.category.size === 0 || selected.category.has(cat);
+        const hoodMatch =
+          selected.hood.size === 0 || selected.hood.has(hood);
+        const moodMatch =
+          selected.mood.size === 0 ||
+          rowMoods.some((m) => selected.mood.has(m));
+        const visible =
+          quickMatch &&
+          dateMatch &&
+          searchMatch &&
+          categoryMatch &&
+          hoodMatch &&
+          moodMatch;
         row.hidden = !visible;
         if (visible) visibleCount += 1;
       });
@@ -100,6 +139,10 @@
         activeQuick = "";
         activeDate = "";
         searchTerm = "";
+        selected.category.clear();
+        selected.mood.clear();
+        selected.hood.clear();
+        filterButtons.forEach((btn) => btn.classList.remove("on"));
         if (searchInput) searchInput.value = "";
         render();
       });
@@ -111,6 +154,22 @@
         render();
       });
     }
+
+    filterButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const group = button.dataset.hfxFilter;
+        const value = (button.dataset.value || "").trim();
+        if (!group || !value || !selected[group]) return;
+        if (selected[group].has(value)) {
+          selected[group].delete(value);
+          button.classList.remove("on");
+        } else {
+          selected[group].add(value);
+          button.classList.add("on");
+        }
+        render();
+      });
+    });
 
     render();
   }
@@ -136,7 +195,7 @@
     button.addEventListener("click", function () {
       const q = input.value.trim();
       const base =
-        data.browseUrl || `${window.location.origin}/browse/`;
+        data.browseUrl || `${window.location.origin}/events/`;
       if (!q) {
         window.location.href = base;
         return;
@@ -147,29 +206,60 @@
 
   function renderMapPins() {
     const mapRoot = document.querySelector("[data-hfx-map-canvas]");
-    if (!mapRoot || !events.length) return;
+    if (!mapRoot || typeof window.L === "undefined") return;
 
-    // Relative pseudo coordinates for Halifax neighborhoods.
-    const hoodCoords = {
-      Halifax: { x: 55, y: 45 },
-      Downtown: { x: 60, y: 55 },
-      Dartmouth: { x: 75, y: 50 },
-      "North End": { x: 45, y: 35 },
-      "South End": { x: 58, y: 70 },
-      Bedford: { x: 32, y: 20 },
-    };
+    const withCoords = events.filter(
+      (event) =>
+        typeof event.lat === "number" &&
+        typeof event.lng === "number" &&
+        Number.isFinite(event.lat) &&
+        Number.isFinite(event.lng)
+    );
 
-    events.slice(0, 80).forEach((event, index) => {
-      const point = hoodCoords[event.hood] || hoodCoords.Halifax;
-      const jitter = (index % 7) - 3;
-      const pin = document.createElement("a");
-      pin.className = "hfx-map-pin";
-      pin.href = event.url || "#";
-      pin.title = event.title || "Event";
-      pin.style.left = `calc(${point.x}% + ${jitter * 2}px)`;
-      pin.style.top = `calc(${point.y}% + ${jitter * 2}px)`;
-      mapRoot.appendChild(pin);
+    const map = window.L.map(mapRoot, {
+      center: [44.649, -63.575],
+      zoom: 13,
+      scrollWheelZoom: false,
     });
+
+    window.L.tileLayer(
+      "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+      { subdomains: "abcd", maxZoom: 19 }
+    ).addTo(map);
+
+    if (!withCoords.length) {
+      return;
+    }
+
+    const bounds = [];
+    withCoords.forEach((event) => {
+      const hue = Number.isFinite(event.hue) ? event.hue : 210;
+      const isPick = Boolean(event.critic);
+      const markerHtml = `<div class="hfx-leaflet-pin${
+        isPick ? " pick" : ""
+      }" style="${isPick ? "" : `--pin-hue:${Math.round(hue)};`}">${
+        isPick ? "★" : ""
+      }</div>`;
+      const marker = window.L.marker([event.lat, event.lng], {
+        icon: window.L.divIcon({
+          className: "hfx-leaflet-icon",
+          html: markerHtml,
+          iconSize: isPick ? [28, 28] : [22, 22],
+          iconAnchor: isPick ? [14, 14] : [11, 11],
+        }),
+      });
+      marker.bindPopup(
+        `<strong>${event.title || "Event"}</strong><br>${event.venue || ""}<br>${
+          event.time || ""
+        } · ${event.priceLabel || ""}`
+      );
+      marker.addTo(map);
+      bounds.push([event.lat, event.lng]);
+    });
+
+    if (bounds.length > 1) {
+      map.fitBounds(bounds, { padding: [24, 24] });
+    }
   }
 
   document.addEventListener("DOMContentLoaded", function () {

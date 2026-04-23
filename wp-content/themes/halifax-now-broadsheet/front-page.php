@@ -22,7 +22,7 @@ $picks        = array_values(array_filter($events, static function ($event) {
 	return !empty($event['pick']);
 }));
 $picks        = array_slice($picks, 0, 5);
-$browse_url   = home_url('/browse/');
+$browse_url   = hfx_events_base_url();
 $map_url      = home_url('/map/');
 $venues_url   = home_url('/venues/');
 $submit_url   = home_url('/submit/');
@@ -231,7 +231,7 @@ $has_heat_data = $total_heat_count > 0;
 					<div class="hfx-rightnow-copy"><strong><?php echo esc_html(count($tonight)); ?> <?php esc_html_e('events', 'halifax-now-broadsheet'); ?></strong> <?php esc_html_e('tonight. Sunset 8:07pm. Bring a layer.', 'halifax-now-broadsheet'); ?></div>
 				</div>
 
-				<button class="hfx-surprise-btn" data-hfx-surprise>🎲 <?php esc_html_e('Surprise me', 'halifax-now-broadsheet'); ?> →</button>
+				<button class="hfx-surprise-btn" data-hfx-surprise><span class="hfx-dice-icon" aria-hidden="true"></span><?php esc_html_e('Surprise me', 'halifax-now-broadsheet'); ?> →</button>
 
 				<div class="hfx-home-card">
 					<div class="hfx-home-card-hd"><?php esc_html_e('The neighbourhoods', 'halifax-now-broadsheet'); ?></div>
@@ -246,16 +246,19 @@ $has_heat_data = $total_heat_count > 0;
 					<div class="hfx-home-card-hd"><?php esc_html_e('Busy nights · Next 2 weeks', 'halifax-now-broadsheet'); ?></div>
 					<div class="hfx-heatstrip">
 						<?php foreach ($heat_days as $day) : ?>
-							<?php $shade = (int) round(50 + (170 * ($day['count'] / $max_heat))); ?>
+							<?php
+							$opacity = $has_heat_data ? (0.15 + (0.85 * ((int) $day['count'] / (int) $max_heat))) : 0.15;
+							$opacity = max(0.15, min(1.0, $opacity));
+							$opacity_str = number_format($opacity, 2, '.', '');
+							?>
 							<?php
 							$heat_classes = 'hfx-heat-day';
 							$heat_classes .= $day['count'] > 0 ? ' has-events' : ' is-empty';
 							$heat_classes .= $day['key'] === $today_ymd ? ' is-today' : '';
 							?>
-							<a class="<?php echo esc_attr($heat_classes); ?>" href="<?php echo esc_url($browse_url . '?date=' . rawurlencode($day['key'])); ?>" style="background-color: rgb(80, 96, <?php echo esc_attr((string) $shade); ?>);" aria-label="<?php echo esc_attr(sprintf(__('%1$s %2$s: %3$d events', 'halifax-now-broadsheet'), $day['dow'], $day['label'], (int) $day['count'])); ?>">
+							<a class="<?php echo esc_attr($heat_classes); ?>" href="<?php echo esc_url($browse_url . '?date=' . rawurlencode($day['key'])); ?>" style="background-color: rgba(15, 15, 15, <?php echo esc_attr($opacity_str); ?>);" aria-label="<?php echo esc_attr(sprintf(__('%1$s %2$s: %3$d events', 'halifax-now-broadsheet'), $day['dow'], $day['label'], (int) $day['count'])); ?>">
 								<span class="dow"><?php echo esc_html(substr($day['dow'], 0, 1)); ?></span>
 								<span class="day"><?php echo esc_html($day['label']); ?></span>
-								<span class="ct"><?php echo esc_html((string) $day['count']); ?></span>
 							</a>
 						<?php endforeach; ?>
 					</div>
