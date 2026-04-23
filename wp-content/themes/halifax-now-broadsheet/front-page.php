@@ -38,22 +38,35 @@ for ($i = 0; $i < 14; $i++) {
 		'count' => 0,
 	);
 }
+$heat_keys = array_fill_keys(array_column($heat_days, 'key'), true);
 foreach ($events as $event) {
 	if (empty($event['date'])) {
 		continue;
 	}
+	$event_date = (string) $event['date'];
+	$date_obj   = DateTimeImmutable::createFromFormat('Y-m-d', $event_date);
+	if (!$date_obj || $date_obj->format('Y-m-d') !== $event_date) {
+		continue;
+	}
+	if (!isset($heat_keys[$event_date])) {
+		continue;
+	}
 	foreach ($heat_days as $idx => $day) {
-		if ($day['key'] === $event['date']) {
+		if ($day['key'] === $event_date) {
 			$heat_days[$idx]['count']++;
+			break;
 		}
 	}
 }
 $max_heat = 1;
+$total_heat_count = 0;
 foreach ($heat_days as $day) {
 	if ($day['count'] > $max_heat) {
 		$max_heat = $day['count'];
 	}
+	$total_heat_count += (int) $day['count'];
 }
+$has_heat_data = $total_heat_count > 0;
 ?>
 <div class="v4-root">
 	<header class="v4-mast">
@@ -200,7 +213,9 @@ foreach ($heat_days as $day) {
 							</a>
 						<?php endforeach; ?>
 					</div>
-					<div class="hfx-heat-legend"><?php esc_html_e('Darker = busier', 'halifax-now-broadsheet'); ?></div>
+					<div class="hfx-heat-legend">
+						<?php echo esc_html($has_heat_data ? __('Darker = busier', 'halifax-now-broadsheet') : __('No dated events in next 2 weeks', 'halifax-now-broadsheet')); ?>
+					</div>
 				</div>
 
 				<div class="hfx-map-card">

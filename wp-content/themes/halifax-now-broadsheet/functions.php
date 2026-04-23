@@ -294,6 +294,49 @@ function hfx_event_recurring_label( $post_id, $is_recurring ) {
 }
 
 /**
+ * Parse TEC datetime meta to a Unix timestamp.
+ *
+ * @param int              $post_id   Post ID.
+ * @param array<int,string> $meta_keys Ordered candidate meta keys.
+ * @return int|null
+ */
+function hfx_event_meta_timestamp( $post_id, $meta_keys ) {
+	$post_id = (int) $post_id;
+	foreach ( $meta_keys as $key ) {
+		$raw = (string) get_post_meta( $post_id, (string) $key, true );
+		if ( '' === trim( $raw ) ) {
+			continue;
+		}
+		$raw = html_entity_decode( wp_strip_all_tags( $raw ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		$raw = preg_replace( '/\s+/', ' ', trim( $raw ) );
+		if ( ! is_string( $raw ) || '' === $raw ) {
+			continue;
+		}
+
+		$ts = strtotime( $raw );
+		if ( false !== $ts ) {
+			return (int) $ts;
+		}
+
+		if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $raw ) ) {
+			$ts = strtotime( $raw . ' 00:00:00' );
+			if ( false !== $ts ) {
+				return (int) $ts;
+			}
+		}
+
+		if ( preg_match( '/^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})(:\d{2})?$/', $raw, $m ) ) {
+			$norm = $m[1] . ' ' . $m[2] . ( isset( $m[3] ) ? $m[3] : ':00' );
+			$ts   = strtotime( $norm );
+			if ( false !== $ts ) {
+				return (int) $ts;
+			}
+		}
+	}
+	return null;
+}
+
+/**
  * Convert event post to frontend payload (aligns with Halifax ECP spec / JSON contract).
  *
  * @param int $post_id Post ID.
@@ -333,23 +376,20 @@ function hfx_event_to_payload($post_id) {
 		$hood = trim($hood_acf);
 	}
 
-	$start_meta = get_post_meta($post_id, '_EventStartDate', true);
-	$end_meta   = get_post_meta($post_id, '_EventEndDate', true);
-	$time       = '';
-	$end_time   = '';
-	$date       = '';
-	if ($start_meta) {
-		$timestamp = strtotime($start_meta);
-		$date      = $timestamp ? gmdate('Y-m-d', $timestamp) : '';
-		$time      = $timestamp ? gmdate('H:i', $timestamp) : '';
+	$time     = '';
+	$end_time = '';
+	$date     = '';
+	$start_ts = hfx_event_meta_timestamp( $post_id, array( '_EventStartDate', '_EventStartDateUTC' ) );
+	if ( null !== $start_ts ) {
+		$date = function_exists( 'wp_date' ) ? wp_date( 'Y-m-d', $start_ts, wp_timezone() ) : gmdate( 'Y-m-d', $start_ts );
+		$time = function_exists( 'wp_date' ) ? wp_date( 'H:i', $start_ts, wp_timezone() ) : gmdate( 'H:i', $start_ts );
 	} else {
-		$date = get_the_date('Y-m-d', $post_id);
+		$date = get_post_time( 'Y-m-d', false, $post_id );
+		$time = get_post_time( 'H:i', false, $post_id );
 	}
-	if (!empty($end_meta)) {
-		$e_ts = strtotime($end_meta);
-		if ($e_ts) {
-			$end_time = gmdate('H:i', $e_ts);
-		}
+	$end_ts = hfx_event_meta_timestamp( $post_id, array( '_EventEndDate', '_EventEndDateUTC' ) );
+	if ( null !== $end_ts ) {
+		$end_time = function_exists( 'wp_date' ) ? wp_date( 'H:i', $end_ts, wp_timezone() ) : gmdate( 'H:i', $end_ts );
 	}
 
 	$price = '';
