@@ -6,18 +6,82 @@ on:
     paths:
       - "wp-content/themes/halifax-now-broadsheet/**"
       - ".github/workflows/deploy-theme-plesk.yml"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run rsync in dry-run mode"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
+      force_delete:
+        description: "Allow deleting remote files not present locally"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
+
+concurrency:
+  group: deploy-theme-plesk
+  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          for s in PLESK_THEME_PATH PLESK_SSH_HOST PLESK_SSH_USER PLESK_SSH_KEY PLESK_SSH_PORT; do
+            if [ -z "${{ secrets[s] }}" ]; then
+              echo "Missing required secret: $s"
+              exit 1
+            fi
+          done
+
+      - name: Build rsync switches
+        id: rsync_flags
+        shell: bash
+        run: |
+          set -euo pipefail
+          FLAGS="-avzr --exclude=.git --exclude=.github"
+
+          # Only delete when explicitly allowed in manual dispatch
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.force_delete }}" == "true" ]]; then
+            FLAGS="$FLAGS --delete"
+          fi
+
+          # Optional dry-run for manual runs
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.dry_run }}" == "true" ]]; then
+            FLAGS="$FLAGS --dry-run"
+          fi
+
+          echo "flags=$FLAGS" >> "$GITHUB_OUTPUT"
+          echo "Using rsync flags: $FLAGS"
+
+      - name: Safety check remote path
+        shell: bash
+        run: |
+          set -euo pipefail
+          RP="${{ secrets.PLESK_THEME_PATH }}"
+          # Basic guardrails against dangerous targets
+          if [[ -z "$RP" || "$RP" == "/" || "$RP" == "/var/www" || "$RP" == "/home" ]]; then
+            echo "Unsafe PLESK_THEME_PATH: '$RP'"
+            exit 1
+          fi
+
       - name: Deploy theme via rsync over SSH
         uses: burnett01/rsync-deployments@7.0.2
         with:
-          switches: -avzr --delete --exclude=".git" --exclude=".github"
+          switches: ${{ steps.rsync_flags.outputs.flags }}
           path: wp-content/themes/halifax-now-broadsheet/
           remote_path: ${{ secrets.PLESK_THEME_PATH }}/
           remote_host: ${{ secrets.PLESK_SSH_HOST }}
