@@ -7,9 +7,14 @@
 
 get_header();
 
-$events       = hfx_get_events_payload(80);
-$tonight      = array_slice($events, 0, 8);
-$weekend      = array_slice($events, 8, 8);
+$events       = hfx_get_events_payload(120);
+$tz           = wp_timezone();
+$now          = current_datetime();
+$today_ymd    = $now->format('Y-m-d');
+$today_start  = DateTimeImmutable::createFromFormat('!Y-m-d', $today_ymd, $tz);
+$upcoming     = array();
+$tonight      = array();
+$weekend      = array();
 $picks        = array_values(array_filter($events, static function ($event) {
 	return !empty($event['pick']);
 }));
@@ -19,38 +24,52 @@ $browse_url   = home_url('/browse/');
 $map_url      = home_url('/map/');
 $venues_url   = home_url('/venues/');
 $submit_url   = home_url('/submit/');
-$lead_tonight = !empty($tonight) ? $tonight[0] : null;
-$rest_tonight = count($tonight) > 1 ? array_slice($tonight, 1) : array();
 $hoods        = array_values(array_unique(array_filter(array_map(static function ($event) {
 	return isset($event['hood']) ? $event['hood'] : '';
 }, $events))));
 sort($hoods);
 
-$today_ymd = current_time('Y-m-d');
 $heat_days = array();
 for ($i = 0; $i < 14; $i++) {
-	$day_ts          = strtotime($today_ymd . ' +' . $i . ' day');
-	$day_key         = gmdate('Y-m-d', $day_ts);
+	$day_dt          = $today_start->modify('+' . $i . ' day');
+	$day_key         = $day_dt->format('Y-m-d');
 	$heat_days[$i]   = array(
 		'key'   => $day_key,
-		'label' => gmdate('j', $day_ts),
-		'dow'   => strtoupper(gmdate('D', $day_ts)),
+		'label' => $day_dt->format('j'),
+		'dow'   => strtoupper($day_dt->format('D')),
 		'count' => 0,
 	);
 }
-$heat_keys = array_fill_keys(array_column($heat_days, 'key'), true);
+
 foreach ($events as $event) {
 	if (empty($event['date'])) {
 		continue;
 	}
 	$event_date = (string) $event['date'];
-	$date_obj   = DateTimeImmutable::createFromFormat('Y-m-d', $event_date);
-	if (!$date_obj || $date_obj->format('Y-m-d') !== $event_date) {
+	$event_time = !empty($event['time']) ? (string) $event['time'] : '00:00';
+	if (1 !== preg_match('/^\d{4}-\d{2}-\d{2}$/', $event_date) || 1 !== preg_match('/^\d{2}:\d{2}$/', $event_time)) {
 		continue;
 	}
-	if (!isset($heat_keys[$event_date])) {
+	$event_dt = DateTimeImmutable::createFromFormat('Y-m-d H:i', $event_date . ' ' . $event_time, $tz);
+	if (!$event_dt || $event_dt->format('Y-m-d') !== $event_date) {
 		continue;
 	}
+
+	$event_day = DateTimeImmutable::createFromFormat('!Y-m-d', $event_date, $tz);
+	if (!$event_day || $event_day < $today_start) {
+		continue;
+	}
+
+	$upcoming[] = $event;
+	if ($event_date === $today_ymd) {
+		$tonight[] = $event;
+	}
+
+	$day_of_week = (int) $event_day->format('w');
+	if (in_array($day_of_week, array(0, 5, 6), true)) {
+		$weekend[] = $event;
+	}
+
 	foreach ($heat_days as $idx => $day) {
 		if ($day['key'] === $event_date) {
 			$heat_days[$idx]['count']++;
@@ -58,6 +77,12 @@ foreach ($events as $event) {
 		}
 	}
 }
+
+$tonight = array_slice($tonight, 0, 8);
+$weekend = array_slice($weekend, 0, 8);
+
+$lead_tonight = !empty($tonight) ? $tonight[0] : null;
+$rest_tonight = count($tonight) > 1 ? array_slice($tonight, 1) : array();
 $max_heat = 1;
 $total_heat_count = 0;
 foreach ($heat_days as $day) {
@@ -206,7 +231,12 @@ $has_heat_data = $total_heat_count > 0;
 					<div class="hfx-heatstrip">
 						<?php foreach ($heat_days as $day) : ?>
 							<?php $shade = (int) round(50 + (170 * ($day['count'] / $max_heat))); ?>
-							<a class="hfx-heat-day" href="<?php echo esc_url($browse_url . '?date=' . rawurlencode($day['key'])); ?>" style="background-color: rgb(80, 96, <?php echo esc_attr((string) $shade); ?>);">
+							<?php
+							$heat_classes = 'hfx-heat-day';
+							$heat_classes .= $day['count'] > 0 ? ' has-events' : ' is-empty';
+							$heat_classes .= $day['key'] === $today_ymd ? ' is-today' : '';
+							?>
+							<a class="<?php echo esc_attr($heat_classes); ?>" href="<?php echo esc_url($browse_url . '?date=' . rawurlencode($day['key'])); ?>" style="background-color: rgb(80, 96, <?php echo esc_attr((string) $shade); ?>);" aria-label="<?php echo esc_attr(sprintf(__('%1$s %2$s: %3$d events', 'halifax-now-broadsheet'), $day['dow'], $day['label'], (int) $day['count'])); ?>">
 								<span class="dow"><?php echo esc_html(substr($day['dow'], 0, 1)); ?></span>
 								<span class="day"><?php echo esc_html($day['label']); ?></span>
 								<span class="ct"><?php echo esc_html((string) $day['count']); ?></span>
