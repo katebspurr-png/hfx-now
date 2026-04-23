@@ -509,6 +509,27 @@ function hfx_pick_event_category_term( $terms ) {
 }
 
 /**
+ * Apply deterministic hue variation so repeated categories do not collapse visually.
+ *
+ * @param int    $hue  Base hue.
+ * @param string $seed Stable event seed.
+ * @return int Degrees 0–359.
+ */
+function hfx_event_apply_hue_variation( $hue, $seed = '' ) {
+	$base_hue = (int) $hue;
+	$base_hue = ( ( $base_hue % 360 ) + 360 ) % 360;
+	$seed     = is_string( $seed ) ? trim( $seed ) : '';
+	if ( '' === $seed ) {
+		return $base_hue;
+	}
+
+	// Offset in roughly [-24, +24] degrees for controlled palette spread.
+	$byte   = hexdec( substr( md5( 'hfx-hue|' . $seed ), 0, 2 ) );
+	$offset = (int) round( ( ( $byte / 255 ) * 48 ) - 24 );
+	return ( $base_hue + $offset + 360 ) % 360;
+}
+
+/**
  * Convert event post to frontend payload (aligns with Halifax ECP spec / JSON contract).
  *
  * @param int $post_id Post ID.
@@ -611,7 +632,8 @@ function hfx_event_to_payload($post_id) {
 
 	$cat_label = $category ? $category : __( 'Events', 'halifax-now-broadsheet' );
 	$cat_key   = $category_slug ? (string) $category_slug : ( $category ? sanitize_title( (string) $category ) : 'events' );
-	$hue       = hfx_event_category_hue( $cat_key, $cat_label, (string) $post_id );
+	$hue_base  = hfx_event_category_hue( $cat_key, $cat_label, (string) $post_id );
+	$hue       = hfx_event_apply_hue_variation( $hue_base, (string) $post_id );
 	$short_acf  = hfx_get_event_field($post_id, 'hfx_short_blurb');
 	$excerpt_p  = (string) get_post_field('post_excerpt', $post_id);
 	$excerpt    = get_the_excerpt($post_id);
