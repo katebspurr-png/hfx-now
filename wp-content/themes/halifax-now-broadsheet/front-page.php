@@ -22,7 +22,6 @@ $picks        = array_values(array_filter($events, static function ($event) {
 	return !empty($event['pick']);
 }));
 $picks        = array_slice($picks, 0, 5);
-$wall         = array_slice($events, 0, 10);
 $browse_url   = home_url('/browse/');
 $map_url      = home_url('/map/');
 $venues_url   = home_url('/venues/');
@@ -83,6 +82,7 @@ foreach ($events as $event) {
 
 $tonight = array_slice($tonight, 0, 8);
 $weekend = array_slice($weekend, 0, 8);
+$wall    = array_slice($upcoming, 0, 10);
 
 $lead_tonight = !empty($tonight) ? $tonight[0] : null;
 $rest_tonight = count($tonight) > 1 ? array_slice($tonight, 1) : array();
