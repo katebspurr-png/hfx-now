@@ -14,6 +14,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Validate required secrets
+        shell: bash
+        env:
+          PLESK_THEME_PATH: ${{ secrets.PLESK_THEME_PATH }}
+          PLESK_SSH_HOST: ${{ secrets.PLESK_SSH_HOST }}
+          PLESK_SSH_USER: ${{ secrets.PLESK_SSH_USER }}
+          PLESK_SSH_KEY: ${{ secrets.PLESK_SSH_KEY }}
+          PLESK_SSH_PORT: ${{ secrets.PLESK_SSH_PORT }}
+        run: |
+          set -euo pipefail
+          for v in PLESK_THEME_PATH PLESK_SSH_HOST PLESK_SSH_USER PLESK_SSH_KEY PLESK_SSH_PORT; do
+            if [ -z "${!v}" ]; then
+              echo "Missing required secret: $v"
+              exit 1
+            fi
+          done
+
       - name: Deploy theme via rsync over SSH
         uses: burnett01/rsync-deployments@7.0.2
         with:
