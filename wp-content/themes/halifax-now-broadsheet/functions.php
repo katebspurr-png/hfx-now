@@ -221,13 +221,8 @@ function hfx_get_event_posts($limit = 100) {
 		'posts_per_page' => $limit,
 		'orderby'        => 'date',
 		'order'          => 'DESC',
+		'no_found_rows'  => true,
 	);
-
-	if (post_type_exists('tribe_events')) {
-		$query_args['meta_key'] = '_EventStartDate';
-		$query_args['orderby']  = 'meta_value';
-		$query_args['order']    = 'ASC';
-	}
 
 	$posts = get_posts($query_args);
 	return is_array($posts) ? $posts : array();
