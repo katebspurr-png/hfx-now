@@ -1102,7 +1102,7 @@ function hfx_get_events_payload($limit = 100) {
 	}
 
 	// Try transient cache (5-minute TTL) to avoid thousands of DB queries per page load.
-	$transient_key = 'hfx_events_payload_' . $limit;
+	$transient_key = 'hfx_events_payload_v2_' . $limit;
 	$cached        = get_transient( $transient_key );
 	if ( false !== $cached ) {
 		$cache[ $limit ] = $cached;
@@ -1141,6 +1141,7 @@ function hfx_get_events_payload($limit = 100) {
 function hfx_clear_events_payload_cache() {
 	foreach ( array( 100, 120, 200, 250, 300, 500 ) as $limit ) {
 		delete_transient( 'hfx_events_payload_' . $limit );
+		delete_transient( 'hfx_events_payload_v2_' . $limit );
 	}
 }
 add_action( 'save_post_tribe_events', 'hfx_clear_events_payload_cache' );
