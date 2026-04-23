@@ -224,18 +224,9 @@ function hfx_get_event_posts($limit = 100) {
 	);
 
 	if (post_type_exists('tribe_events')) {
-		$today_sql = current_datetime()->setTime( 0, 0, 0 )->format( 'Y-m-d H:i:s' );
-		$query_args['meta_key']   = '_EventStartDate';
-		$query_args['orderby']    = 'meta_value';
-		$query_args['order']      = 'ASC';
-		$query_args['meta_query'] = array(
-			array(
-				'key'     => '_EventStartDate',
-				'value'   => $today_sql,
-				'compare' => '>=',
-				'type'    => 'DATETIME',
-			),
-		);
+		$query_args['meta_key'] = '_EventStartDate';
+		$query_args['orderby']  = 'meta_value';
+		$query_args['order']    = 'ASC';
 	}
 
 	$posts = get_posts($query_args);
