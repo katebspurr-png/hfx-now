@@ -953,3 +953,51 @@ function hfx_register_acf_fields() {
 	);
 }
 add_action( 'acf/init', 'hfx_register_acf_fields' );
+/**
+ * Format event date + time as a human label for card display.
+ *
+ * Returns strings like "Tonight · 8pm", "Tomorrow · 2pm", "Sunday · 9am",
+ * "Thu · Apr 23 · 8pm". The CSS class already applies text-transform:uppercase,
+ * so lowercase output here is intentional.
+ *
+ * @param string $date      YYYY-MM-DD event date (may be empty).
+ * @param string $time      HH:MM 24-hour event time (may be empty).
+ * @param string $today_ymd Current date as YYYY-MM-DD.
+ * @return string
+ */
+function hfx_format_event_when( $date, $time, $today_ymd ) {
+	$time_fmt = '';
+	if ( is_string( $time ) && 1 === preg_match( '/^(\d{2}):(\d{2})$/', $time, $m ) ) {
+		$h    = (int) $m[1];
+		$min  = (int) $m[2];
+		$ampm = $h >= 12 ? 'pm' : 'am';
+		$h12  = $h % 12;
+		if ( 0 === $h12 ) {
+			$h12 = 12;
+		}
+		$time_fmt = $min > 0
+			? sprintf( '%d:%02d%s', $h12, $min, $ampm )
+			: sprintf( '%d%s', $h12, $ampm );
+	}
+
+	if ( ! is_string( $date ) || '' === $date ) {
+		return $time_fmt;
+	}
+
+	$today_ts     = (int) strtotime( $today_ymd );
+	$tomorrow_ymd = gmdate( 'Y-m-d', $today_ts + DAY_IN_SECONDS );
+	$event_ts     = (int) strtotime( $date );
+	$diff_days    = (int) round( ( $event_ts - $today_ts ) / DAY_IN_SECONDS );
+
+	if ( $date === $today_ymd ) {
+		$label = 'Tonight';
+	} elseif ( $date === $tomorrow_ymd ) {
+		$label = 'Tomorrow';
+	} elseif ( $diff_days > 0 && $diff_days <= 6 ) {
+		$label = date_i18n( 'l', $event_ts );
+	} else {
+		$label = date_i18n( 'D · M j', $event_ts );
+	}
+
+	return $time_fmt ? $label . ' · ' . $time_fmt : $label;
+}
