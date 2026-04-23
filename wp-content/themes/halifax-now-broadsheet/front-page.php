@@ -261,7 +261,7 @@ $has_heat_data = $total_heat_count > 0;
 
 	<section class="v4-sec">
 		<div class="v4-sec-hd">
-			<div class="h"><?php esc_html_e('The Wall', 'halifax-now-broadsheet'); ?><span class="count">+ <?php echo esc_html(count($wall)); ?> <?php esc_html_e('this week', 'halifax-now-broadsheet'); ?></span></div>
+			<div class="h"><?php esc_html_e('The Wall', 'halifax-now-broadsheet'); ?><span class="count">+ <?php echo esc_html(count($wall)); ?> <?php esc_html_e('upcoming', 'halifax-now-broadsheet'); ?></span></div>
 			<a class="l" href="<?php echo esc_url($browse_url); ?>"><?php esc_html_e('All listings', 'halifax-now-broadsheet'); ?></a>
 		</div>
 		<div class="v4-wall">

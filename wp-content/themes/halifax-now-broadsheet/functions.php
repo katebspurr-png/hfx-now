@@ -794,6 +794,23 @@ function hfx_event_image_e($image_url, $category, $alt, $classes = '', $hue_degr
  * @return array<int, array<string, mixed>>
  */
 function hfx_get_events_payload($limit = 100) {
+	static $cache = array();
+
+	$limit = (int) $limit;
+
+	// Return immediately if already fetched in this request.
+	if ( isset( $cache[ $limit ] ) ) {
+		return $cache[ $limit ];
+	}
+
+	// Try transient cache (5-minute TTL) to avoid thousands of DB queries per page load.
+	$transient_key = 'hfx_events_payload_' . $limit;
+	$cached        = get_transient( $transient_key );
+	if ( false !== $cached ) {
+		$cache[ $limit ] = $cached;
+		return $cached;
+	}
+
 	$posts  = hfx_get_event_posts($limit);
 	$events = array();
 
@@ -801,8 +818,23 @@ function hfx_get_events_payload($limit = 100) {
 		$events[] = hfx_event_to_payload($post->ID);
 	}
 
+	set_transient( $transient_key, $events, 5 * MINUTE_IN_SECONDS );
+	$cache[ $limit ] = $events;
 	return $events;
 }
+
+/**
+ * Clear all hfx_events_payload transients so the next request rebuilds from DB.
+ */
+function hfx_clear_events_payload_cache() {
+	foreach ( array( 100, 120, 200, 250, 300, 500 ) as $limit ) {
+		delete_transient( 'hfx_events_payload_' . $limit );
+	}
+}
+add_action( 'save_post_tribe_events', 'hfx_clear_events_payload_cache' );
+add_action( 'save_post',              'hfx_clear_events_payload_cache' );
+add_action( 'delete_post',            'hfx_clear_events_payload_cache' );
+add_action( 'transition_post_status', 'hfx_clear_events_payload_cache' );
 
 /**
  * Query var helper.
@@ -814,6 +846,113 @@ function hfx_qs($key) {
 	return isset($_GET[ $key ]) ? sanitize_text_field(wp_unslash($_GET[ $key ])) : '';
 }
 
+/**
+ * Register ACF field group for HFX event metadata.
+ * Fields: critic pick, moods, neighbourhood, short blurb, editor blurb.
+ */
+function hfx_register_acf_fields() {
+	if ( ! function_exists( 'acf_add_local_field_group' ) ) {
+		return;
+	}
+
+	$post_types = array( 'tribe_events', 'post' );
+
+	acf_add_local_field_group(
+		array(
+			'key'      => 'group_hfx_event_meta',
+			'title'    => 'HFX Event Details',
+			'fields'   => array(
+				array(
+					'key'          => 'field_hfx_critic_pick',
+					'label'        => "Critic's Pick",
+					'name'         => 'hfx_critic_pick',
+					'type'         => 'true_false',
+					'instructions' => 'Mark this event as an editorial pick. Displays a ★ badge.',
+					'default_value'=> 0,
+					'ui'           => 1,
+				),
+				array(
+					'key'          => 'field_hfx_moods',
+					'label'        => 'Moods',
+					'name'         => 'hfx_moods',
+					'type'         => 'checkbox',
+					'instructions' => 'Select all that apply.',
+					'choices'      => array(
+						'chill'  => '🌙 Chill',
+						'rowdy'  => '🔥 Rowdy',
+						'date'   => '💋 Date Night',
+						'kids'   => '🧃 Kid-friendly',
+						'solo'   => '👤 Solo OK',
+						'crew'   => '👯 Bring a crew',
+						'free'   => '🪙 Broke-friendly',
+						'rainy'  => '☔ Rainy-day',
+					),
+					'layout'       => 'horizontal',
+					'return_format'=> 'value',
+				),
+				array(
+					'key'          => 'field_hfx_neighbourhood',
+					'label'        => 'Neighbourhood',
+					'name'         => 'hfx_neighbourhood',
+					'type'         => 'select',
+					'instructions' => 'Primary neighbourhood for map and filtering.',
+					'choices'      => array(
+						'Downtown'      => 'Downtown',
+						'North End'     => 'North End',
+						'South End'     => 'South End',
+						'West End'      => 'West End',
+						'Quinpool'      => 'Quinpool',
+						'Spring Garden' => 'Spring Garden',
+						'Dartmouth'     => 'Dartmouth',
+						'Bedford'       => 'Bedford',
+					),
+					'allow_null'   => 1,
+					'placeholder'  => 'Select neighbourhood',
+					'return_format'=> 'value',
+				),
+				array(
+					'key'          => 'field_hfx_short_blurb',
+					'label'        => 'Short Blurb',
+					'name'         => 'hfx_short_blurb',
+					'type'         => 'text',
+					'instructions' => 'One-liner for event cards. Max 90 characters.',
+					'maxlength'    => 90,
+					'placeholder'  => 'e.g. Live jazz every Tuesday — no cover, no fuss.',
+				),
+				array(
+					'key'          => 'field_hfx_editor_blurb',
+					'label'        => 'Editor Blurb',
+					'name'         => 'hfx_editor_blurb',
+					'type'         => 'textarea',
+					'instructions' => 'Opinionated 2–3 sentence editorial voice for the event detail page.',
+					'rows'         => 4,
+					'placeholder'  => 'Write in first-person editorial voice.',
+				),
+			),
+			'location' => array(
+				array(
+					array(
+						'param'    => 'post_type',
+						'operator' => '==',
+						'value'    => 'tribe_events',
+					),
+				),
+				array(
+					array(
+						'param'    => 'post_type',
+						'operator' => '==',
+						'value'    => 'post',
+					),
+				),
+			),
+			'position'      => 'normal',
+			'style'         => 'default',
+			'label_placement' => 'top',
+			'active'        => true,
+		)
+	);
+}
+add_action( 'acf/init', 'hfx_register_acf_fields' );
 /**
  * Format event date + time as a human label for card display.
  *
