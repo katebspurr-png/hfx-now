@@ -813,3 +813,111 @@ function hfx_get_events_payload($limit = 100) {
 function hfx_qs($key) {
 	return isset($_GET[ $key ]) ? sanitize_text_field(wp_unslash($_GET[ $key ])) : '';
 }
+
+/**
+ * Register ACF field group for HFX event metadata.
+ * Fields: critic pick, moods, neighbourhood, short blurb, editor blurb.
+ */
+function hfx_register_acf_fields() {
+	if ( ! function_exists( 'acf_add_local_field_group' ) ) {
+		return;
+	}
+
+	$post_types = array( 'tribe_events', 'post' );
+
+	acf_add_local_field_group(
+		array(
+			'key'      => 'group_hfx_event_meta',
+			'title'    => 'HFX Event Details',
+			'fields'   => array(
+				array(
+					'key'          => 'field_hfx_critic_pick',
+					'label'        => "Critic's Pick",
+					'name'         => 'hfx_critic_pick',
+					'type'         => 'true_false',
+					'instructions' => 'Mark this event as an editorial pick. Displays a ★ badge.',
+					'default_value'=> 0,
+					'ui'           => 1,
+				),
+				array(
+					'key'          => 'field_hfx_moods',
+					'label'        => 'Moods',
+					'name'         => 'hfx_moods',
+					'type'         => 'checkbox',
+					'instructions' => 'Select all that apply.',
+					'choices'      => array(
+						'chill'  => '🌙 Chill',
+						'rowdy'  => '🔥 Rowdy',
+						'date'   => '💋 Date Night',
+						'kids'   => '🧃 Kid-friendly',
+						'solo'   => '👤 Solo OK',
+						'crew'   => '👯 Bring a crew',
+						'free'   => '🪙 Broke-friendly',
+						'rainy'  => '☔ Rainy-day',
+					),
+					'layout'       => 'horizontal',
+					'return_format'=> 'value',
+				),
+				array(
+					'key'          => 'field_hfx_neighbourhood',
+					'label'        => 'Neighbourhood',
+					'name'         => 'hfx_neighbourhood',
+					'type'         => 'select',
+					'instructions' => 'Primary neighbourhood for map and filtering.',
+					'choices'      => array(
+						'Downtown'      => 'Downtown',
+						'North End'     => 'North End',
+						'South End'     => 'South End',
+						'West End'      => 'West End',
+						'Quinpool'      => 'Quinpool',
+						'Spring Garden' => 'Spring Garden',
+						'Dartmouth'     => 'Dartmouth',
+						'Bedford'       => 'Bedford',
+					),
+					'allow_null'   => 1,
+					'placeholder'  => 'Select neighbourhood',
+					'return_format'=> 'value',
+				),
+				array(
+					'key'          => 'field_hfx_short_blurb',
+					'label'        => 'Short Blurb',
+					'name'         => 'hfx_short_blurb',
+					'type'         => 'text',
+					'instructions' => 'One-liner for event cards. Max 90 characters.',
+					'maxlength'    => 90,
+					'placeholder'  => 'e.g. Live jazz every Tuesday — no cover, no fuss.',
+				),
+				array(
+					'key'          => 'field_hfx_editor_blurb',
+					'label'        => 'Editor Blurb',
+					'name'         => 'hfx_editor_blurb',
+					'type'         => 'textarea',
+					'instructions' => 'Opinionated 2–3 sentence editorial voice for the event detail page.',
+					'rows'         => 4,
+					'placeholder'  => 'Write in first-person editorial voice.',
+				),
+			),
+			'location' => array(
+				array(
+					array(
+						'param'    => 'post_type',
+						'operator' => '==',
+						'value'    => 'tribe_events',
+					),
+				),
+				array(
+					array(
+						'param'    => 'post_type',
+						'operator' => '==',
+						'value'    => 'post',
+					),
+				),
+			),
+			'position'      => 'normal',
+			'style'         => 'default',
+			'label_placement' => 'top',
+			'active'        => true,
+		)
+	);
+}
+add_action( 'acf/init', 'hfx_register_acf_fields' );
