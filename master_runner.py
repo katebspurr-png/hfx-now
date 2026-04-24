@@ -11,6 +11,7 @@ Master runner for Halifax-Now scrapers.
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -19,8 +20,10 @@ from typing import List, Dict, Any
 
 from scraper_registry import ScraperConfig, SCRAPERS, get_enabled_scrapers
 from merge_master_events import merge_all_events
+from scraper_paths import OUTPUT_DIR
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CONSISTENCY_CHECKER = os.path.join(BASE_DIR, "tools", "check_scraper_output_consistency.py")
 
 # -------------------------------------------------------------------
 # Alert configuration (simple, mostly placeholders)
@@ -137,6 +140,15 @@ def run_scraper(config: ScraperConfig) -> Dict[str, Any]:
         if completed.returncode == 0:
             result["status"] = "ok"
             print(f"[OK] {config.name} finished in {result['duration_sec']}s")
+            if os.path.exists(config.output):
+                run_date = datetime.now().strftime("%Y-%m-%d")
+                root, ext = os.path.splitext(config.output)
+                dated_output = f"{root}_{run_date}{ext}"
+                try:
+                    shutil.copyfile(config.output, dated_output)
+                    print(f"[SNAPSHOT] {os.path.basename(dated_output)}")
+                except Exception as e:
+                    print(f"[WARN] Could not write dated snapshot for {config.key}: {e}")
         else:
             result["status"] = "error"
             result["error"] = (completed.stderr or "").strip()
@@ -166,6 +178,26 @@ def run_scraper(config: ScraperConfig) -> Dict[str, Any]:
     return result
 
 
+def run_consistency_check() -> bool:
+    """Run preflight checker and stop early on config/path drift."""
+    if not os.path.exists(CONSISTENCY_CHECKER):
+        print(f"[WARN] Consistency checker not found: {CONSISTENCY_CHECKER}")
+        return True
+
+    cmd = [sys.executable, CONSISTENCY_CHECKER]
+    print("\nRunning preflight consistency check ...")
+    completed = subprocess.run(cmd, cwd=BASE_DIR, capture_output=True, text=True)
+    if completed.stdout:
+        print(completed.stdout.strip())
+    if completed.returncode != 0:
+        if completed.stderr:
+            print(completed.stderr.strip())
+        print("[ABORT] Consistency check failed. Fix issues before running scrapers.")
+        return False
+    print("[OK] Consistency check passed.")
+    return True
+
+
 # -------------------------------------------------------------------
 # Main entry point
 # -------------------------------------------------------------------
@@ -176,6 +208,9 @@ def main() -> None:
     print(" Started :", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     print(" Base dir:", BASE_DIR)
     print("==============================================")
+
+    if not run_consistency_check():
+        return
 
     enabled = get_enabled_scrapers()
 
@@ -201,6 +236,14 @@ def main() -> None:
     try:
         merge_all_events()
         print("[MERGE] merge_all_events() completed.")
+        run_date = datetime.now().strftime("%Y-%m-%d")
+        for name in ("master_events.csv", "events_archive.csv"):
+            src = os.path.join(OUTPUT_DIR, name)
+            if os.path.exists(src):
+                root, ext = os.path.splitext(src)
+                dated = f"{root}_{run_date}{ext}"
+                shutil.copyfile(src, dated)
+                print(f"[SNAPSHOT] {os.path.basename(dated)}")
     except Exception as e:
         print(f"[MERGE ERROR] merge_all_events() failed: {e}")
 

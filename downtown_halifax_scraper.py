@@ -2,10 +2,12 @@ from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
 from dateutil import parser as dateparser
 import csv
+import os
 import re
 
 from category_mapping import normalize_categories
 from cost_parsing import extract_event_cost
+from scraper_paths import OUTPUT_DIR
 
 TIME_RE = re.compile(
     r"(\d{1,2})(?::(\d{2}))?\s*(am|pm)",
@@ -39,7 +41,7 @@ def parse_start_time(text: str) -> str:
 
 LISTING_URL = "https://downtownhalifax.ca/events"
 SITE_ROOT = "https://downtownhalifax.ca"
-CSV_FILE = "output/downtown_halifax_for_import.csv"
+CSV_FILE = os.path.join(OUTPUT_DIR, "downtown_halifax_for_import.csv")
 TIMEZONE = "America/Halifax"
 
 FIELDNAMES = [

@@ -17,7 +17,7 @@ from __future__ import annotations
 import csv
 import os
 import re
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from typing import Dict, List, Optional
 from urllib.parse import urljoin
 
@@ -363,14 +363,18 @@ def scrape_yukyuks_month(month: int, year: int) -> List[Dict[str, str]]:
 
 def scrape_yukyuks() -> List[Dict[str, str]]:
     """
-    Scrape Yuk Yuk's Halifax for the next 30 days.
+    Scrape Yuk Yuk's Halifax for all published future events.
     """
     today = date.today()
-    cutoff_date = today + timedelta(days=30)
     all_events: List[Dict[str, str]] = []
+    seen_keys = set()
 
-    # Scrape current month + next month (to cover 30 days)
-    for i in range(2):
+    # Crawl forward in month windows and stop after consecutive empty future months.
+    max_months_ahead = 24
+    empty_future_months = 0
+    empty_stop_threshold = 3
+
+    for i in range(max_months_ahead):
         month = today.month + i
         year = today.year
 
@@ -380,20 +384,38 @@ def scrape_yukyuks() -> List[Dict[str, str]]:
             year += 1
 
         events = scrape_yukyuks_month(month, year)
+        kept_this_month = 0
 
-        # Filter events to only include those within 30 days
+        # Keep only today/future events with no upper-day cap.
         for event in events:
+            key = f"{event.get('EVENT WEBSITE','')}|{event.get('EVENT START DATE','')}"
+            if key in seen_keys:
+                continue
             try:
                 event_date = datetime.strptime(event['EVENT START DATE'], '%Y-%m-%d').date()
-                if event_date <= cutoff_date:
+                if event_date >= today:
+                    seen_keys.add(key)
                     all_events.append(event)
                 else:
-                    print(f"  ⊘ Skipping (beyond 30 days): {event['EVENT NAME']} - {event['EVENT START DATE']}")
+                    print(f"  ⊘ Skipping (past): {event['EVENT NAME']} - {event['EVENT START DATE']}")
             except:
                 # If date parsing fails, include the event anyway
+                seen_keys.add(key)
                 all_events.append(event)
+            kept_this_month += 1
 
-    print(f"\nTotal events scraped (within 30 days): {len(all_events)}")
+        if kept_this_month == 0:
+            empty_future_months += 1
+            if empty_future_months >= empty_stop_threshold:
+                print(
+                    f"Stopping month crawl after {empty_future_months} empty future months "
+                    f"(last checked: {month:02d}/{year})."
+                )
+                break
+        else:
+            empty_future_months = 0
+
+    print(f"\nTotal events scraped (today forward): {len(all_events)}")
     return all_events
 
 

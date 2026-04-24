@@ -28,9 +28,8 @@ from bs4 import BeautifulSoup, Tag, NavigableString
 
 from category_mapping import normalize_categories
 from cost_parsing import extract_event_cost
+from scraper_paths import OUTPUT_DIR
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 LISTING_URL = "https://www.saintandrewshfx.ca/upcoming-performances-"

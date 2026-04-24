@@ -16,6 +16,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+from event_horizon import is_within_event_horizon
 
 # Common recurring event patterns
 RECURRING_KEYWORDS = [
@@ -68,10 +69,7 @@ def make_titles_unique(input_file: str, output_file: str = None):
 
     print(f"   Found {len(rows)} events")
 
-    # Get today's date for filtering
-    today = datetime.now().date()
-
-    # Filter out past events
+    # Filter out events outside configured event horizon
     filtered_rows = []
     past_count = 0
 
@@ -82,8 +80,8 @@ def make_titles_unique(input_file: str, output_file: str = None):
             try:
                 event_date = datetime.strptime(date_str, '%Y-%m-%d').date()
 
-                # Keep only today and future events
-                if event_date >= today:
+                # Keep only rows within configured event horizon
+                if is_within_event_horizon(date_str):
                     filtered_rows.append(row)
                 else:
                     past_count += 1

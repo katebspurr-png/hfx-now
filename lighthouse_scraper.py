@@ -10,13 +10,12 @@ from dateutil import parser as dateparser
 
 from category_mapping import normalize_categories
 from cost_parsing import extract_event_cost
+from scraper_paths import OUTPUT_DIR
 
 # ----------------------------
 # Paths & constants
 # ----------------------------
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 BASE_URL = "https://www.lighthouseartscentre.ca"

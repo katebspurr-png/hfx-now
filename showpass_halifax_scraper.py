@@ -6,10 +6,8 @@ import os
 import re
 
 from cost_parsing import extract_event_cost
+from scraper_paths import OUTPUT_DIR
 
-# Base paths
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Timestamp to keep each run’s output unique
@@ -123,17 +121,25 @@ def parse_time_range(time_text: str):
     if "all day" in txt:
         return "", "", True
 
-    if "–" in time_text:
-        parts = [p.strip() for p in time_text.split("–", 1)]
-    elif "-" in time_text:
-        parts = [p.strip() for p in time_text.split("-", 1)]
-    else:
-        parts = [time_text]
+    # Pull explicit time tokens out of mixed strings like:
+    # "Starts: 9:00 PM ADT", "Fri Oct 3 @ 6:30 PM", "7PM Doors / 8PM Showtime".
+    time_tokens = re.findall(r"\b\d{1,2}(?::\d{2})?\s*[ap]m\b", time_text, flags=re.IGNORECASE)
+    if not time_tokens:
+        return "", "", False
 
-    if len(parts) == 1:
-        return parts[0], "", False
-    else:
-        return parts[0], parts[1], False
+    def _normalize_token(token: str) -> str:
+        raw = re.sub(r"\s+", "", token.upper())
+        match = re.match(r"^(\d{1,2})(?::(\d{2}))?(AM|PM)$", raw)
+        if not match:
+            return ""
+        hour = int(match.group(1))
+        minute = match.group(2) or "00"
+        ampm = match.group(3)
+        return f"{hour}:{minute} {ampm}"
+
+    start_time = _normalize_token(time_tokens[0])
+    end_time = _normalize_token(time_tokens[1]) if len(time_tokens) > 1 else ""
+    return start_time, end_time, False
 
 
 # ---------- page text heuristics ----------
@@ -172,7 +178,7 @@ def guess_date_time_and_venue(body_text: str):
 
         # ----- time-ish -----
         if not time_line:
-            if re.search(r"\d{1,2}:\d{2}\s*(am|pm)", low):
+            if re.search(r"\b\d{1,2}(?::\d{2})?\s*[ap]m\b", low):
                 time_line = ln
 
         # ----- venue-ish -----

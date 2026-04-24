@@ -20,6 +20,7 @@ from typing import List, Dict, Optional, Tuple
 
 import requests
 from bs4 import BeautifulSoup, Tag
+from scraper_paths import OUTPUT_DIR
 
 # Note: Neptune prices come from neptune_prices.json, not page scraping
 
@@ -53,8 +54,6 @@ def get_price_for_show(url: str, prices: Dict[str, str]) -> str:
         return price.strip()
     return "See website"
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 OUTPUT_CSV = os.path.join(OUTPUT_DIR, "neptune_events.csv")

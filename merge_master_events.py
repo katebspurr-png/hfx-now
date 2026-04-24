@@ -15,6 +15,7 @@ Merge all Halifax-Now scraper outputs into a single TEC-compatible CSV.
 """
 
 import csv
+import html
 import os
 import re
 import shutil
@@ -24,6 +25,9 @@ from typing import Dict, List, Tuple, Set
 
 from dateutil import parser as dateparser
 
+from event_horizon import SKIP_PAST_EVENTS, is_within_event_horizon
+from schema_fields_v3 import HFX_HEADERS
+from scraper_paths import OUTPUT_DIR
 from scraper_registry import get_enabled_scrapers
 from venue_aliases import normalize_venue
 
@@ -34,19 +38,14 @@ csv.field_size_limit(sys.maxsize)
 # Paths / constants
 # --------------------------------------------------------------------
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
+# Same per-scraper output root as individual scrapers (scraper_paths.OUTPUT_DIR)
 READY_DIR = os.path.join(OUTPUT_DIR, "ready_to_import")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(READY_DIR, exist_ok=True)
 
 MASTER_CSV = os.path.join(OUTPUT_DIR, "master_events.csv")
 ARCHIVE_CSV = os.path.join(OUTPUT_DIR, "events_archive.csv")
 NEW_EVENTS_CSV = os.path.join(READY_DIR, "new_events.csv")
 READY_MASTER_CSV = os.path.join(READY_DIR, "master_events.csv")
-
-# Skip events whose start date is in the past?
-SKIP_PAST_EVENTS = True  # Skip past events - only keep future events
 
 # TEC import headers (title case â€“ matches your scrapers)
 TEC_HEADERS: List[str] = [
@@ -67,6 +66,7 @@ TEC_HEADERS: List[str] = [
     "Event URL",
     "Event Featured Image",
     "Event Tags",
+    *HFX_HEADERS,
     "Source Event ID",
     "SOURCE",
 ]
@@ -79,6 +79,192 @@ TEC_HEADERS: List[str] = [
 def canonicalize_header(name: str) -> str:
     """Uppercase + strip all non-alphanumeric chars."""
     return re.sub(r"[^A-Z0-9]", "", (name or "").upper())
+
+
+def strip_html(text: str) -> str:
+    if not text:
+        return ""
+    text = html.unescape(text)
+    text = re.sub(r"<[^>]+>", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def first_sentence(text: str) -> str:
+    cleaned = strip_html(text)
+    if not cleaned:
+        return ""
+    m = re.search(r"^(.+?[.!?])(?:\s|$)", cleaned)
+    return m.group(1).strip() if m else cleaned
+
+
+def clip(text: str, max_len: int) -> str:
+    t = (text or "").strip()
+    if len(t) <= max_len:
+        return t
+    return t[: max_len - 1].rstrip() + "…"
+
+
+def normalize_lookup_text(value: str) -> str:
+    value = (value or "").lower().strip()
+    value = re.sub(r"[’']", "", value)
+    value = re.sub(r"[^a-z0-9]+", " ", value)
+    return re.sub(r"\s+", " ", value).strip()
+
+
+def extract_city_hint(text: str) -> str:
+    candidates = [
+        "halifax",
+        "dartmouth",
+        "bedford",
+        "truro",
+        "pictou",
+        "wolfville",
+        "goodwood",
+        "eastern passage",
+    ]
+    for city in candidates:
+        if city in text:
+            return city
+    return ""
+
+
+def infer_neighbourhood(row: Dict[str, str]) -> str:
+    venue = normalize_lookup_text(row.get("Event Venue Name") or "")
+    addr = normalize_lookup_text(row.get("Event Venue Address") or "")
+    city = normalize_lookup_text(row.get("Event Venue City") or "")
+    text = f"{venue} {addr} {city}".strip()
+
+    venue_overrides = {
+        "downtown halifax": "Downtown",
+        "candlelight concert halifax": "Downtown",
+        "bearlys house of blues and ribs": "Downtown",
+        "the carleton": "Downtown",
+        "light house arts centre": "Downtown",
+        "rebecca cohn": "South End",
+        "scotiabank studio stage": "Downtown",
+        "scotiabank centre": "Downtown",
+        "casino nova scotia the bruce guthro theatre": "Downtown",
+        "maritime museum of the atlantic": "Downtown",
+        "discovery centre": "Downtown",
+        "the dome nightclub": "Downtown",
+        "halifax tower hotel": "Downtown",
+        "good robot brewing co": "North End",
+        "good robot robie": "North End",
+        "halifax live comedy club": "Downtown",
+        "the marquee": "Downtown",
+        "seahorse tavern": "Downtown",
+        "rumours lounge cabaret": "Downtown",
+        "yuk yuks halifax": "North End",
+        "st andrews united church": "South End",
+        "the stage at st andrews": "South End",
+        "the bus stop theatre co op": "North End",
+        "bus stop theatre co op": "North End",
+        "carbon arc cinema": "Downtown",
+        "sanctuary arts centre": "Downtown",
+        "art gallery of nova scotia": "Downtown",
+        "rox live": "Downtown",
+        "anna leonowens gallery": "Downtown",
+        "the wanderers grounds": "South End",
+    }
+    for venue_key, hood in venue_overrides.items():
+        if venue_key in venue:
+            return hood
+
+    rules = [
+        ("gottingen", "North End"),
+        ("north", "North End"),
+        ("quinpool", "Quinpool"),
+        ("spring garden", "Spring Garden"),
+        ("south park", "South End"),
+        ("dalhousie", "South End"),
+        ("hennessey", "South End"),
+        ("argyle", "Downtown"),
+        ("barrington", "Downtown"),
+        ("grafton", "Downtown"),
+        ("granville", "Downtown"),
+        ("market", "Downtown"),
+        ("marginal", "Downtown"),
+        ("waterfront", "Downtown"),
+        ("almon", "North End"),
+        ("agricola", "North End"),
+        ("clifton", "North End"),
+        ("herring cove", "West End"),
+        ("dartmouth", "Dartmouth"),
+        ("bedford", "Bedford"),
+    ]
+    for key, hood in rules:
+        if key in text:
+            return hood
+
+    city_hint = city or extract_city_hint(text)
+    if city_hint == "halifax":
+        return "Downtown"
+    if city_hint == "dartmouth":
+        return "Dartmouth"
+    if city_hint == "bedford":
+        return "Bedford"
+    if city_hint in {"truro", "pictou", "wolfville", "goodwood", "eastern passage"}:
+        return "Out of Town"
+    return ""
+
+
+def infer_moods(row: Dict[str, str]) -> str:
+    title = (row.get("Event Name") or "").lower()
+    desc = strip_html(row.get("Event Description") or "").lower()
+    category = (row.get("Event Category") or "").lower()
+    tags = (row.get("Event Tags") or "").lower()
+    text = f"{title} {desc} {category} {tags}"
+
+    moods: List[str] = []
+    checks = [
+        ("chill", ["acoustic", "ambient", "jazz", "reading", "gallery", "soft"]),
+        ("rowdy", ["metal", "punk", "nightclub", "dj", "dance", "party"]),
+        ("date", ["valentine", "couples", "romantic", "date night"]),
+        ("kids", ["family", "kids", "children", "all ages"]),
+        ("solo", ["workshop", "talk", "lecture", "drop-in"]),
+        ("crew", ["group", "friends", "party", "festival"]),
+        ("free", ["free", "$0", "no cover"]),
+        ("rainy", ["indoor", "cinema", "theatre", "comedy"]),
+    ]
+    for mood, keywords in checks:
+        if any(k in text for k in keywords):
+            moods.append(mood)
+
+    if not moods and "music" in category:
+        moods.append("crew")
+    if not moods and "comedy" in category:
+        moods.extend(["solo", "rainy"])
+
+    return ",".join(dict.fromkeys(moods))
+
+
+def infer_critic_pick(row: Dict[str, str]) -> str:
+    tags = (row.get("Event Tags") or "").lower()
+    if "critic" in tags and "pick" in tags:
+        return "1"
+    return "0"
+
+
+def enrich_hfx_fields(row: Dict[str, str]) -> Dict[str, str]:
+    out = row.copy()
+    excerpt = strip_html(out.get("hfx_short_blurb") or "")
+    if not excerpt:
+        excerpt = first_sentence(out.get("Event Description") or "")
+    out["hfx_short_blurb"] = clip(excerpt, 90)
+
+    # Editorial blurb is intentionally human-authored; do not auto-generate from scraper text.
+    out["hfx_editor_blurb"] = strip_html(out.get("hfx_editor_blurb") or "")
+
+    if not (out.get("hfx_neighbourhood") or "").strip():
+        out["hfx_neighbourhood"] = infer_neighbourhood(out)
+
+    if not (out.get("hfx_moods") or "").strip():
+        out["hfx_moods"] = infer_moods(out)
+
+    if not (out.get("hfx_critic_pick") or "").strip():
+        out["hfx_critic_pick"] = infer_critic_pick(out)
+
+    return out
 
 
 def build_canonical_header_map() -> Dict[str, str]:
@@ -117,6 +303,67 @@ SECONDARY_SOURCES = {
     "halifaxlive", "jumpcomedy", "showpasshalifax",
 }
 
+# Explicit source ranking used during dedupe merges.
+# Lower rank = higher authority.
+SOURCE_PRIORITY_RANK = {
+    # Venue-first (most authoritative)
+    "carleton": 10,
+    "thecarleton": 10,
+    "goodrobot": 20,
+    "neptune": 30,
+    "lighthouse": 40,
+    "propeller": 50,
+    "sanctuary": 60,
+    "carbonarc": 70,
+    "mma": 80,
+    "symphonyns": 90,
+    "standrews": 100,
+    "artgalleryns": 110,
+    "busstop": 120,
+    "gottingen2037": 130,
+    "yukyuks": 140,
+    "bearlys": 150,
+    "rumourshfx": 160,
+    # Aggregators / marketplace listings
+    "halifaxlive": 300,
+    "jumpcomedy": 310,
+    "showpasshalifax": 320,
+    "ticketmaster": 330,
+    "discoverhalifax": 340,
+    "downtown": 350,
+    "candlelight": 360,
+}
+
+
+def normalize_source_key(source: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", (source or "").strip().lower())
+
+
+def source_priority(source: str) -> int:
+    return SOURCE_PRIORITY_RANK.get(normalize_source_key(source), 999)
+
+
+def pick_base_and_filler(existing: Dict[str, str], new: Dict[str, str]) -> Tuple[Dict[str, str], Dict[str, str]]:
+    """
+    Pick a deterministic base row by explicit source rank.
+    Lower numeric rank wins; ties break lexicographically by normalized source key.
+    """
+    existing_source = normalize_source_key(existing.get("SOURCE") or "")
+    new_source = normalize_source_key(new.get("SOURCE") or "")
+    existing_rank = source_priority(existing_source)
+    new_rank = source_priority(new_source)
+
+    if new_rank < existing_rank:
+        return new, existing
+    if existing_rank < new_rank:
+        return existing, new
+
+    # Deterministic tie-break for equal ranks.
+    if new_source and existing_source and new_source < existing_source:
+        return new, existing
+
+    return existing, new
+
 # --------------------------------------------------------------------
 # Time normalization (for matching events across scrapers)
 # --------------------------------------------------------------------
@@ -134,6 +381,8 @@ def normalize_time(time_str: str) -> str:
         return ""
 
     time_str = time_str.strip()
+    if not time_str:
+        return ""
 
     # Remove common prefixes like "Starts:", "Doors:", etc.
     time_str = re.sub(r'^(starts|doors|show|time)[:\s]*', '', time_str, flags=re.IGNORECASE).strip()
@@ -145,6 +394,18 @@ def normalize_time(time_str: str) -> str:
     if re.match(r'^\d{1,2}:\d{2}$', time_str):
         parts = time_str.split(':')
         return f"{int(parts[0]):02d}:{parts[1]}"
+
+    # Extract a 12-hour token from longer strings (e.g., "@ 6:30 PM ADT", full date lines).
+    token_match = re.search(r'(\d{1,2})(?::(\d{2}))?\s*(AM|PM)\b', time_str, re.IGNORECASE)
+    if token_match:
+        hour = int(token_match.group(1))
+        minute = token_match.group(2) or "00"
+        ampm = token_match.group(3).upper()
+        if ampm == "PM" and hour != 12:
+            hour += 12
+        elif ampm == "AM" and hour == 12:
+            hour = 0
+        return f"{hour:02d}:{minute}"
 
     # 12-hour format with AM/PM? (e.g., "8:00 PM", "08:00 PM", "8 PM")
     match = re.match(r'^(\d{1,2}):?(\d{2})?\s*(AM|PM)$', time_str, re.IGNORECASE)
@@ -160,8 +421,8 @@ def normalize_time(time_str: str) -> str:
 
         return f"{hour:02d}:{minute}"
 
-    # Return as-is if we can't parse
-    return time_str
+    # Unparseable strings should not survive into export.
+    return ""
 
 
 def times_match(time1: str, time2: str, tolerance_hours: int = 2) -> bool:
@@ -332,7 +593,9 @@ def normalize_row_for_master(raw_row: Dict[str, str]) -> Dict[str, str]:
             target_header = CANONICAL_HEADER_MAP[canon]
             normalized[target_header] = (value or "").strip()
 
-    return normalized
+    normalized["Event Start Time"] = normalize_time(normalized.get("Event Start Time", ""))
+    normalized["Event End Time"] = normalize_time(normalized.get("Event End Time", ""))
+    return enrich_hfx_fields(normalized)
 
 
 # --------------------------------------------------------------------
@@ -351,10 +614,7 @@ def parse_date_safe(date_str: str) -> date | None:
 
 
 def is_future_or_today(date_str: str) -> bool:
-    d = parse_date_safe(date_str)
-    if not d:
-        return False
-    return d >= date.today()
+    return is_within_event_horizon(date_str)
 
 
 def build_dedupe_key(row: Dict[str, str]) -> Tuple[str, str, str]:
@@ -482,24 +742,7 @@ def choose_better_row(existing: Dict[str, str], new: Dict[str, str]) -> Dict[str
     2. Fill in any missing fields from the other source.
     3. If both are same tier, prefer the one with more data as before.
     """
-    existing_source = (existing.get("SOURCE") or "").strip().lower()
-    new_source = (new.get("SOURCE") or "").strip().lower()
-
-    existing_is_primary = existing_source in PRIMARY_SOURCES
-    new_is_primary = new_source in PRIMARY_SOURCES
-
-    # Determine which row should be the "base" (primary) vs "filler" (secondary)
-    if new_is_primary and not existing_is_primary:
-        # New row is from a venue-specific source, existing is aggregator
-        # Use new as base, fill gaps from existing
-        base, filler = new, existing
-    elif existing_is_primary and not new_is_primary:
-        # Existing is venue-specific, new is aggregator
-        # Keep existing as base, fill gaps from new
-        base, filler = existing, new
-    else:
-        # Both same tier - use existing as base (first one wins)
-        base, filler = existing, new
+    base, filler = pick_base_and_filler(existing, new)
 
     # Start with the base row
     result = base.copy()
@@ -699,26 +942,7 @@ def merge_all_events():
 
     # Write master_events.csv
     if merged_rows:
-        fieldnames = [
-            "Event Name",
-            "Event Description",
-            "Event Start Date",
-            "Event Start Time",
-            "Event End Date",
-            "Event End Time",
-            "Event Venue Name",
-            "Event Venue Country",
-            "Event Venue State/Province",
-            "Event Venue City",
-            "Event Venue Address",
-            "Event Venue Zip",
-            "Event Cost",
-            "Event Category",
-            "Event URL",
-            "Event Featured Image",
-            "Event Tags",
-            "SOURCE",
-        ]
+        fieldnames = list(TEC_HEADERS)
         with open(master_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()

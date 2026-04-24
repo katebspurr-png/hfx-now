@@ -14,11 +14,10 @@ import re
 from datetime import datetime
 
 from cost_parsing import extract_event_cost
+from scraper_paths import OUTPUT_DIR
 
 # ---------- CONFIG ----------
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 LISTING_URL = "https://bluemountainfriends.ca/activities/#hiking"

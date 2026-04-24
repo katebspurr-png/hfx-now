@@ -20,6 +20,7 @@ from typing import Dict, List, Set, Tuple
 
 from dateutil import parser as dateparser
 
+from event_horizon import SKIP_PAST_EVENTS, is_within_event_horizon
 from schema_fields_v3 import HFX_HEADERS, V3_EXPORT_HEADERS, V3_HEADERS
 from scraper_registry_v3 import get_enabled_scrapers_v3
 from venue_aliases import normalize_venue
@@ -36,8 +37,6 @@ MASTER_CSV_V3 = os.path.join(OUTPUT_DIR_V3, "master_events_v3.csv")
 ARCHIVE_CSV_V3 = os.path.join(OUTPUT_DIR_V3, "events_archive_v3.csv")
 NEW_EVENTS_CSV_V3 = os.path.join(READY_DIR_V3, "new_events_v3.csv")
 READY_MASTER_CSV_V3 = os.path.join(READY_DIR_V3, "master_events_v3.csv")
-
-SKIP_PAST_EVENTS = True
 
 PRIMARY_SOURCES = {
     "goodrobot",
@@ -57,6 +56,37 @@ PRIMARY_SOURCES = {
     "bearlys",
     "rumourshfx",
     "thecarleton",
+}
+
+# Explicit source ranking used during dedupe merges.
+# Lower rank = higher authority.
+SOURCE_PRIORITY_RANK = {
+    # Venue-first (most authoritative)
+    "carleton": 10,
+    "thecarleton": 10,
+    "goodrobot": 20,
+    "neptune": 30,
+    "lighthouse": 40,
+    "propeller": 50,
+    "sanctuary": 60,
+    "carbonarc": 70,
+    "mma": 80,
+    "symphonyns": 90,
+    "standrews": 100,
+    "artgalleryns": 110,
+    "busstop": 120,
+    "gottingen2037": 130,
+    "yukyuks": 140,
+    "bearlys": 150,
+    "rumourshfx": 160,
+    # Aggregators / marketplace listings
+    "halifaxlive": 300,
+    "jumpcomedy": 310,
+    "showpasshalifax": 320,
+    "ticketmaster": 330,
+    "discoverhalifax": 340,
+    "downtown": 350,
+    "candlelight": 360,
 }
 
 # When merging two rows for the same event, prefer *more complete* data (e.g. TBA → real details)
@@ -233,7 +263,6 @@ def build_canonical_header_map() -> Dict[str, str]:
     aliases = {
         "EVENTWEBSITE": "Event URL",
         "EVENTEXCERPT": "hfx_short_blurb",
-        "EVENTORGANIZERNAME": "hfx_editor_blurb",
         "HFXSHORTBLURB": "hfx_short_blurb",
         "HFXEDITORBLURB": "hfx_editor_blurb",
         "HFXNEIGHBOURHOOD": "hfx_neighbourhood",
@@ -256,6 +285,8 @@ def normalize_row_for_v3(raw_row: Dict[str, str]) -> Dict[str, str]:
         target = CANONICAL_HEADER_MAP.get(canon)
         if target:
             normalized[target] = (value or "").strip()
+    normalized["Event Start Time"] = normalize_time(normalized.get("Event Start Time", ""))
+    normalized["Event End Time"] = normalize_time(normalized.get("Event End Time", ""))
     return normalized
 
 
@@ -270,8 +301,7 @@ def parse_date_safe(date_str: str) -> date | None:
 
 
 def is_future_or_today(date_str: str) -> bool:
-    parsed = parse_date_safe(date_str)
-    return bool(parsed and parsed >= date.today())
+    return is_within_event_horizon(date_str)
 
 
 def normalize_source_key(source: str) -> str:
@@ -280,6 +310,32 @@ def normalize_source_key(source: str) -> str:
         return ""
     s = re.sub(r"[^a-z0-9]+", "", s)
     return s
+
+
+def source_priority(source: str) -> int:
+    return SOURCE_PRIORITY_RANK.get(normalize_source_key(source), 999)
+
+
+def pick_base_and_filler(existing: Dict[str, str], new: Dict[str, str]) -> Tuple[Dict[str, str], Dict[str, str]]:
+    """
+    Pick a deterministic base row by explicit source rank.
+    Lower numeric rank wins; ties break lexicographically by normalized source key.
+    """
+    existing_source = normalize_source_key(existing.get("SOURCE") or "")
+    new_source = normalize_source_key(new.get("SOURCE") or "")
+    existing_rank = source_priority(existing_source)
+    new_rank = source_priority(new_source)
+
+    if new_rank < existing_rank:
+        return new, existing
+    if existing_rank < new_rank:
+        return existing, new
+
+    # Deterministic tie-break for equal ranks.
+    if new_source and existing_source and new_source < existing_source:
+        return new, existing
+
+    return existing, new
 
 
 def strip_html(text: str) -> str:
@@ -454,10 +510,8 @@ def enrich_hfx_fields(row: Dict[str, str]) -> Dict[str, str]:
         excerpt = first_sentence(out.get("Event Description") or "")
     out["hfx_short_blurb"] = clip(excerpt, 90)
 
-    editor = strip_html(out.get("hfx_editor_blurb") or "")
-    if not editor:
-        editor = clip(strip_html(out.get("Event Description") or ""), 280)
-    out["hfx_editor_blurb"] = editor
+    # Editorial blurb is intentionally human-authored; do not auto-generate from scraper text.
+    out["hfx_editor_blurb"] = strip_html(out.get("hfx_editor_blurb") or "")
 
     if not (out.get("hfx_neighbourhood") or "").strip():
         out["hfx_neighbourhood"] = infer_neighbourhood(out)
@@ -475,6 +529,8 @@ def normalize_time(time_str: str) -> str:
     if not time_str:
         return ""
     time_str = time_str.strip()
+    if not time_str:
+        return ""
     time_str = re.sub(r"^(starts|doors|show|time)[:\s]*", "", time_str, flags=re.IGNORECASE).strip()
     time_str = re.sub(r"\s*(AST|ADT|EST|EDT|PST|PDT|MST|MDT|CST|CDT|UTC|GMT)\s*$", "", time_str, flags=re.IGNORECASE).strip()
 
@@ -482,9 +538,20 @@ def normalize_time(time_str: str) -> str:
         hh, mm = time_str.split(":")
         return f"{int(hh):02d}:{mm}"
 
+    token_match = re.search(r"(\d{1,2})(?::(\d{2}))?\s*(AM|PM)\b", time_str, re.IGNORECASE)
+    if token_match:
+        hour = int(token_match.group(1))
+        minute = token_match.group(2) or "00"
+        ampm = token_match.group(3).upper()
+        if ampm == "PM" and hour != 12:
+            hour += 12
+        elif ampm == "AM" and hour == 12:
+            hour = 0
+        return f"{hour:02d}:{minute}"
+
     match = re.match(r"^(\d{1,2}):?(\d{2})?\s*(AM|PM)$", time_str, re.IGNORECASE)
     if not match:
-        return time_str
+        return ""
     hour = int(match.group(1))
     minute = match.group(2) or "00"
     ampm = match.group(3).upper()
@@ -580,17 +647,7 @@ def build_fuzzy_group_key(row: Dict[str, str]) -> Tuple[str, str]:
 
 
 def choose_better_row_v3(existing: Dict[str, str], new: Dict[str, str]) -> Dict[str, str]:
-    existing_source = normalize_source_key(existing.get("SOURCE") or "")
-    new_source = normalize_source_key(new.get("SOURCE") or "")
-    existing_is_primary = existing_source in PRIMARY_SOURCES
-    new_is_primary = new_source in PRIMARY_SOURCES
-
-    if new_is_primary and not existing_is_primary:
-        base, filler = new, existing
-    elif existing_is_primary and not new_is_primary:
-        base, filler = existing, new
-    else:
-        base, filler = existing, new
+    base, filler = pick_base_and_filler(existing, new)
 
     result = base.copy()
 

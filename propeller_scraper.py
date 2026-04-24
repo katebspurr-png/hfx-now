@@ -9,13 +9,13 @@ from bs4 import BeautifulSoup
 
 from cost_parsing import extract_event_cost
 from default_images import get_default_image
+from event_horizon import is_within_event_horizon
+from scraper_paths import OUTPUT_DIR
 
 # ----------------------------
 # Paths & constants
 # ----------------------------
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 BASE_URL = "https://drinkpropeller.ca"
@@ -33,6 +33,11 @@ TEC_HEADERS = [
     "EVENT NAME",
     "EVENT EXCERPT",
     "EVENT VENUE NAME",
+    "EVENT VENUE COUNTRY",
+    "EVENT VENUE STATE/PROVINCE",
+    "EVENT VENUE CITY",
+    "EVENT VENUE ADDRESS",
+    "EVENT VENUE ZIP",
     "EVENT ORGANIZER NAME",
     "EVENT START DATE",
     "EVENT START TIME",
@@ -62,26 +67,29 @@ VENUE_INFO = {
     "bedford": {
         "EVENT VENUE NAME": "Propeller Brewing - Bedford Taproom",
         "EVENT ORGANIZER NAME": "Propeller Brewing Co.",
-        "STREET": "",
+        "EVENT VENUE ADDRESS": "1225 Bedford Highway",
         "CITY": "Bedford",
         "PROVINCE": "NS",
-        "POSTAL": "",
+        "POSTAL": "B4A 1C4",
+        "COUNTRY": "Canada",
     },
     "gottingen": {
         "EVENT VENUE NAME": "Propeller Brewing - Gottingen Taproom",
         "EVENT ORGANIZER NAME": "Propeller Brewing Co.",
-        "STREET": "",
+        "EVENT VENUE ADDRESS": "2015 Gottingen Street",
         "CITY": "Halifax",
         "PROVINCE": "NS",
-        "POSTAL": "",
+        "POSTAL": "B3K 3B1",
+        "COUNTRY": "Canada",
     },
     "quinpool": {
         "EVENT VENUE NAME": "Propeller Brewing - Quinpool Taproom",
         "EVENT ORGANIZER NAME": "Propeller Brewing Co.",
-        "STREET": "",
+        "EVENT VENUE ADDRESS": "6169 Quinpool Road",
         "CITY": "Halifax",
         "PROVINCE": "NS",
-        "POSTAL": "",
+        "POSTAL": "B3L 4P8",
+        "COUNTRY": "Canada",
     },
 }
 
@@ -101,12 +109,6 @@ TIME_RANGE_RE = re.compile(
     re.IGNORECASE
 )
 
-# Match section headers with times like "TRIVIA NIGHTS (Wednesdays 7–9pm)"
-SECTION_TIME_RE = re.compile(
-    rf"\((?:[A-Za-z]+\s+)?(\d{{1,2}}(?::\d{{2}})?)\s*{DASH_PATTERN}\s*(\d{{1,2}}(?::\d{{2}})?)\s*([ap]m)\)",
-    re.IGNORECASE
-)
-
 EVENT_LINE_RE = re.compile(
     rf"""^\s*
     (?P<date>
@@ -121,9 +123,105 @@ EVENT_LINE_RE = re.compile(
     re.IGNORECASE | re.VERBOSE,
 )
 
+# Line starts with "Apr 1-", "Dec 3rd -", with optional same-line title after the dash
+RE_DATE_START = re.compile(
+    r"""^(?P<mon>Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+
+    (?P<day>\d{1,2})(?P<ord>st|nd|rd|th)?\s*[-–—]\s*
+    (?P<rest>.*)$""",
+    re.IGNORECASE | re.VERBOSE,
+)
+
 # ----------------------------
 # Helpers
 # ----------------------------
+
+def is_taproom_venue_header(line: str) -> bool:
+    u = line.upper()
+    return any(
+        x in u
+        for x in (
+            "BEDFORD HIGHWAY TAPROOM",
+            "GOTTINGEN TAPROOM",
+            "QUINPOOL TAPROOM",
+        )
+    )
+
+
+def is_noise_line(line: str) -> bool:
+    s = line.lower().strip()
+    if not s:
+        return True
+    if s.startswith("©") or "all rights reserved" in s:
+        return True
+    if s in {"subscribe", "email", "close (esc)", "search", "got it"}:
+        return True
+    if "privacy policy" in s or "refund policy" in s or "terms of service" in s:
+        return True
+    if "add some flavour" in s or "new website" in s or "home delivery notice" in s:
+        return True
+    return False
+
+
+def _date_label_from_match(m: re.Match) -> str:
+    """Build 'April 1' or 'April 1st' for TEC/parse_event_line input."""
+    mon = m.group("mon")
+    day = m.group("day")
+    ord_ = m.group("ord") or ""
+    return f"{mon} {day}{ord_}"
+
+
+def _venue_key_from_line(line: str) -> Optional[str]:
+    u = line.upper()
+    if "BEDFORD HIGHWAY TAPROOM" in u:
+        return "BEDFORD"
+    if "GOTTINGEN TAPROOM" in u:
+        return "GOTTINGEN"
+    if "QUINPOOL TAPROOM" in u:
+        return "QUINPOOL"
+    return None
+
+
+def _pair_location_colon_continuations(continuation: List[str]) -> List[str]:
+    """
+    Join e.g. ['Downstairs', ': Nerd Nite – 6:30', 'Upstairs', ': General Trivia – 7–9']
+    into two titles. Single-line cont lists pass through.
+    """
+    t = [x.strip() for x in continuation if x.strip() and not is_noise_line(x)]
+    if len(t) <= 1:
+        return t
+    out: List[str] = []
+    i = 0
+    while i < len(t):
+        if i + 1 < len(t) and t[i + 1].lstrip().startswith(":"):
+            out.append(t[i] + t[i + 1].lstrip())
+            i += 2
+        else:
+            out.append(t[i])
+            i += 1
+    return out
+
+
+def synthetic_event_lines_for_date(m: re.Match, continuation: List[str]) -> List[str]:
+    """
+    Turn one date line + following lines (until next date) into
+    'Month D - title' lines parse_event_line understands.
+    The site often uses 'April 1-' on one line and the title on the next.
+    """
+    rest0 = (m.group("rest") or "").strip()
+    cont = [c for c in continuation if not is_noise_line(c)]
+    if rest0 and cont:
+        # Same-day extras (e.g. "April 12- Late Open" + "– Staff Meeting" + "Live Music: …")
+        titles: List[str] = [rest0] + [c.lstrip("–-—\u00a0 ").strip() for c in cont if c.strip()]
+    elif rest0:
+        titles = [rest0]
+    else:
+        if not cont:
+            return []
+        titles = _pair_location_colon_continuations(cont)
+
+    label = _date_label_from_match(m)
+    return [f"{label} - {t}" for t in titles]
+
 
 def fetch_html(url: str) -> str:
     headers = {
@@ -271,6 +369,11 @@ def parse_event_line(line: str, venue_key: str, section_time: Optional[tuple] = 
     venue_info = VENUE_INFO.get(venue_key.lower(), {})
     venue_name = venue_info.get("EVENT VENUE NAME", "Propeller Taproom")
     organizer_name = venue_info.get("EVENT ORGANIZER NAME", "Propeller Brewing Co.")
+    venue_address = venue_info.get("EVENT VENUE ADDRESS", "")
+    venue_city = venue_info.get("CITY", "Halifax")
+    venue_province = venue_info.get("PROVINCE", "NS")
+    venue_postal = venue_info.get("POSTAL", "")
+    venue_country = venue_info.get("COUNTRY", "Canada")
 
     categories = "Food & Drink, Live Music & Nightlife"
     tags = "propeller brewing, taproom, trivia, live music, events"
@@ -284,6 +387,11 @@ def parse_event_line(line: str, venue_key: str, section_time: Optional[tuple] = 
         "EVENT NAME": title_text,
         "EVENT EXCERPT": "",
         "EVENT VENUE NAME": venue_name,
+        "EVENT VENUE COUNTRY": venue_country,
+        "EVENT VENUE STATE/PROVINCE": venue_province,
+        "EVENT VENUE CITY": venue_city,
+        "EVENT VENUE ADDRESS": venue_address,
+        "EVENT VENUE ZIP": venue_postal,
         "EVENT ORGANIZER NAME": organizer_name,
         "EVENT START DATE": start_date_str,
         "EVENT START TIME": start_time_str,
@@ -323,69 +431,50 @@ def scrape_propeller() -> List[Dict[str, str]]:
     print(f"[Propeller] Fetched {len(lines)} text lines from {EVENTS_URL}")
     venue_lines = [l for l in lines if any(v in l.upper() for v in ["BEDFORD", "GOTTINGEN", "QUINPOOL"])]
     print(f"[Propeller] Venue header lines found: {len(venue_lines)} -> {venue_lines[:5]}")
-    date_lines = [l for l in lines if MONTH_RE.match(l)]
-    print(f"[Propeller] Date-prefixed lines found: {len(date_lines)} -> {date_lines[:5]}")
 
     events: List[Dict[str, str]] = []
     current_venue_key: Optional[str] = None
-    current_section_time: Optional[tuple] = None  # (start, end, ampm) from section headers
 
-    for line in lines:
+    i = 0
+    while i < len(lines):
+        line = lines[i]
         uline = line.upper()
 
-        # Track which taproom we're in
-        if "BEDFORD HIGHWAY TAPROOM" in uline:
-            current_venue_key = "BEDFORD"
-            current_section_time = None  # Reset section time for new venue
-            continue
-        if "GOTTINGEN TAPROOM" in uline:
-            current_venue_key = "GOTTINGEN"
-            current_section_time = None
-            continue
-        if "QUINPOOL TAPROOM" in uline:
-            current_venue_key = "QUINPOOL"
-            current_section_time = None
+        if is_taproom_venue_header(line):
+            v = _venue_key_from_line(line)
+            if v:
+                current_venue_key = v
+            i += 1
             continue
 
-        # Only parse when we know the venue
         if not current_venue_key:
+            i += 1
             continue
 
-        # Check if this is a section header with time info
-        # e.g., "TRIVIA NIGHTS (Wednesdays 7–9pm)", "LIVE MUSIC SUNDAYS (3:30–5:30pm)"
-        section_match = SECTION_TIME_RE.search(line)
-        if section_match and not MONTH_RE.match(line):
-            # This is a section header, extract the time for subsequent events
-            start_raw, end_raw, ampm = section_match.groups()
-            current_section_time = (start_raw, end_raw, ampm)
-            print(f"  [Section] {line.strip()[:50]}... -> time: {current_section_time}")
+        m = RE_DATE_START.match(line)
+        if m:
+            j = i + 1
+            while j < len(lines):
+                nxt = lines[j]
+                if is_taproom_venue_header(nxt) or RE_DATE_START.match(nxt):
+                    break
+                if is_noise_line(nxt):
+                    break
+                j += 1
+            continuation = lines[i + 1 : j]
+            for synthetic in synthetic_event_lines_for_date(m, continuation):
+                row = parse_event_line(synthetic, current_venue_key, None)
+                if row:
+                    events.append(row)
+            i = j
             continue
-        
-        # Check if this is a new section without time (reset section time)
-        # e.g., "ART NIGHTS", "LIVE COMEDY"
-        if uline.strip() and not MONTH_RE.match(line) and not section_match:
-            # Check if it looks like a section header (short, all caps or title case)
-            stripped = line.strip()
-            if len(stripped) < 50 and (stripped.isupper() or stripped.istitle()):
-                # Might be a section header without time
-                if any(kw in uline for kw in ["TRIVIA", "MUSIC", "ART", "COMEDY", "BINGO", "JAM", "TOURNAMENT", "BOOK CLUB"]):
-                    current_section_time = None  # Reset - no default time for this section
-                    print(f"  [Section no-time] {stripped}")
 
-        # Event lines start with a month token like 'Nov 2nd'
-        if MONTH_RE.match(line):
-            row = parse_event_line(line, current_venue_key, current_section_time)
-            if row:
-                events.append(row)
+        i += 1
 
     return events
 
-from datetime import datetime, date
-from typing import List, Dict
-
 
 def filter_future_events(rows: List[Dict[str, str]]) -> List[Dict[str, str]]:
-    today = date.today()
     filtered: List[Dict[str, str]] = []
     skipped = 0
 
@@ -403,11 +492,11 @@ def filter_future_events(rows: List[Dict[str, str]]) -> List[Dict[str, str]]:
             print(f"[SKIP - bad date {date_str!r}] {name!r}")
             continue
 
-        if event_date >= today:
+        if is_within_event_horizon(date_str):
             filtered.append(row)
         else:
             skipped += 1
-            print(f"[SKIP - past {event_date}] {name!r}")
+            print(f"[SKIP - outside horizon {event_date}] {name!r}")
 
     print(f"Filtered out {skipped} past/invalid events")
     return filtered

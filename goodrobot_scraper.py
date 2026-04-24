@@ -9,13 +9,12 @@ from dateutil import parser as dateparser
 
 from cost_parsing import extract_event_cost
 from default_images import get_default_image
+from scraper_paths import OUTPUT_DIR
 
 # ----------------------------
 # Paths & constants
 # ----------------------------
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 BASE_URL = "https://goodrobotbrewing.ca/events"

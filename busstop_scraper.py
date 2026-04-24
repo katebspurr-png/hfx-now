@@ -3,10 +3,9 @@ from dateutil import parser as dateparser
 import csv
 import os
 import re
+from scraper_paths import OUTPUT_DIR
 
 # ---------- base paths ----------
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 EVENTS_URL = "https://busstoptheatre.coop/events/photo/"

@@ -7,6 +7,7 @@ import shutil
 
 from category_mapping import normalize_categories
 from cost_parsing import extract_event_cost
+from scraper_paths import OUTPUT_DIR
 
 BASE_URL = "https://discoverhalifaxns.com/events/"
 SITE_ROOT = "https://discoverhalifaxns.com"
@@ -31,7 +32,7 @@ LISTING_URLS = [
     "https://discoverhalifaxns.com/events/this-weekends-events/",
 ]
 
-CSV_FILE = "output/discover_halifax_events_for_import.csv"
+CSV_FILE = os.path.join(OUTPUT_DIR, "discover_halifax_for_import.csv")
 
 FIELDNAMES = [
     "EVENT NAME",

@@ -8,16 +8,17 @@ import requests
 from bs4 import BeautifulSoup
 from dateutil import parser as dateparser
 
+from scraper_paths import OUTPUT_DIR
+
 # ----------------------------
 # Paths & constants
 # ----------------------------
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-BASE_URL = "https://maritimemuseum.novascotia.ca/events"
-OUTPUT_CSV = os.path.join(BASE_DIR, "output", "mma_events.csv")
+BASE_URL = "https://maritimemuseum.novascotia.ca/whats-on"
+SITE_ORIGIN = "https://maritimemuseum.novascotia.ca"
+OUTPUT_CSV = os.path.join(OUTPUT_DIR, "mma_events.csv")
 
 TIMEZONE = "America/Halifax"
 
@@ -81,14 +82,14 @@ def fetch_html(url: str) -> str:
 
 
 def get_event_links_from_index(html: str) -> List[str]:
-    """Collect all /event/... links from the events index page."""
+    """Collect detail links from the museum What's On index page."""
     soup = BeautifulSoup(html, "html.parser")
     links = set()
 
     for a in soup.find_all("a", href=True):
         href = a["href"]
-        if "/event/" in href:
-            links.add(urljoin(BASE_URL, href))
+        if href.startswith("/whats-on/") and href.rstrip("/") != "/whats-on":
+            links.add(urljoin(SITE_ORIGIN, href))
 
     return sorted(links)
 

@@ -5,6 +5,7 @@ import os
 import re
 from datetime import date
 from typing import Dict, List, Optional
+from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
@@ -93,12 +94,24 @@ def parse_time_24(time_str: str) -> str:
     """
     Convert '08:00 PM' -> '20:00'
     """
-    m = re.search(r"\d{1,2}:\d{2}\s*(AM|PM)", time_str)
+    m = re.search(r"\d{1,2}:\d{2}\s*(AM|PM)", time_str, flags=re.I)
     if not m:
+        m = re.search(r"\d{1,2}\s*(AM|PM)", time_str, flags=re.I)
+    if not m:
+        m24 = re.search(r"\b([01]?\d|2[0-3]):([0-5]\d)\b", time_str)
+        if m24:
+            hour = int(m24.group(1))
+            minute = int(m24.group(2))
+            suffix = "AM" if hour < 12 else "PM"
+            hour12 = hour % 12 or 12
+            return f"{hour12:02d}:{minute:02d} {suffix}"
         return ""
     try:
-        dt = dateparser.parse(m.group(0))
-        return dt.strftime("%H:%M")
+        raw = m.group(0).upper().replace(".", "")
+        if re.search(r"^\d{1,2}\s*(AM|PM)$", raw):
+            raw = raw.replace(" ", ":00 ")
+        dt = dateparser.parse(raw)
+        return dt.strftime("%I:%M %p")
     except Exception:
         return ""
 
@@ -116,7 +129,39 @@ def is_day_single(s: str) -> bool:
 
 
 def looks_like_time(s: str) -> bool:
-    return bool(re.search(r"\d{1,2}:\d{2}\s*(AM|PM)", s))
+    return bool(
+        re.search(r"\d{1,2}:\d{2}\s*(AM|PM)", s, flags=re.I)
+        or re.search(r"\b\d{1,2}\s*(AM|PM)\b", s, flags=re.I)
+        or re.search(r"\b([01]?\d|2[0-3]):([0-5]\d)\b", s)
+    )
+
+
+def extract_event_image(ticket_anchor) -> str:
+    """Find an event image near the ticket link."""
+    container = ticket_anchor.find_parent(["div", "article", "section", "li"])
+    if not container:
+        return ""
+    for img in container.find_all("img"):
+        raw = (
+            img.get("src")
+            or img.get("data-src")
+            or img.get("data-lazy-src")
+            or img.get("srcset")
+            or ""
+        )
+        if not raw:
+            continue
+        candidate = str(raw).split(",")[0].split()[0].strip()
+        if candidate.startswith("//"):
+            candidate = f"https:{candidate}"
+        elif candidate.startswith("/"):
+            candidate = urljoin("https://www.yukyuks.com", candidate)
+        if not candidate.startswith("http"):
+            continue
+        if any(x in candidate.lower() for x in ["logo", "icon", "placeholder", "pixel", "1x1"]):
+            continue
+        return candidate
+    return ""
 
 
 def looks_like_meta(s: str) -> bool:
@@ -189,16 +234,19 @@ def parse_events_from_html(html: str) -> List[Dict[str, str]]:
         return events
 
     # Collect the ticket URLs in order
-    book_links = [
-        a.get("href")
-        for a in soup.find_all("a", string=lambda s: s and "Book Tickets" in s)
+    ticket_anchors = [
+        a for a in soup.find_all("a", string=lambda s: s and "Book Tickets" in s)
     ]
     link_by_index: Dict[int, str] = {}
+    image_by_index: Dict[int, str] = {}
     for idx, line_index in enumerate(book_indices):
-        if idx < len(book_links) and book_links[idx]:
-            link_by_index[line_index] = book_links[idx]
+        if idx < len(ticket_anchors):
+            href = ticket_anchors[idx].get("href")
+            link_by_index[line_index] = href or BASE_URL
+            image_by_index[line_index] = extract_event_image(ticket_anchors[idx])
         else:
             link_by_index[line_index] = BASE_URL
+            image_by_index[line_index] = ""
 
     # Main pass over lines
     for i, line in enumerate(lines):
@@ -287,7 +335,7 @@ def parse_events_from_html(html: str) -> List[Dict[str, str]]:
         row: Dict[str, str] = {k: "" for k in FIELDNAMES}
         row["EVENT NAME"] = name or "Comedy Night"
         description = " ".join(desc_parts).strip()
-        row["EVENT EXCERPT"] = description[:200] + "..." if len(description) > 200 else description
+        row["EVENT EXCERPT"] = description[:220] + "..." if len(description) > 220 else description
         row["EVENT DESCRIPTION"] = description
 
         row["EVENT START DATE"] = start_date.strftime("%Y-%m-%d")
@@ -322,7 +370,7 @@ def parse_events_from_html(html: str) -> List[Dict[str, str]]:
         else:
             row["EVENT WEBSITE"] = ticket_href or BASE_URL
 
-        row["EVENT FEATURED IMAGE"] = ""
+        row["EVENT FEATURED IMAGE"] = image_by_index.get(i) or "https://www.yukyuks.com/images/logo.webp"
         row["EVENT SHOW MAP LINK"] = "TRUE"
         row["EVENT SHOW MAP"] = "TRUE"
         row["ALLOW COMMENTS"] = "FALSE"

@@ -829,6 +829,22 @@ function hfx_event_to_payload($post_id) {
 	if (!$venue_n && function_exists('tribe_get_venue')) {
 		$venue_n = tribe_get_venue($post_id);
 	}
+	if (!$venue_n) {
+		$venue_meta_keys = array(
+			'Event Venue Name',
+			'EVENT VENUE NAME',
+			'event_venue_name',
+			'_EventVenue',
+			'_Venue',
+		);
+		foreach ($venue_meta_keys as $mk) {
+			$candidate = trim((string) get_post_meta($post_id, $mk, true));
+			if ('' !== $candidate) {
+				$venue_n = $candidate;
+				break;
+			}
+		}
+	}
 	$coords = hfx_event_lat_lng($post_id, (int) $venue);
 
 	$address = get_post_meta($post_id, '_EventVenueAddress', true);
@@ -878,8 +894,19 @@ function hfx_event_to_payload($post_id) {
 	}
 	$price = trim($price);
 	if ($price === '') {
-		$price = (string) get_post_meta($post_id, '_EventCost', true);
-		$price = trim($price);
+		$cost_meta_keys = array(
+			'_EventCost',   // TEC canonical
+			'Event Cost',   // CSV/header variants
+			'EVENT COST',   // scraper raw header variant
+			'event_cost',
+		);
+		foreach ( $cost_meta_keys as $mk ) {
+			$candidate = trim( (string) get_post_meta( $post_id, $mk, true ) );
+			if ( '' !== $candidate ) {
+				$price = $candidate;
+				break;
+			}
+		}
 	}
 
 	$is_pick = false;
@@ -1398,4 +1425,134 @@ function hfx_format_event_when( $date, $time, $today_ymd ) {
 	}
 
 	return $time_fmt ? $label . ' · ' . $time_fmt : $label;
+}
+
+/**
+ * Resolve the first non-empty cost from known import/meta variants.
+ *
+ * @param int $post_id Event post ID.
+ * @return string
+ */
+function hfx_resolve_event_cost_from_meta_variants( $post_id ) {
+	$keys = array(
+		'_EventCost',   // TEC canonical.
+		'Event Cost',   // Common CSV import variant.
+		'EVENT COST',   // Scraper header variant.
+		'event_cost',   // Lowercase variant.
+	);
+
+	foreach ( $keys as $key ) {
+		$value = trim( (string) get_post_meta( (int) $post_id, $key, true ) );
+		if ( '' !== $value ) {
+			return $value;
+		}
+	}
+	return '';
+}
+
+/**
+ * WP-CLI: Backfill missing _EventCost from alternate imported cost keys.
+ *
+ * Usage:
+ *   wp hfx backfill-event-cost --dry-run=1
+ *   wp hfx backfill-event-cost --force=1
+ *   wp hfx backfill-event-cost --limit=500
+ *   wp hfx backfill-event-cost --post_id=12345
+ *
+ * @param array $args Positional args (unused).
+ * @param array $assoc_args Flags/options.
+ * @return void
+ */
+function hfx_cli_backfill_event_cost( $args, $assoc_args ) {
+	if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
+		return;
+	}
+
+	$dry_run = isset( $assoc_args['dry-run'] )
+		? filter_var( $assoc_args['dry-run'], FILTER_VALIDATE_BOOLEAN )
+		: true;
+	$force = isset( $assoc_args['force'] )
+		? filter_var( $assoc_args['force'], FILTER_VALIDATE_BOOLEAN )
+		: false;
+	$limit = isset( $assoc_args['limit'] ) ? max( 1, (int) $assoc_args['limit'] ) : 0;
+	$post_id_filter = isset( $assoc_args['post_id'] ) ? (int) $assoc_args['post_id'] : 0;
+
+	$q_args = array(
+		'post_type'      => 'tribe_events',
+		'post_status'    => array( 'publish', 'future', 'draft', 'pending', 'private' ),
+		'fields'         => 'ids',
+		'orderby'        => 'ID',
+		'order'          => 'DESC',
+		'posts_per_page' => $limit > 0 ? $limit : -1,
+		'no_found_rows'  => true,
+	);
+	if ( $post_id_filter > 0 ) {
+		$q_args['post__in'] = array( $post_id_filter );
+	}
+
+	$ids = get_posts( $q_args );
+	if ( empty( $ids ) ) {
+		WP_CLI::success( 'No matching tribe_events posts found.' );
+		return;
+	}
+
+	$scanned = 0;
+	$updated = 0;
+	$skipped = 0;
+	$already = 0;
+
+	WP_CLI::log(
+		sprintf(
+			'Backfill starting (%s, force=%s, posts=%d).',
+			$dry_run ? 'dry-run' : 'apply',
+			$force ? 'true' : 'false',
+			count( $ids )
+		)
+	);
+
+	foreach ( $ids as $pid ) {
+		$pid = (int) $pid;
+		$scanned++;
+
+		$current = trim( (string) get_post_meta( $pid, '_EventCost', true ) );
+		if ( '' !== $current && ! $force ) {
+			$already++;
+			continue;
+		}
+
+		$resolved = hfx_resolve_event_cost_from_meta_variants( $pid );
+		if ( '' === $resolved ) {
+			$skipped++;
+			continue;
+		}
+
+		if ( $dry_run ) {
+			$updated++;
+			WP_CLI::log( sprintf( '[dry-run] %d => _EventCost "%s"', $pid, $resolved ) );
+			continue;
+		}
+
+		update_post_meta( $pid, '_EventCost', $resolved );
+		$updated++;
+		WP_CLI::log( sprintf( '[updated] %d => _EventCost "%s"', $pid, $resolved ) );
+	}
+
+	if ( $updated > 0 && ! $dry_run ) {
+		hfx_clear_events_payload_cache();
+	}
+
+	WP_CLI::success(
+		sprintf(
+			'Done. scanned=%d updated=%d already=%d skipped=%d mode=%s',
+			$scanned,
+			$updated,
+			$already,
+			$skipped,
+			$dry_run ? 'dry-run' : 'apply'
+		)
+	);
+}
+
+if ( defined( 'WP_CLI' ) && WP_CLI ) {
+	WP_CLI::add_command( 'hfx backfill-event-cost', 'hfx_cli_backfill_event_cost' );
 }
