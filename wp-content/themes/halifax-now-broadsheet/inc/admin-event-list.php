@@ -17,7 +17,6 @@ function hfx_admin_event_columns( $cols ) {
 		if ( 'title' === $key ) {
 			$new['hfx_venue'] = 'Venue';
 			$new['hfx_price'] = 'Price';
-			$new['hfx_hood']  = 'Neighbourhood';
 			$new['hfx_pick']  = '★';
 		}
 	}
@@ -41,7 +40,7 @@ function hfx_admin_event_column( $col, $post_id ) {
 					echo '<span class="hfx-dim">—</span>';
 				}
 			} elseif ( function_exists( 'tribe_get_venue' ) ) {
-				$v = (string) tribe_get_venue( $post_id );
+				$v = wp_strip_all_tags( (string) tribe_get_venue( $post_id, false, false ) );
 				echo $v !== '' ? esc_html( $v ) : '<span class="hfx-dim">—</span>';
 			} else {
 				echo '<span class="hfx-dim">—</span>';
@@ -51,11 +50,6 @@ function hfx_admin_event_column( $col, $post_id ) {
 		case 'hfx_price':
 			$price = trim( (string) get_post_meta( $post_id, '_EventCost', true ) );
 			echo $price !== '' ? esc_html( $price ) : '<span class="hfx-dim">Free</span>';
-			break;
-
-		case 'hfx_hood':
-			$hood = trim( (string) get_post_meta( $post_id, 'hfx_neighbourhood', true ) );
-			echo $hood !== '' ? esc_html( $hood ) : '<span class="hfx-dim">—</span>';
 			break;
 
 		case 'hfx_pick':
@@ -86,7 +80,6 @@ function hfx_admin_event_column( $col, $post_id ) {
 add_filter( 'manage_edit-tribe_events_sortable_columns', 'hfx_admin_event_sortable_columns' );
 function hfx_admin_event_sortable_columns( $cols ) {
 	$cols['hfx_price'] = 'hfx_price';
-	$cols['hfx_hood']  = 'hfx_hood';
 	$cols['hfx_pick']  = 'hfx_pick';
 	return $cols;
 }
@@ -98,7 +91,6 @@ function hfx_admin_event_sort_query( $query ) {
 	}
 	$map = array(
 		'hfx_price' => '_EventCost',
-		'hfx_hood'  => 'hfx_neighbourhood',
 		'hfx_pick'  => 'hfx_critic_pick',
 	);
 	$ob = $query->get( 'orderby' );
@@ -118,11 +110,11 @@ function hfx_admin_event_css() {
 	}
 	?>
 	<style>
-	.column-hfx_venue { width: 150px; }
-	.column-hfx_price { width: 68px; }
-	.column-hfx_hood  { width: 120px; }
-	.column-hfx_pick  { width: 30px; text-align: center !important; }
+	.column-hfx_venue { width: 130px; }
+	.column-hfx_price { width: 60px; }
+	.column-hfx_pick  { width: 28px; text-align: center !important; }
 	td.column-hfx_pick { text-align: center; }
+	.column-title { min-width: 160px; }
 	.hfx-dim { color: #bbb; }
 
 	/* Quick-edit panel */
