@@ -167,7 +167,7 @@ $has_heat_data = $total_heat_count > 0;
 		<a class="v4-mood" href="<?php echo esc_url($browse_url . '?mood=kids'); ?>">🧃 Kid-friendly</a>
 		<a class="v4-mood" href="<?php echo esc_url($browse_url . '?mood=solo'); ?>">👤 Solo OK</a>
 		<a class="v4-mood" href="<?php echo esc_url($browse_url . '?mood=crew'); ?>">👯 Bring a crew</a>
-		<a class="v4-mood" href="<?php echo esc_url($browse_url . '?mood=free'); ?>">🪙 Broke-friendly</a>
+		<a class="v4-mood" href="<?php echo esc_url($browse_url . '?mood=free'); ?>">💸 Wallet-friendly</a>
 		<a class="v4-mood" href="<?php echo esc_url($browse_url . '?mood=rainy'); ?>">☔ Rainy-day</a>
 	</div>
 
