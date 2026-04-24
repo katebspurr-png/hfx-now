@@ -11,12 +11,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 add_filter( 'manage_tribe_events_posts_columns', 'hfx_admin_event_columns' );
 function hfx_admin_event_columns( $cols ) {
+	unset( $cols['series'] );
+
 	$new = array();
 	foreach ( $cols as $key => $label ) {
 		$new[ $key ] = $label;
 		if ( 'title' === $key ) {
 			$new['hfx_venue'] = 'Venue';
 			$new['hfx_price'] = 'Price';
+			$new['hfx_hood']  = 'Hood';
 			$new['hfx_pick']  = '★';
 		}
 	}
@@ -52,6 +55,11 @@ function hfx_admin_event_column( $col, $post_id ) {
 			echo $price !== '' ? esc_html( $price ) : '<span class="hfx-dim">Free</span>';
 			break;
 
+		case 'hfx_hood':
+			$hood = trim( (string) get_post_meta( $post_id, 'hfx_neighbourhood', true ) );
+			echo $hood !== '' ? esc_html( $hood ) : '<span class="hfx-dim">—</span>';
+			break;
+
 		case 'hfx_pick':
 			$pick    = get_post_meta( $post_id, 'hfx_critic_pick', true );
 			$is_pick = $pick && '0' !== (string) $pick;
@@ -60,18 +68,33 @@ function hfx_admin_event_column( $col, $post_id ) {
 			}
 
 			// Hidden data block read by quick-edit JS (rendered once, in this column).
-			$price    = trim( (string) get_post_meta( $post_id, '_EventCost', true ) );
-			$hood     = trim( (string) get_post_meta( $post_id, 'hfx_neighbourhood', true ) );
+			$price     = trim( (string) get_post_meta( $post_id, '_EventCost', true ) );
+			$hood      = trim( (string) get_post_meta( $post_id, 'hfx_neighbourhood', true ) );
+			$venue_id  = (int) get_post_meta( $post_id, '_EventVenueID', true );
 			$moods_raw = get_post_meta( $post_id, 'hfx_moods', true );
-			$moods    = is_array( $moods_raw ) ? $moods_raw
+			$moods     = is_array( $moods_raw ) ? $moods_raw
 				: ( is_string( $moods_raw ) && $moods_raw !== '' ? array_map( 'trim', explode( ',', $moods_raw ) ) : array() );
 
+			$start_raw = (string) get_post_meta( $post_id, '_EventStartDate', true );
+			$end_raw   = (string) get_post_meta( $post_id, '_EventEndDate', true );
+			$start_dt  = $start_raw ? date_create( $start_raw ) : false;
+			$end_dt    = $end_raw   ? date_create( $end_raw )   : false;
+			$start_date = $start_dt ? $start_dt->format( 'Y-m-d' ) : '';
+			$start_time = $start_dt ? $start_dt->format( 'H:i' )   : '';
+			$end_date   = $end_dt   ? $end_dt->format( 'Y-m-d' )   : '';
+			$end_time   = $end_dt   ? $end_dt->format( 'H:i' )     : '';
+
 			printf(
-				'<span class="hfx-row-data" style="display:none" data-price="%s" data-hood="%s" data-pick="%s" data-moods="%s"></span>',
+				'<span class="hfx-row-data" style="display:none" data-venue-id="%s" data-price="%s" data-hood="%s" data-pick="%s" data-moods="%s" data-start-date="%s" data-start-time="%s" data-end-date="%s" data-end-time="%s"></span>',
+				esc_attr( (string) $venue_id ),
 				esc_attr( $price ),
 				esc_attr( $hood ),
 				esc_attr( $is_pick ? '1' : '0' ),
-				esc_attr( (string) wp_json_encode( array_values( $moods ) ) )
+				esc_attr( (string) wp_json_encode( array_values( $moods ) ) ),
+				esc_attr( $start_date ),
+				esc_attr( $start_time ),
+				esc_attr( $end_date ),
+				esc_attr( $end_time )
 			);
 			break;
 	}
@@ -80,6 +103,7 @@ function hfx_admin_event_column( $col, $post_id ) {
 add_filter( 'manage_edit-tribe_events_sortable_columns', 'hfx_admin_event_sortable_columns' );
 function hfx_admin_event_sortable_columns( $cols ) {
 	$cols['hfx_price'] = 'hfx_price';
+	$cols['hfx_hood']  = 'hfx_hood';
 	$cols['hfx_pick']  = 'hfx_pick';
 	return $cols;
 }
@@ -91,6 +115,7 @@ function hfx_admin_event_sort_query( $query ) {
 	}
 	$map = array(
 		'hfx_price' => '_EventCost',
+		'hfx_hood'  => 'hfx_neighbourhood',
 		'hfx_pick'  => 'hfx_critic_pick',
 	);
 	$ob = $query->get( 'orderby' );
@@ -112,6 +137,7 @@ function hfx_admin_event_css() {
 	<style>
 	.column-hfx_venue { width: 130px; }
 	.column-hfx_price { width: 60px; }
+	.column-hfx_hood  { width: 110px; }
 	.column-hfx_pick  { width: 28px; text-align: center !important; }
 	td.column-hfx_pick { text-align: center; }
 	.column-title { min-width: 160px; }
@@ -197,11 +223,31 @@ function hfx_admin_event_quick_edit( $col, $post_type ) {
 		'rainy' => '☔ Rainy-day',
 	);
 
+	$venues = get_posts( array(
+		'post_type'      => 'tribe_venue',
+		'post_status'    => 'publish',
+		'posts_per_page' => -1,
+		'orderby'        => 'title',
+		'order'          => 'ASC',
+		'no_found_rows'  => true,
+	) );
+
 	wp_nonce_field( 'hfx_quick_edit', 'hfx_qe_nonce' );
 	?>
+	<input type="hidden" name="hfx_qe_initialized" id="hfx-qe-initialized" value="0">
 	<div id="hfx-quick-edit">
 		<h4>Halifax Now</h4>
 		<div class="hfx-qe-row">
+
+			<div class="hfx-qe-field">
+				<span>Venue</span>
+				<select name="hfx_qe_venue_id" id="hfx-qe-venue-id" style="max-width:200px">
+					<option value="0">— no venue —</option>
+					<?php foreach ( $venues as $v ) : ?>
+						<option value="<?php echo esc_attr( (string) $v->ID ); ?>"><?php echo esc_html( $v->post_title ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</div>
 
 			<div class="hfx-qe-field">
 				<span>Price</span>
@@ -222,6 +268,26 @@ function hfx_admin_event_quick_edit( $col, $post_type ) {
 					<input type="checkbox" name="hfx_qe_pick" id="hfx-qe-pick" value="1">
 					★ Critic's Pick
 				</label>
+			</div>
+
+		</div>
+
+		<div class="hfx-qe-row" style="margin-top:8px;">
+
+			<div class="hfx-qe-field">
+				<span>Start date</span>
+				<div style="display:flex;gap:6px;">
+					<input type="date" name="hfx_qe_start_date" id="hfx-qe-start-date">
+					<input type="time" name="hfx_qe_start_time" id="hfx-qe-start-time">
+				</div>
+			</div>
+
+			<div class="hfx-qe-field">
+				<span>End date</span>
+				<div style="display:flex;gap:6px;">
+					<input type="date" name="hfx_qe_end_date" id="hfx-qe-end-date">
+					<input type="time" name="hfx_qe_end_time" id="hfx-qe-end-time">
+				</div>
 			</div>
 
 		</div>
@@ -261,14 +327,23 @@ function hfx_admin_event_quick_edit_js() {
 			var $data = $('#post-' + postId).find('.hfx-row-data');
 			var $qe   = $('#edit-' + postId);
 
+			$qe.find('#hfx-qe-venue-id').val($data.data('venueId') || '0');
 			$qe.find('#hfx-qe-price').val($data.data('price') || '');
 			$qe.find('#hfx-qe-hood').val($data.data('hood') || '');
 			$qe.find('#hfx-qe-pick').prop('checked', String($data.data('pick')) === '1');
+			$qe.find('#hfx-qe-start-date').val($data.data('startDate') || '');
+			$qe.find('#hfx-qe-start-time').val($data.data('startTime') || '');
+			$qe.find('#hfx-qe-end-date').val($data.data('endDate') || '');
+			$qe.find('#hfx-qe-end-time').val($data.data('endTime') || '');
 
 			var moods = $data.data('moods') || [];
 			$qe.find('.hfx-qe-mood').each(function () {
 				$(this).prop('checked', moods.indexOf($(this).val()) !== -1);
 			});
+
+			// Signal that JS pre-population succeeded — save handler uses this
+			// to know it can trust empty values as intentional clears.
+			$qe.find('#hfx-qe-initialized').val('1');
 		};
 	}(jQuery));
 	</script>
@@ -292,27 +367,68 @@ function hfx_save_quick_edit_event( $post_id ) {
 		return;
 	}
 
+	// Only trust empty/unchecked values when JS confirmed it pre-populated the form.
+	// If JS didn't run, skip overwriting existing data with defaults.
+	$initialized = isset( $_POST['hfx_qe_initialized'] ) && '1' === $_POST['hfx_qe_initialized'];
+
+	// Venue — always save (dropdown always sends a value).
+	if ( isset( $_POST['hfx_qe_venue_id'] ) ) {
+		$venue_id = absint( $_POST['hfx_qe_venue_id'] );
+		if ( $venue_id > 0 && get_post_type( $venue_id ) === 'tribe_venue' ) {
+			update_post_meta( $post_id, '_EventVenueID', $venue_id );
+		} elseif ( 0 === $venue_id && $initialized ) {
+			delete_post_meta( $post_id, '_EventVenueID' );
+		}
+	}
+
+	// Price — always save (text field, user can see its value).
 	update_post_meta(
 		$post_id,
 		'_EventCost',
 		isset( $_POST['hfx_qe_price'] ) ? sanitize_text_field( wp_unslash( $_POST['hfx_qe_price'] ) ) : ''
 	);
 
-	update_post_meta(
-		$post_id,
-		'hfx_neighbourhood',
-		isset( $_POST['hfx_qe_hood'] ) ? sanitize_text_field( wp_unslash( $_POST['hfx_qe_hood'] ) ) : ''
-	);
-
-	update_post_meta(
-		$post_id,
-		'hfx_critic_pick',
-		isset( $_POST['hfx_qe_pick'] ) ? 1 : 0
-	);
-
-	$moods = array();
-	if ( isset( $_POST['hfx_qe_moods'] ) && is_array( $_POST['hfx_qe_moods'] ) ) {
-		$moods = array_map( 'sanitize_key', array_map( 'wp_unslash', $_POST['hfx_qe_moods'] ) );
+	// Neighbourhood — only clear if JS confirmed the form was pre-populated.
+	$new_hood = isset( $_POST['hfx_qe_hood'] ) ? sanitize_text_field( wp_unslash( $_POST['hfx_qe_hood'] ) ) : '';
+	if ( $new_hood !== '' || $initialized ) {
+		update_post_meta( $post_id, 'hfx_neighbourhood', $new_hood );
 	}
-	update_post_meta( $post_id, 'hfx_moods', $moods );
+
+	// Critic's pick — only save 0 (uncheck) if JS confirmed pre-population.
+	$new_pick = isset( $_POST['hfx_qe_pick'] ) ? 1 : 0;
+	if ( $new_pick === 1 || $initialized ) {
+		update_post_meta( $post_id, 'hfx_critic_pick', $new_pick );
+	}
+
+	// Moods — only overwrite with empty if JS confirmed pre-population.
+	$new_moods = array();
+	if ( isset( $_POST['hfx_qe_moods'] ) && is_array( $_POST['hfx_qe_moods'] ) ) {
+		$new_moods = array_map( 'sanitize_key', array_map( 'wp_unslash', $_POST['hfx_qe_moods'] ) );
+	}
+	if ( ! empty( $new_moods ) || $initialized ) {
+		update_post_meta( $post_id, 'hfx_moods', $new_moods );
+	}
+
+	// Dates: only save when both date and time are provided and valid.
+	if ( ! empty( $_POST['hfx_qe_start_date'] ) && ! empty( $_POST['hfx_qe_start_time'] ) ) {
+		$start_date = sanitize_text_field( wp_unslash( $_POST['hfx_qe_start_date'] ) );
+		$start_time = sanitize_text_field( wp_unslash( $_POST['hfx_qe_start_time'] ) );
+		$start_dt   = date_create_from_format( 'Y-m-d H:i', $start_date . ' ' . $start_time );
+		if ( $start_dt ) {
+			$formatted = $start_dt->format( 'Y-m-d H:i:s' );
+			update_post_meta( $post_id, '_EventStartDate', $formatted );
+			update_post_meta( $post_id, '_EventStartDateUTC', $formatted );
+		}
+	}
+
+	if ( ! empty( $_POST['hfx_qe_end_date'] ) && ! empty( $_POST['hfx_qe_end_time'] ) ) {
+		$end_date = sanitize_text_field( wp_unslash( $_POST['hfx_qe_end_date'] ) );
+		$end_time = sanitize_text_field( wp_unslash( $_POST['hfx_qe_end_time'] ) );
+		$end_dt   = date_create_from_format( 'Y-m-d H:i', $end_date . ' ' . $end_time );
+		if ( $end_dt ) {
+			$formatted = $end_dt->format( 'Y-m-d H:i:s' );
+			update_post_meta( $post_id, '_EventEndDate', $formatted );
+			update_post_meta( $post_id, '_EventEndDateUTC', $formatted );
+		}
+	}
 }
