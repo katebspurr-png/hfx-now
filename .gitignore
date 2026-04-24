@@ -24,7 +24,3 @@ site_potential_duplicates.csv
 
 # Local ad-hoc export/import intermediates
 ready_to_import_*.csv
-
-# Local machine/editor metadata
-.DS_Store
-.specstory/

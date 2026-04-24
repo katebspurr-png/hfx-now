@@ -1,5 +1,7 @@
 # Halifax Event Scrapers (v2 + v3)
 
+Start here for current operational context: `STATUS.md`
+
 This directory contains the Halifax event scraping pipeline and import tooling.
 
 ## Primary entry points
