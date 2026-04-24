@@ -21,6 +21,9 @@ from typing import List, Dict, Optional, Tuple
 import requests
 from bs4 import BeautifulSoup, Tag
 
+from cost_parsing import format_cost_fields
+from scraper_paths import OUTPUT_DIR
+
 # Note: Neptune prices come from neptune_prices.json, not page scraping
 
 # -------------------------------------------------------------------
@@ -52,10 +55,6 @@ def get_price_for_show(url: str, prices: Dict[str, str]) -> str:
     if price and price.strip():
         return price.strip()
     return "See website"
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 OUTPUT_CSV = os.path.join(OUTPUT_DIR, "neptune_events.csv")
 
@@ -465,9 +464,7 @@ def build_row(
     Build a TEC row for a single performance (or a single run-range fallback).
     Neptune prices are on external ticketing system, so we use a placeholder.
     """
-    # Only show currency fields for actual numeric prices
-    is_numeric_price = bool(event_cost and event_cost[0].isdigit())
-    
+    tec = format_cost_fields(event_cost)
     return {
         "EVENT NAME": title,
         "EVENT EXCERPT": excerpt,
@@ -483,10 +480,10 @@ def build_row(
         "STICKY IN MONTH VIEW": "FALSE",
         "EVENT CATEGORY": "Arts & Culture, Theatre & Comedy",
         "EVENT TAGS": "Theatre, Live Performance, Neptune",
-        "EVENT COST": event_cost,
-        "EVENT CURRENCY SYMBOL": "$" if is_numeric_price else "",
-        "EVENT CURRENCY POSITION": "prefix" if is_numeric_price else "",
-        "EVENT ISO CURRENCY CODE": "CAD" if is_numeric_price else "",
+        "EVENT COST": tec["EVENT COST"],
+        "EVENT CURRENCY SYMBOL": tec["EVENT CURRENCY SYMBOL"],
+        "EVENT CURRENCY POSITION": tec["EVENT CURRENCY POSITION"],
+        "EVENT ISO CURRENCY CODE": tec["EVENT ISO CURRENCY CODE"],
         "EVENT FEATURED IMAGE": image_url,
         "EVENT WEBSITE": event_url,
         "EVENT SHOW MAP LINK": "TRUE",

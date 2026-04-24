@@ -5,9 +5,7 @@ import os
 import re
 
 # ---------- base paths ----------
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+from scraper_paths import OUTPUT_DIR
 
 EVENTS_URL = "https://busstoptheatre.coop/events/photo/"
 CSV_FILE = os.path.join(OUTPUT_DIR, "busstop_theatre_for_import.csv")

@@ -22,9 +22,7 @@ from bs4 import BeautifulSoup, Tag
 from category_mapping import normalize_categories
 from cost_parsing import extract_event_cost
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+from scraper_paths import OUTPUT_DIR
 
 LISTING_URL = "https://symphonynovascotia.ca/concerts-and-tickets/concerts/"
 OUTPUT_CSV = os.path.join(OUTPUT_DIR, "symphonyns_events.csv")

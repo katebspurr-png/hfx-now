@@ -21,22 +21,61 @@ from dateutil import parser as dateparser
 # Import helpers if available
 try:
     from category_mapping import normalize_categories
-    from cost_parsing import extract_event_cost
+    from cost_parsing import extract_event_cost, format_cost_fields
 except ImportError:
     def normalize_categories(cats):
         return cats
+
     def extract_event_cost(title, desc):
-        # Simple fallback
-        if 'free' in (title + desc).lower():
+        if "free" in (title + desc).lower():
             return "Free"
-        cost_match = re.search(r'\$\s*(\d+(?:\.\d{2})?)', title + desc)
+        cost_match = re.search(r"\$\s*(\d+(?:\.\d{2})?)", title + desc)
         if cost_match:
-            return f"${cost_match.group(1)}"
+            return cost_match.group(1)
         return "See website"
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+    def format_cost_fields(cost: str) -> dict:
+        c = (cost or "").strip()
+        if not c:
+            return {
+                "EVENT COST": "",
+                "EVENT CURRENCY SYMBOL": "",
+                "EVENT CURRENCY POSITION": "",
+                "EVENT ISO CURRENCY CODE": "",
+            }
+        if c.lower() == "free":
+            return {
+                "EVENT COST": "Free",
+                "EVENT CURRENCY SYMBOL": "",
+                "EVENT CURRENCY POSITION": "",
+                "EVENT ISO CURRENCY CODE": "",
+            }
+        low = c.lower()
+        if low in (
+            "see website",
+            "see event website",
+            "tba",
+            "tbc",
+            "tbd",
+            "various",
+            "call",
+            "contact",
+            "contact venue",
+        ) or ("see" in low and "website" in low and not re.search(r"\d", c)):
+            return {
+                "EVENT COST": c,
+                "EVENT CURRENCY SYMBOL": "",
+                "EVENT CURRENCY POSITION": "",
+                "EVENT ISO CURRENCY CODE": "",
+            }
+        return {
+            "EVENT COST": c,
+            "EVENT CURRENCY SYMBOL": "$",
+            "EVENT CURRENCY POSITION": "prefix",
+            "EVENT ISO CURRENCY CODE": "CAD",
+        }
+
+from scraper_paths import OUTPUT_DIR
 
 BASE_URL = "https://www.tixr.com"
 EVENTS_URL = "https://www.tixr.com/groups/hfxcomedyfest"
@@ -258,7 +297,8 @@ def parse_event_card(link, card) -> Optional[Dict[str, str]]:
             description = desc_elem.get_text(' ', strip=True)
 
     # Extract cost
-    event_cost = extract_event_cost(title, card_text + ' ' + description)
+    event_cost = extract_event_cost(title, card_text + " " + description)
+    tec_cost = format_cost_fields(event_cost)
 
     # Categories
     categories = normalize_categories("Arts & Culture, Theatre & Comedy")
@@ -280,10 +320,10 @@ def parse_event_card(link, card) -> Optional[Dict[str, str]]:
         "STICKY IN MONTH VIEW": "FALSE",
         "EVENT CATEGORY": categories,
         "EVENT TAGS": tags,
-        "EVENT COST": event_cost,
-        "EVENT CURRENCY SYMBOL": "$" if event_cost and event_cost[0].isdigit() else "",
-        "EVENT CURRENCY POSITION": "prefix" if event_cost and event_cost[0].isdigit() else "",
-        "EVENT ISO CURRENCY CODE": "CAD" if event_cost and event_cost[0].isdigit() else "",
+        "EVENT COST": tec_cost["EVENT COST"],
+        "EVENT CURRENCY SYMBOL": tec_cost["EVENT CURRENCY SYMBOL"],
+        "EVENT CURRENCY POSITION": tec_cost["EVENT CURRENCY POSITION"],
+        "EVENT ISO CURRENCY CODE": tec_cost["EVENT ISO CURRENCY CODE"],
         "EVENT FEATURED IMAGE": details.get('image', ''),
         "EVENT WEBSITE": event_url,
         "EVENT SHOW MAP LINK": "TRUE",

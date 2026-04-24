@@ -7,11 +7,10 @@ from dateutil import parser as dateparser
 
 from category_mapping import normalize_categories
 from default_images import get_default_image
+from cost_parsing import extract_event_cost, format_cost_fields
 
 # Base paths
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+from scraper_paths import OUTPUT_DIR
 
 # Event listing for 2037 Gottingen (Marquee + Seahorse, etc.)
 LISTING_URL = LISTING_URLS = [
@@ -377,6 +376,9 @@ def scrape_event(url: str):
     if not featured_image:
         featured_image = get_default_image("2037 Gottingen")
 
+    if not cost:
+        cost = extract_event_cost(title, full_text, description)
+    tec_cost = format_cost_fields(cost)
     row = {
         "EVENT NAME": title,
         "EVENT EXCERPT": excerpt,
@@ -392,10 +394,10 @@ def scrape_event(url: str):
         "STICKY IN MONTH VIEW": "False",
         "EVENT CATEGORY": cat_str,
         "EVENT TAGS": tags_str,
-        "EVENT COST": cost,
-        "EVENT CURRENCY SYMBOL": "",
-        "EVENT CURRENCY POSITION": "",
-        "EVENT ISO CURRENCY CODE": "",
+        "EVENT COST": tec_cost["EVENT COST"],
+        "EVENT CURRENCY SYMBOL": tec_cost["EVENT CURRENCY SYMBOL"],
+        "EVENT CURRENCY POSITION": tec_cost["EVENT CURRENCY POSITION"],
+        "EVENT ISO CURRENCY CODE": tec_cost["EVENT ISO CURRENCY CODE"],
         "EVENT FEATURED IMAGE": featured_image,
         "EVENT WEBSITE": url,  # 2037 Gottingen event page; merge will prefer Showpass ticket URL if available
         "EVENT SHOW MAP LINK": "True",

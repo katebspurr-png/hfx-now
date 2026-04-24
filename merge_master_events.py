@@ -24,6 +24,7 @@ from typing import Dict, List, Tuple, Set
 
 from dateutil import parser as dateparser
 
+from scraper_paths import OUTPUT_DIR
 from scraper_registry import get_enabled_scrapers
 from venue_aliases import normalize_venue
 
@@ -34,10 +35,8 @@ csv.field_size_limit(sys.maxsize)
 # Paths / constants
 # --------------------------------------------------------------------
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
+# Same per-scraper output root as individual scrapers (scraper_paths.OUTPUT_DIR)
 READY_DIR = os.path.join(OUTPUT_DIR, "ready_to_import")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(READY_DIR, exist_ok=True)
 
 MASTER_CSV = os.path.join(OUTPUT_DIR, "master_events.csv")

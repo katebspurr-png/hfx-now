@@ -2,10 +2,12 @@ from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
 from dateutil import parser as dateparser
 import csv
+import os
 import re
 
 from category_mapping import normalize_categories
 from cost_parsing import extract_event_cost
+from scraper_paths import OUTPUT_DIR
 
 TIME_RE = re.compile(
     r"(\d{1,2})(?::(\d{2}))?\s*(am|pm)",
@@ -35,11 +37,164 @@ def parse_start_time(text: str) -> str:
 
     return f"{hour:02d}:{minute:02d}"
 
+# ---------- VENUE HELPERS (Location block is often address-only) ----------
+
+# Many DH pages show the *name* after the date as "Date | Venue Name" while
+# ### Location is only a street address — use the byline when that happens.
+_RE_STREET_NUM = re.compile(r"(?<![\d/])(\d{3,5})\s+[A-Za-z]")
+
+
+def is_probably_street_address_only(s: str) -> bool:
+    t = (s or "").strip()
+    if not t:
+        return False
+    if re.match(r"^\d+\s", t) and re.search(
+        r"(street|st\.|ave|avenue|road|rd\.|hollis|barrington|blowers|granville|spring garden)",
+        t,
+        re.IGNORECASE,
+    ):
+        return True
+    if re.search(
+        r"\bHalifax,?\s*NS\b",
+        t,
+        re.IGNORECASE,
+    ) and re.search(r"\d{3,5}\s+[\w\-.]", t):
+        return True
+    if re.search(
+        r"\b[A-Z]\d[A-Z]\d[A-Z0-9]\b|\bB\dJ\b",
+        t,
+        re.IGNORECASE,
+    ) and re.search(
+        r"Canada|NS,?\s*Canada|street",
+        t,
+        re.IGNORECASE,
+    ):
+        return True
+    if re.search(r"^\d+\s[\w\-.']+(?:\s[\w\-.']+)*,\s*Halifax", t, re.IGNORECASE):
+        return True
+    return bool(re.match(r"^\d+[\w\-.',]*\s+[\w\-.']+.*(?:Halifax|NS|Canada|B3[A-Z0-9])", t, re.IGNORECASE))
+
+
+def strip_trailing_street_from_venue(s: str) -> str:
+    """
+    "Rox Live 1743 Grafton Street Halifax" -> "Rox Live" when a street number appears mid-string.
+    """
+    t = (s or "").strip()
+    m = _RE_STREET_NUM.search(t)
+    if m and m.start() > 0:
+        return t[: m.start()].strip()
+    return t
+
+
+def _is_dh_date_line(s: str) -> bool:
+    """Event header line that is only a date or date range (not a venue)."""
+    t = (s or "").strip()
+    if not t:
+        return True
+    return bool(
+        re.search(
+            r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b",
+            t,
+            re.IGNORECASE,
+        )
+        and re.search(r"\b20\d{2}\b", t)
+    )
+
+
+def _is_venue_byline_candidate(s: str, title: str) -> bool:
+    t = (title or "").strip()
+    s = (s or "").strip()
+    if len(s) < 2 or s == t or s == "|":
+        return False
+    low = s.lower()
+    if low in (
+        "location",
+        "time",
+        "about the event",
+        "add to calendar",
+    ) or "about the event" in low:
+        return False
+    if s.startswith("###") or s.startswith("Add to Calendar"):
+        return False
+    if re.fullmatch(
+        r"\d{1,2}:\d{2}\s*(am|pm|a\.m\.|p\.m\.)?", s, re.IGNORECASE
+    ):
+        return False
+    return True
+
+
+def extract_venue_byline_from_header(lines: list[str], title: str) -> str:
+    """
+    On detail pages, the venue is often: (1) a line after \"|\" or
+    (2) the part after the last | on a line like
+    'Apr 7 2026 - Apr 30 2026 | Teichert Gallery'.
+    The ### Location field may only have a street address.
+    """
+    title = (title or "").strip()
+    for i, text in enumerate(lines):
+        t = (text or "").strip()
+        if t == "|" and i + 1 < len(lines):
+            cand = (lines[i + 1] or "").strip()
+            if _is_venue_byline_candidate(cand, title) and not _is_dh_date_line(cand):
+                return cand
+        if "|" in t and "http" not in t.lower() and t != "|":
+            parts = [
+                p.strip() for p in re.split(r"\s*\|\s*", t) if p.strip() and p.strip() != "|"
+            ]
+            for p in reversed(parts):
+                if not _is_venue_byline_candidate(p, title):
+                    continue
+                if _is_dh_date_line(p):
+                    continue
+                return p
+    return ""
+
+
+def time_text_is_parseable(time_text: str) -> bool:
+    """
+    Skip dateparser for values that are not clock times (e.g. multi-venue festivals
+    use \"Various\" in the Time field on DH pages).
+    """
+    t = (time_text or "").strip()
+    if not t or len(t) > 160:
+        return False
+    low = t.lower()
+    if re.fullmatch(
+        r"various|tba|tbd|n/?a|multiple|multi[- ]?venue|all day|ongoing|see (details|schedule|link|site).*",
+        low,
+    ) or re.match(
+        r"^(various|tba|tbd)\b", low
+    ):
+        return False
+    if not re.search(r"\d", t):
+        return False
+    return True
+
+
+def resolve_venue_name(title: str, byline: str, raw_location: str) -> str:
+    byline = (byline or "").strip()
+    raw = (raw_location or "").strip()
+
+    if not raw and not byline:
+        return ""
+    if byline and (not raw or is_probably_street_address_only(raw)):
+        return byline
+    if not raw:
+        return byline
+    if is_probably_street_address_only(raw) and byline:
+        return byline
+    if raw and not is_probably_street_address_only(raw):
+        return strip_trailing_street_from_venue(raw)
+    if byline:
+        return byline
+    return raw
+
+
 # ---------- CONFIG ----------
 
 LISTING_URL = "https://downtownhalifax.ca/events"
 SITE_ROOT = "https://downtownhalifax.ca"
-CSV_FILE = "output/downtown_halifax_for_import.csv"
+CSV_FILE = os.path.join(OUTPUT_DIR, "downtown_halifax_for_import.csv")
 TIMEZONE = "America/Halifax"
 
 FIELDNAMES = [
@@ -245,8 +400,13 @@ def scrape_dh_event(page, url):
             if i + 1 < len(lines):
                 time_text = lines[i + 1].strip()
 
+    # Prefer venue name from page header (often "… | Teichert Gallery") when
+    # ### Location is a street address only.
+    byline_venue = extract_venue_byline_from_header(lines, title)
+    venue_name = resolve_venue_name(title, byline_venue, location)
+
     # Try to parse time(s) from time_text if it looks like a time range
-    if time_text:
+    if time_text and time_text_is_parseable(time_text):
         # Handle patterns like "6:00 pm - 8:00 pm" or "6-8 pm" or "10:30pm to 1:30am"
         try:
             # Check if this is a time range with dash/hyphen/to
@@ -340,7 +500,7 @@ def scrape_dh_event(page, url):
     row = {
         "EVENT NAME":      title,
         "EVENT EXCERPT":   excerpt,
-        "EVENT VENUE NAME": location,
+        "EVENT VENUE NAME": venue_name,
         "EVENT ORGANIZER NAME": organizer,
         "EVENT START DATE": start_date,
         "EVENT START TIME": start_time,

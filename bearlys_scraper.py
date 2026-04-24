@@ -9,11 +9,9 @@ import requests
 from bs4 import BeautifulSoup
 from dateutil import parser as dateparser
 
-from cost_parsing import extract_event_cost
+from cost_parsing import extract_event_cost, format_cost_fields
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+from scraper_paths import OUTPUT_DIR
 
 BASE_URL = "https://www.bearlys.ca/calendar"
 OUTPUT_CSV = os.path.join(OUTPUT_DIR, "bearlys_events.csv")
@@ -198,8 +196,9 @@ def parse_event_detail(title: str, url: str) -> Optional[Dict[str, str]]:
     else:
         category = "Live Music"
 
-    # Most Bearly's events are free or prices aren't published on their site
-    event_cost = ""
+    # Prices are often in page copy rather than a dedicated field
+    event_cost = extract_event_cost(title, text)
+    tec_cost = format_cost_fields(event_cost)
 
     row: Dict[str, str] = {
         "EVENT NAME": title,
@@ -216,10 +215,10 @@ def parse_event_detail(title: str, url: str) -> Optional[Dict[str, str]]:
         "STICKY IN MONTH VIEW": "FALSE",
         "EVENT CATEGORY": category,
         "EVENT TAGS": "bearlys, live music, halifax, blues",
-        "EVENT COST": event_cost,
-        "EVENT CURRENCY SYMBOL": "$" if event_cost and event_cost != "Free" else "",
-        "EVENT CURRENCY POSITION": "prefix" if event_cost and event_cost != "Free" else "",
-        "EVENT ISO CURRENCY CODE": "CAD" if event_cost and event_cost != "Free" else "",
+        "EVENT COST": tec_cost["EVENT COST"],
+        "EVENT CURRENCY SYMBOL": tec_cost["EVENT CURRENCY SYMBOL"],
+        "EVENT CURRENCY POSITION": tec_cost["EVENT CURRENCY POSITION"],
+        "EVENT ISO CURRENCY CODE": tec_cost["EVENT ISO CURRENCY CODE"],
         "EVENT FEATURED IMAGE": "https://static1.squarespace.com/static/54de1c46e4b0aa612e8f8cd0/t/67a0f1aee3107168dd42358d/1738600879182/newlogo.png",
         "EVENT WEBSITE": url,
         "EVENT SHOW MAP LINK": "TRUE",

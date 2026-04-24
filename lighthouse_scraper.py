@@ -15,9 +15,7 @@ from cost_parsing import extract_event_cost
 # Paths & constants
 # ----------------------------
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+from scraper_paths import OUTPUT_DIR
 
 BASE_URL = "https://www.lighthouseartscentre.ca"
 EVENTS_URL = BASE_URL + "/events"

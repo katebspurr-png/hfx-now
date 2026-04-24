@@ -5,19 +5,22 @@ from typing import List, Dict, Optional
 from urllib.parse import urljoin
 
 import requests
+import urllib3
 from bs4 import BeautifulSoup
 from dateutil import parser as dateparser
+
+from scraper_paths import OUTPUT_DIR
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ----------------------------
 # Paths & constants
 # ----------------------------
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-BASE_URL = "https://maritimemuseum.novascotia.ca/events"
-OUTPUT_CSV = os.path.join(BASE_DIR, "output", "mma_events.csv")
+# Listing page (old /events URL 404s as of 2026; site uses What's On)
+BASE_URL = "https://maritimemuseum.novascotia.ca/whats-on"
+SITE_ORIGIN = "https://maritimemuseum.novascotia.ca"
+OUTPUT_CSV = os.path.join(OUTPUT_DIR, "mma_events.csv")
 
 TIMEZONE = "America/Halifax"
 
@@ -81,14 +84,19 @@ def fetch_html(url: str) -> str:
 
 
 def get_event_links_from_index(html: str) -> List[str]:
-    """Collect all /event/... links from the events index page."""
+    """Collect all What's On detail links from the listing page (paths under /whats-on/)."""
     soup = BeautifulSoup(html, "html.parser")
     links = set()
 
     for a in soup.find_all("a", href=True):
-        href = a["href"]
-        if "/event/" in href:
-            links.add(urljoin(BASE_URL, href))
+        href = (a["href"] or "").strip()
+        if "/whats-on/" not in href:
+            continue
+        if re.match(r"^https?://[^/]+/whats-on/?$", href) or href.rstrip("/") == "/whats-on":
+            continue
+        if not re.search(r"/whats-on/[^/?#]+", href):
+            continue
+        links.add(urljoin(SITE_ORIGIN, href))
 
     return sorted(links)
 
@@ -205,6 +213,8 @@ def parse_event_page(html: str, url: str) -> Optional[Dict[str, str]]:
             break
 
     time_line = all_lines[time_idx] if time_idx is not None else ""
+    if not time_line and re.search(r"\b(am|pm)\b", date_line, flags=re.IGNORECASE):
+        time_line = date_line
 
     start_date, start_time, end_date, end_time = parse_date_time(date_line, time_line)
     if not start_date:
@@ -217,6 +227,10 @@ def parse_event_page(html: str, url: str) -> Optional[Dict[str, str]]:
     for k in range(start_desc_idx, len(all_lines)):
         line = all_lines[k]
         if "Improve Your Experience" in line:
+            break
+        if line.strip() in ("Related Events", "Location", "Date", "Pricing") or line.startswith(
+            "Related Events"
+        ):
             break
         desc_parts.append(line)
 

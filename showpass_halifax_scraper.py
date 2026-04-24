@@ -8,9 +8,7 @@ import re
 from cost_parsing import extract_event_cost
 
 # Base paths
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+from scraper_paths import OUTPUT_DIR
 
 # Timestamp to keep each run’s output unique
 # Example: showpass_halifax_for_import_2025-11-30_21-48.csv

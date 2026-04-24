@@ -17,9 +17,7 @@ import requests
 
 from category_mapping import normalize_categories
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+from scraper_paths import OUTPUT_DIR
 
 OUTPUT_CSV = os.path.join(OUTPUT_DIR, "ticketmaster_events.csv")
 

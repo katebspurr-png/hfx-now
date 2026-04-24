@@ -24,11 +24,9 @@ from playwright.sync_api import sync_playwright, Page
 from bs4 import BeautifulSoup, Tag
 from dateutil import parser as dateparser
 
-from cost_parsing import extract_event_cost
+from cost_parsing import extract_event_cost, format_cost_fields
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+from scraper_paths import OUTPUT_DIR
 
 BASE_URL = "https://www.yukyuks.com"
 HALIFAX_URL = "https://www.yukyuks.com/halifax"
@@ -379,6 +377,7 @@ def parse_event_card(card: Tag, current_month: int, current_year: int, page: Opt
 
     # Extract cost
     event_cost = extract_event_cost(title, description + ' ' + card_text)
+    tec_cost = format_cost_fields(event_cost)
 
     # Build the row
     row: Dict[str, str] = {k: "" for k in FIELDNAMES}
@@ -395,10 +394,10 @@ def parse_event_card(card: Tag, current_month: int, current_year: int, page: Opt
     row["TIMEZONE"] = "America/Halifax"
     row["HIDE FROM EVENT LISTINGS"] = "FALSE"
     row["STICKY IN MONTH VIEW"] = "FALSE"
-    row["EVENT COST"] = event_cost
-    row["EVENT CURRENCY SYMBOL"] = "$" if event_cost and event_cost[0].isdigit() else ""
-    row["EVENT CURRENCY POSITION"] = "prefix" if event_cost and event_cost[0].isdigit() else ""
-    row["EVENT ISO CURRENCY CODE"] = "CAD" if event_cost and event_cost[0].isdigit() else ""
+    row["EVENT COST"] = tec_cost["EVENT COST"]
+    row["EVENT CURRENCY SYMBOL"] = tec_cost["EVENT CURRENCY SYMBOL"]
+    row["EVENT CURRENCY POSITION"] = tec_cost["EVENT CURRENCY POSITION"]
+    row["EVENT ISO CURRENCY CODE"] = tec_cost["EVENT ISO CURRENCY CODE"]
     row["EVENT CATEGORY"] = "Arts & Culture, Theatre & Comedy"
     row["EVENT TAGS"] = "comedy, stand-up, yukyuks, halifax"
     row["EVENT WEBSITE"] = event_url

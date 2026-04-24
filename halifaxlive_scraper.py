@@ -1,18 +1,17 @@
 from playwright.sync_api import sync_playwright
 from dateutil import parser as dateparser
 import csv
+import json
 import os
 import re
 
 from category_mapping import normalize_categories
-from cost_parsing import extract_event_cost
+from cost_parsing import extract_event_cost, format_cost_fields
 from default_images import get_default_image
 
 # ---------- base paths ----------
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+from scraper_paths import OUTPUT_DIR
 
 SHOWS_URL = "https://halifaxlive.ca/shows/"
 CSV_FILE = os.path.join(OUTPUT_DIR, "halifaxlive_shows_for_import.csv")
@@ -121,6 +120,65 @@ def extract_first_date_line(body_text: str) -> str:
             return ln
     return ""
 
+def _normalize_dollar_value(raw):
+    try:
+        val = float(raw)
+    except (TypeError, ValueError):
+        return ""
+    if val <= 0:
+        return ""
+    # Halifax Live sometimes stores tier prices in cents
+    if val >= 500:
+        val = val / 100.0
+    return str(int(val)) if float(val).is_integer() else f"{val:.2f}".rstrip("0").rstrip(".")
+
+def extract_halifaxlive_price(page_html: str, show_url: str) -> str:
+    """
+    Read embedded Angular data for exact show pricing.
+    Falls back to empty string if the structured payload is unavailable.
+    """
+    slug = show_url.rstrip("/").split("/")[-1].lower()
+    m = re.search(r'(<script[^>]*>\s*\{"\d+"\s*:\s*\{.*?</script>)', page_html, flags=re.DOTALL)
+    if not m:
+        return ""
+
+    script_block = m.group(1)
+    start = script_block.find("{")
+    end = script_block.rfind("</script>")
+    if start == -1 or end == -1:
+        return ""
+    payload = script_block[start:end].strip()
+
+    try:
+        data_root = json.loads(payload)
+    except json.JSONDecodeError:
+        return ""
+
+    for root in data_root.values():
+        shows = ((root or {}).get("b") or {}).get("data") or []
+        for show in shows:
+            if str(show.get("slug", "")).lower() != slug:
+                continue
+
+            # Prefer explicit show-level price if present
+            price = _normalize_dollar_value(show.get("price"))
+            if price:
+                return price
+
+            # Otherwise choose lowest active tier price (stored in cents)
+            tier_prices = []
+            for tier in show.get("ticket_tiers", []) or []:
+                t_price = _normalize_dollar_value(tier.get("price"))
+                if t_price:
+                    try:
+                        tier_prices.append(float(t_price))
+                    except ValueError:
+                        pass
+            if tier_prices:
+                best = min(tier_prices)
+                return str(int(best)) if best.is_integer() else f"{best:.2f}".rstrip("0").rstrip(".")
+    return ""
+
 
 # ---------- collect show URLs from /shows ----------
 
@@ -224,8 +282,10 @@ def scrape_show(page, url: str):
         "Standup comedy, full bar, and food service in an intimate venue."
     )
 
-    # Extract cost from page text
-    event_cost = extract_event_cost(title, body_text)
+    # Extract cost: prefer structured show price, then text fallback
+    page_html = page.content()
+    event_cost = extract_halifaxlive_price(page_html, url) or extract_event_cost(title, body_text)
+    tec_cost = format_cost_fields(event_cost)
 
     row = {
         "EVENT NAME": title,
@@ -242,10 +302,10 @@ def scrape_show(page, url: str):
         "STICKY IN MONTH VIEW": "False",
         "EVENT CATEGORY": event_category,
         "EVENT TAGS": event_tags,
-        "EVENT COST": event_cost,
-        "EVENT CURRENCY SYMBOL": "$" if event_cost and event_cost != "Free" else "",
-        "EVENT CURRENCY POSITION": "prefix" if event_cost and event_cost != "Free" else "",
-        "EVENT ISO CURRENCY CODE": "CAD" if event_cost and event_cost != "Free" else "",
+        "EVENT COST": tec_cost["EVENT COST"],
+        "EVENT CURRENCY SYMBOL": tec_cost["EVENT CURRENCY SYMBOL"],
+        "EVENT CURRENCY POSITION": tec_cost["EVENT CURRENCY POSITION"],
+        "EVENT ISO CURRENCY CODE": tec_cost["EVENT ISO CURRENCY CODE"],
         "EVENT FEATURED IMAGE": featured_image,
         "EVENT WEBSITE": url,
         "EVENT SHOW MAP LINK": "True",

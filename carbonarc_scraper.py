@@ -10,14 +10,13 @@ from dateutil import parser as dateparser
 
 from category_mapping import normalize_categories
 from default_images import get_default_image
+from cost_parsing import extract_event_cost, format_cost_fields
 
 # ----------------------------
 # Paths & constants
 # ----------------------------
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+from scraper_paths import OUTPUT_DIR
 
 BASE_URL = "https://www.carbonarc.ca/events"
 OUTPUT_CSV = os.path.join(OUTPUT_DIR, "carbonarc_events.csv")
@@ -371,7 +370,7 @@ def parse_event_page(html: str, url: str) -> Optional[Dict[str, str]]:
     # Featured image: extract event poster (handles YouTube, images, and fallback)
     featured_image = extract_event_poster(soup, h1, url)
 
-    # Event cost: look for a line that contains a '$'
+    # Event cost: first $ on a line, then full-text extraction
     cost = ""
     for line in all_lines:
         if "$" in line:
@@ -379,11 +378,14 @@ def parse_event_page(html: str, url: str) -> Optional[Dict[str, str]]:
             if m:
                 cost = m.group(1)
                 break
+    if not cost:
+        cost = extract_event_cost(title, description, "\n".join(all_lines))
 
+    tec_cost = format_cost_fields(cost)
     categories = normalize_categories("Film & Cinema, Arts & Culture")
     tags = "carbon arc cinema, halifax, film screening, movie, cinema"
-  
-  # If somehow we still don't have a title, bail out
+
+    # If somehow we still don't have a title, bail out
     if not title:
         print(f"    WARNING: Empty title after parsing for {url}")
         return None
@@ -403,10 +405,10 @@ def parse_event_page(html: str, url: str) -> Optional[Dict[str, str]]:
         "STICKY IN MONTH VIEW": "FALSE",
         "EVENT CATEGORY": categories,
         "EVENT TAGS": tags,
-        "EVENT COST": cost,
-        "EVENT CURRENCY SYMBOL": "$" if cost else "",
-        "EVENT CURRENCY POSITION": "prefix" if cost else "",
-        "EVENT ISO CURRENCY CODE": "CAD" if cost else "",
+        "EVENT COST": tec_cost["EVENT COST"],
+        "EVENT CURRENCY SYMBOL": tec_cost["EVENT CURRENCY SYMBOL"],
+        "EVENT CURRENCY POSITION": tec_cost["EVENT CURRENCY POSITION"],
+        "EVENT ISO CURRENCY CODE": tec_cost["EVENT ISO CURRENCY CODE"],
         "EVENT FEATURED IMAGE": featured_image,
         "EVENT WEBSITE": url,
         "EVENT SHOW MAP LINK": "FALSE",

@@ -16,6 +16,7 @@ from datetime import datetime
 from typing import Any, Dict, List
 
 from merge_master_events_v3 import merge_all_events_v3
+from scraper_paths import OUTPUT_DIR
 from scraper_registry_v3 import SCRAPERS_V3, ScraperConfigV3, get_enabled_scrapers_v3
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -95,6 +96,8 @@ def run_scraper(config: ScraperConfigV3) -> Dict[str, Any]:
 
 
 def main() -> None:
+    # Per-scraper CSVs (single shared output dir; see scraper_paths).
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
     print("==============================================")
     print(" Halifax-Now master scraper (v3 lane)")
     print(" Started :", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))

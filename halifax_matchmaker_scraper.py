@@ -24,9 +24,7 @@ BASE_URL = "https://www.halifaxmatchmaker.ca/pages/dating-events"
 SITE_ROOT = "https://www.halifaxmatchmaker.ca"
 
 # Base paths - adjust if your project structure differs
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+from scraper_paths import OUTPUT_DIR
 
 CSV_FILE = os.path.join(OUTPUT_DIR, "halifax_matchmaker_events.csv")
 TIMEZONE = "America/Halifax"
