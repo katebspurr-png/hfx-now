@@ -60,14 +60,16 @@ function hfx_admin_event_column( $col, $post_id ) {
 			}
 
 			// Hidden data block read by quick-edit JS (rendered once, in this column).
-			$price    = trim( (string) get_post_meta( $post_id, '_EventCost', true ) );
-			$hood     = trim( (string) get_post_meta( $post_id, 'hfx_neighbourhood', true ) );
+			$price     = trim( (string) get_post_meta( $post_id, '_EventCost', true ) );
+			$hood      = trim( (string) get_post_meta( $post_id, 'hfx_neighbourhood', true ) );
+			$venue_id  = (int) get_post_meta( $post_id, '_EventVenueID', true );
 			$moods_raw = get_post_meta( $post_id, 'hfx_moods', true );
-			$moods    = is_array( $moods_raw ) ? $moods_raw
+			$moods     = is_array( $moods_raw ) ? $moods_raw
 				: ( is_string( $moods_raw ) && $moods_raw !== '' ? array_map( 'trim', explode( ',', $moods_raw ) ) : array() );
 
 			printf(
-				'<span class="hfx-row-data" style="display:none" data-price="%s" data-hood="%s" data-pick="%s" data-moods="%s"></span>',
+				'<span class="hfx-row-data" style="display:none" data-venue-id="%s" data-price="%s" data-hood="%s" data-pick="%s" data-moods="%s"></span>',
+				esc_attr( (string) $venue_id ),
 				esc_attr( $price ),
 				esc_attr( $hood ),
 				esc_attr( $is_pick ? '1' : '0' ),
@@ -197,11 +199,30 @@ function hfx_admin_event_quick_edit( $col, $post_type ) {
 		'rainy' => '☔ Rainy-day',
 	);
 
+	$venues = get_posts( array(
+		'post_type'      => 'tribe_venue',
+		'post_status'    => 'publish',
+		'posts_per_page' => -1,
+		'orderby'        => 'title',
+		'order'          => 'ASC',
+		'no_found_rows'  => true,
+	) );
+
 	wp_nonce_field( 'hfx_quick_edit', 'hfx_qe_nonce' );
 	?>
 	<div id="hfx-quick-edit">
 		<h4>Halifax Now</h4>
 		<div class="hfx-qe-row">
+
+			<div class="hfx-qe-field">
+				<span>Venue</span>
+				<select name="hfx_qe_venue_id" id="hfx-qe-venue-id" style="max-width:200px">
+					<option value="0">— no venue —</option>
+					<?php foreach ( $venues as $v ) : ?>
+						<option value="<?php echo esc_attr( (string) $v->ID ); ?>"><?php echo esc_html( $v->post_title ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</div>
 
 			<div class="hfx-qe-field">
 				<span>Price</span>
@@ -261,6 +282,7 @@ function hfx_admin_event_quick_edit_js() {
 			var $data = $('#post-' + postId).find('.hfx-row-data');
 			var $qe   = $('#edit-' + postId);
 
+			$qe.find('#hfx-qe-venue-id').val($data.data('venueId') || '0');
 			$qe.find('#hfx-qe-price').val($data.data('price') || '');
 			$qe.find('#hfx-qe-hood').val($data.data('hood') || '');
 			$qe.find('#hfx-qe-pick').prop('checked', String($data.data('pick')) === '1');
@@ -290,6 +312,15 @@ function hfx_save_quick_edit_event( $post_id ) {
 	}
 	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 		return;
+	}
+
+	if ( isset( $_POST['hfx_qe_venue_id'] ) ) {
+		$venue_id = absint( $_POST['hfx_qe_venue_id'] );
+		if ( $venue_id > 0 && get_post_type( $venue_id ) === 'tribe_venue' ) {
+			update_post_meta( $post_id, '_EventVenueID', $venue_id );
+		} elseif ( 0 === $venue_id ) {
+			delete_post_meta( $post_id, '_EventVenueID' );
+		}
 	}
 
 	update_post_meta(
