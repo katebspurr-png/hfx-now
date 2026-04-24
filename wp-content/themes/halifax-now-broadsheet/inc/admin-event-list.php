@@ -318,33 +318,42 @@ function hfx_admin_event_quick_edit_js() {
 	?>
 	<script>
 	(function ($) {
-		var _orig = inlineEditPost.edit;
-		inlineEditPost.edit = function (id) {
-			_orig.apply(this, arguments);
-			var postId = typeof id === 'object' ? parseInt(this.getId(id), 10) : parseInt(id, 10);
-			if (!postId) return;
-
-			var $data = $('#post-' + postId).find('.hfx-row-data');
+		function hfxFillQuickEdit(postId) {
+			var $row  = $('#post-' + postId);
 			var $qe   = $('#edit-' + postId);
+			var $data = $row.find('.hfx-row-data');
+			if (!$data.length || !$qe.length) return;
 
-			$qe.find('#hfx-qe-venue-id').val($data.data('venueId') || '0');
-			$qe.find('#hfx-qe-price').val($data.data('price') || '');
-			$qe.find('#hfx-qe-hood').val($data.data('hood') || '');
-			$qe.find('#hfx-qe-pick').prop('checked', String($data.data('pick')) === '1');
-			$qe.find('#hfx-qe-start-date').val($data.data('startDate') || '');
-			$qe.find('#hfx-qe-start-time').val($data.data('startTime') || '');
-			$qe.find('#hfx-qe-end-date').val($data.data('endDate') || '');
-			$qe.find('#hfx-qe-end-time').val($data.data('endTime') || '');
+			// Use .attr() — avoids jQuery's .data() caching and auto-type-casting.
+			$qe.find('#hfx-qe-venue-id').val($data.attr('data-venue-id') || '0');
+			$qe.find('#hfx-qe-price').val($data.attr('data-price') || '');
+			$qe.find('#hfx-qe-hood').val($data.attr('data-hood') || '');
+			$qe.find('#hfx-qe-pick').prop('checked', $data.attr('data-pick') === '1');
+			$qe.find('#hfx-qe-start-date').val($data.attr('data-start-date') || '');
+			$qe.find('#hfx-qe-start-time').val($data.attr('data-start-time') || '');
+			$qe.find('#hfx-qe-end-date').val($data.attr('data-end-date') || '');
+			$qe.find('#hfx-qe-end-time').val($data.attr('data-end-time') || '');
 
-			var moods = $data.data('moods') || [];
+			var moods = [];
+			try { moods = JSON.parse($data.attr('data-moods') || '[]'); } catch (e) {}
 			$qe.find('.hfx-qe-mood').each(function () {
 				$(this).prop('checked', moods.indexOf($(this).val()) !== -1);
 			});
 
-			// Signal that JS pre-population succeeded — save handler uses this
-			// to know it can trust empty values as intentional clears.
 			$qe.find('#hfx-qe-initialized').val('1');
-		};
+		}
+
+		// MutationObserver: fires the instant the quick-edit row enters the DOM,
+		// regardless of script load order or TEC overrides on inlineEditPost.edit.
+		new MutationObserver(function (mutations) {
+			mutations.forEach(function (m) {
+				m.addedNodes.forEach(function (node) {
+					if (node.nodeType !== 1) return;
+					var match = (node.id || '').match(/^edit-(\d+)$/);
+					if (match) hfxFillQuickEdit(parseInt(match[1], 10));
+				});
+			});
+		}).observe(document.body, { childList: true, subtree: true });
 	}(jQuery));
 	</script>
 	<?php
