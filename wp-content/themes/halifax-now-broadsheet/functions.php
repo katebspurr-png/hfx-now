@@ -878,8 +878,19 @@ function hfx_event_to_payload($post_id) {
 	}
 	$price = trim($price);
 	if ($price === '') {
-		$price = (string) get_post_meta($post_id, '_EventCost', true);
-		$price = trim($price);
+		$cost_meta_keys = array(
+			'_EventCost',   // TEC canonical
+			'Event Cost',   // CSV/header variants
+			'EVENT COST',   // scraper raw header variant
+			'event_cost',
+		);
+		foreach ( $cost_meta_keys as $mk ) {
+			$candidate = trim( (string) get_post_meta( $post_id, $mk, true ) );
+			if ( '' !== $candidate ) {
+				$price = $candidate;
+				break;
+			}
+		}
 	}
 
 	$is_pick = false;

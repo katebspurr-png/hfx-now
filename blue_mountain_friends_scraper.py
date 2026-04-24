@@ -17,9 +17,7 @@ from cost_parsing import extract_event_cost
 
 # ---------- CONFIG ----------
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+from scraper_paths import OUTPUT_DIR
 
 LISTING_URL = "https://bluemountainfriends.ca/activities/#hiking"
 SITE_ROOT = "https://bluemountainfriends.ca"

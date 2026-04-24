@@ -12,14 +12,12 @@ from bs4 import BeautifulSoup
 from dateutil import parser as dateparser
 
 from category_mapping import normalize_categories
-from cost_parsing import extract_event_cost
+from cost_parsing import extract_event_cost, format_cost_fields
 from default_images import get_default_image
 
 # ---------- CONFIG ----------
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+from scraper_paths import OUTPUT_DIR
 
 LISTING_URL = "https://www.jumpcomedy.com/events"
 SITE_ROOT = "https://www.jumpcomedy.com"
@@ -261,6 +259,7 @@ def scrape_jump_event(page, url):
     # ----- Categories -----
     event_category = normalize_categories("Comedy")
     event_tags = "Comedy, Stand-up, Halifax"
+    tec_cost = format_cost_fields(cost)
 
     row = {
         "EVENT NAME": title,
@@ -277,10 +276,10 @@ def scrape_jump_event(page, url):
         "STICKY IN MONTH VIEW": "False",
         "EVENT CATEGORY": event_category,
         "EVENT TAGS": event_tags,
-        "EVENT COST": cost,
-        "EVENT CURRENCY SYMBOL": "$" if cost and cost[0].isdigit() else "",
-        "EVENT CURRENCY POSITION": "prefix" if cost and cost[0].isdigit() else "",
-        "EVENT ISO CURRENCY CODE": "CAD" if cost and cost[0].isdigit() else "",
+        "EVENT COST": tec_cost["EVENT COST"],
+        "EVENT CURRENCY SYMBOL": tec_cost["EVENT CURRENCY SYMBOL"],
+        "EVENT CURRENCY POSITION": tec_cost["EVENT CURRENCY POSITION"],
+        "EVENT ISO CURRENCY CODE": tec_cost["EVENT ISO CURRENCY CODE"],
         "EVENT FEATURED IMAGE": featured_image,
         "EVENT WEBSITE": url,
         "EVENT SHOW MAP LINK": "True",

@@ -1,146 +1,246 @@
 """
 Shared cost/price extraction utilities for Halifax event scrapers.
 
-Provides a unified approach to extracting ticket prices from event text,
-including handling of:
-- Dollar amounts ($20, $25.00)
-- Price ranges ($20 - $35)
-- Free events ("free", "no cover", "PWYC")
-- Common price patterns in event descriptions
+Unifies ticket price extraction from mixed marketing copy, including:
+- $ amounts, CAD / dollars text, price ranges, "from $X", cover/door/ticket lines
+- Free / PWYC / no cover / French gratuit
+- Avoids classifying "sugar-free" style words as "Free admission" where possible
 """
 
 import re
-from typing import Optional
+from typing import List, Optional, Tuple
+
+# Non-numeric cost phrases: keep text, do not add $ in format_cost_fields
+NON_MONETARY_COST_PHRASES = frozenset(
+    {
+        "see website",
+        "see event website",
+        "tba",
+        "tbc",
+        "tbd",
+        "various",
+        "call",
+        "contact",
+        "contact venue",
+    }
+)
+
+# Min/max for plausible single-ticket amounts (CAD)
+_MIN_TICKET = 0.5
+_MAX_TICKET = 15000.0
+
+
+def _is_plausible_price(val: float) -> bool:
+    # Reject year-like stand-alone 4-digit amounts (common in event copy)
+    if val == int(val) and 2015 <= int(val) <= 2035:
+        return False
+    return _MIN_TICKET <= val <= _MAX_TICKET
+
+
+def _norm_price_str(p: str) -> str:
+    p = p.strip()
+    if not p:
+        return p
+    if "." in p:
+        p = p.rstrip("0").rstrip(".")
+    return p
 
 
 def extract_event_cost(*text_sources: str) -> str:
     """
-    Extract event cost from one or more text sources.
-    
-    Args:
-        *text_sources: Variable number of strings to search for price info.
-                       Typically: title, description, page text, JSON-LD, etc.
-    
+    Extract event cost from one or more text blobs (title, description, page text, etc.).
+
     Returns:
-        A string representing the cost:
-        - "Free" for free events
-        - "20" or "20.00" for single prices
-        - "20 - 35" for price ranges
-        - "" if no price found
-    
-    Examples:
-        >>> extract_event_cost("Tickets $25", "Join us for...")
-        '25'
-        >>> extract_event_cost("Free admission!", "All welcome")
-        'Free'
-        >>> extract_event_cost("$20 - $35 at the door")
-        '20 - 35'
+        "Free" | "20" | "20.5" | "20 - 35" | "" (unknown)
     """
-    # Combine all text sources
-    combined = " ".join(str(t) for t in text_sources if t).lower()
-    
+    combined = " ".join(str(t) for t in text_sources if t)
     if not combined.strip():
         return ""
-    
-    # Check for free indicators first
-    free_patterns = [
-        r'\bfree\b',
-        r'\bno cover\b',
-        r'\bno charge\b',
-        r'\bfree admission\b',
-        r'\bfree entry\b',
-        r'\bpwyc\b',
-        r'\bpay what you can\b',
-        r'\bby donation\b',
-        r'\bdonation\b.*\bonly\b',
-        r'\bcomplimentary\b',
+
+    low = combined.lower()
+
+    # ---- Free / PWYC (avoid matching "carefree" — no \\bfree\\b inside a word) ----
+    free_phrases = [
+        r"\bno cover\b",
+        r"\bno charge\b",
+        r"\bno cost\b",
+        r"\bno ticket(?:s)?\s+required\b",
+        r"\bfree admission\b",
+        r"\bfree entry\b",
+        r"\bfree to attend\b",
+        r"\bcomplimentary\b",
+        r"\bpwyc\b",
+        r"\bpay what you can\b",
+        r"\bby donation\b",
+        r"\bsuggested donation\b",
+        r"\bgratuit\b",
+        r"\bgratis\b",
+        r"\bdoors?\s*open\s+free\b",
     ]
-    
-    for pattern in free_patterns:
-        if re.search(pattern, combined, re.IGNORECASE):
+    for pat in free_phrases:
+        if re.search(pat, low, re.IGNORECASE):
             return "Free"
-    
-    # Look for price ranges like "$20 - $35" or "$20-$35" or "$20 to $35"
-    range_pattern = r'\$\s*(\d+(?:\.\d{2})?)\s*[-–—to]+\s*\$?\s*(\d+(?:\.\d{2})?)'
-    range_match = re.search(range_pattern, combined, re.IGNORECASE)
-    if range_match:
-        low = range_match.group(1)
-        high = range_match.group(2)
-        # Remove trailing .00 for cleaner output
-        low = low.rstrip('0').rstrip('.') if '.' in low else low
-        high = high.rstrip('0').rstrip('.') if '.' in high else high
-        return f"{low} - {high}"
-    
-    # Look for single prices - prioritize prices near keywords
-    # First try to find prices near "ticket", "admission", "cover", "price"
-    keyword_price_pattern = r'(?:tickets?|admission|cover|price|cost|entry)[:\s]*\$?\s*(\d+(?:\.\d{2})?)'
-    keyword_match = re.search(keyword_price_pattern, combined, re.IGNORECASE)
-    if keyword_match:
-        price = keyword_match.group(1)
-        return price.rstrip('0').rstrip('.') if '.' in price else price
-    
-    # Look for "from $X" or "starting at $X"
-    from_pattern = r'(?:from|starting at|starts at|as low as)\s*\$?\s*(\d+(?:\.\d{2})?)'
-    from_match = re.search(from_pattern, combined, re.IGNORECASE)
-    if from_match:
-        price = from_match.group(1)
-        return price.rstrip('0').rstrip('.') if '.' in price else price
-    
-    # Look for any dollar amount (but filter out obviously wrong ones)
-    # Skip prices that look like years (2024, 2025, etc.) or very small amounts
-    all_prices = re.findall(r'\$\s*(\d+(?:\.\d{2})?)', combined)
-    valid_prices = []
-    for p in all_prices:
+
+    # Standalone "free" (not part of *-free compound)
+    for m in re.finditer(r"(?<![-–—])\bfree\b(?![-–—])", low):
+        start = m.start()
+        if start >= 1 and low[start - 1] == "-":
+            continue
+        return "Free"
+
+    if re.search(r"\bfree\s*[!.,]?\s*$", low, re.IGNORECASE) and "carefree" not in low:
+        return "Free"
+
+    # ---- Price ranges: $20 - $35, $20–$35, 20-35 CAD, 20 to 35 ----
+    range_patterns = [
+        r"\$\s*(\d+(?:\.\d{1,2})?)\s*[-–—]+\s*\$?\s*(\d+(?:\.\d{1,2})?)\b",
+        r"\b(\d+(?:\.\d{1,2})?)\s*[-–—]+\s*(\d+(?:\.\d{1,2})?)\s*(?:CAD|cdn|dollars?)\b",
+        r"(?:from|between)\s*\$?\s*(\d+(?:\.\d{1,2})?)\s*[-–—to]+\s*\$?\s*(\d+(?:\.\d{1,2})?)\b",
+    ]
+    for pat in range_patterns:
+        rm = re.search(pat, combined, re.IGNORECASE)
+        if not rm:
+            continue
         try:
-            val = float(p)
-            # Skip values that look like years or are unreasonably high/low
-            if 5 <= val <= 500 and not (2020 <= val <= 2030):
-                valid_prices.append(p)
+            a, b = float(rm.group(1)), float(rm.group(2))
         except ValueError:
             continue
-    
-    if valid_prices:
-        # Return the first valid price found
-        price = valid_prices[0]
-        return price.rstrip('0').rstrip('.') if '.' in price else price
-    
+        if _is_plausible_price(a) and _is_plausible_price(b):
+            lo, hi = (a, b) if a <= b else (b, a)
+            return f"{_norm_price_str(str(lo))} - {_norm_price_str(str(hi))}"
+
+    # ---- "Tickets: $X", "cover $X", "door: 25", "GA $30" ----
+    keyword_price = re.search(
+        r"(?:tickets?|admission|cover|door|ga\b|general admission|price|cost|"
+        r"entry|pre-?sale|presale|box office|at the door|(?:^|\s)fee)[:\s]+"
+        r"\$?\s*(\d+(?:\.\d{1,2})?)(?:\s*(?:\+|plus)\s*tax)?",
+        combined,
+        re.IGNORECASE,
+    )
+    if keyword_price:
+        try:
+            v = float(keyword_price.group(1))
+        except ValueError:
+            v = 0.0
+        if _is_plausible_price(v):
+            return _norm_price_str(keyword_price.group(1))
+
+    # ---- "from $X", "starting at $X", "as low as" ----
+    from_m = re.search(
+        r"(?:from|starting at|starts at|as low as|only|just)\s+\$?\s*(\d+(?:\.\d{1,2})?)\b",
+        low,
+        re.IGNORECASE,
+    )
+    if from_m:
+        try:
+            v = float(from_m.group(1))
+        except ValueError:
+            v = 0.0
+        if _is_plausible_price(v):
+            return _norm_price_str(from_m.group(1))
+
+    # ---- $45 CAD, 45.00 CAD ----
+    cad_m = re.search(
+        r"\$?\s*(\d+(?:\.\d{1,2})?)\s*(?:CAD|cdn\.?)\b",
+        combined,
+        re.IGNORECASE,
+    )
+    if cad_m:
+        try:
+            v = float(cad_m.group(1))
+        except ValueError:
+            v = 0.0
+        if _is_plausible_price(v):
+            return _norm_price_str(cad_m.group(1))
+
+    # ---- 25 dollars (no $) ----
+    dol_m = re.search(
+        r"\b(\d+(?:\.\d{1,2})?)\s+dollars?\b",
+        low,
+        re.IGNORECASE,
+    )
+    if dol_m:
+        try:
+            v = float(dol_m.group(1))
+        except ValueError:
+            v = 0.0
+        if _is_plausible_price(v):
+            return _norm_price_str(dol_m.group(1))
+
+    # ---- $ amounts: collect & prefer first in plausible range (skip years) ----
+    candidates: List[Tuple[int, str, float]] = []
+    for m in re.finditer(r"\$(\d+(?:\.\d{1,2})?)", combined):
+        raw = m.group(1)
+        try:
+            val = float(raw)
+        except ValueError:
+            continue
+        if not _is_plausible_price(val):
+            continue
+        candidates.append((m.start(), raw, val))
+
+    if candidates:
+        def score(pos: int, value: float) -> float:
+            s = 0.0
+            start = max(0, pos - 45)
+            ctx = combined[start : pos + 15].lower()
+            for kw in ("ticket", "cover", "admission", "door", "show", "price", "ga ", "cost"):
+                if kw in ctx:
+                    s += 2.0
+            if 20 <= value <= 300:
+                s += 0.5
+            return s
+
+        scored: List[Tuple[float, int, str]] = []
+        for pos, raw, val in candidates:
+            sc = score(pos, val)
+            scored.append((sc, -pos, raw))
+        scored.sort(reverse=True)
+        return _norm_price_str(scored[0][2])
+
     return ""
 
 
 def format_cost_fields(cost: str) -> dict:
     """
-    Given a cost string, return a dict with all TEC cost-related fields.
-    
-    Args:
-        cost: The extracted cost string (e.g., "25", "Free", "20 - 35", "")
-    
-    Returns:
-        Dict with keys: EVENT COST, EVENT CURRENCY SYMBOL, 
-                       EVENT CURRENCY POSITION, EVENT ISO CURRENCY CODE
+    Map a cost string to TEC cost-related field dict.
+    Phrases like "See website" stay as text without a currency symbol.
     """
-    if not cost:
+    c = (cost or "").strip()
+    if not c:
         return {
             "EVENT COST": "",
             "EVENT CURRENCY SYMBOL": "",
             "EVENT CURRENCY POSITION": "",
             "EVENT ISO CURRENCY CODE": "",
         }
-    
-    if cost.lower() == "free":
+
+    if c.lower() == "free":
         return {
             "EVENT COST": "Free",
             "EVENT CURRENCY SYMBOL": "",
             "EVENT CURRENCY POSITION": "",
             "EVENT ISO CURRENCY CODE": "",
         }
-    
+
+    if c.lower() in NON_MONETARY_COST_PHRASES or (
+        "see" in c.lower() and "website" in c.lower() and not re.search(r"\d", c)
+    ):
+        return {
+            "EVENT COST": c,
+            "EVENT CURRENCY SYMBOL": "",
+            "EVENT CURRENCY POSITION": "",
+            "EVENT ISO CURRENCY CODE": "",
+        }
+
     return {
-        "EVENT COST": cost,
+        "EVENT COST": c,
         "EVENT CURRENCY SYMBOL": "$",
         "EVENT CURRENCY POSITION": "prefix",
         "EVENT ISO CURRENCY CODE": "CAD",
     }
 
 
-
-
+def apply_tec_cost_fields(cost: str) -> dict:
+    """Alias for :func:`format_cost_fields` (clearer name for scraper code)."""
+    return format_cost_fields(cost)

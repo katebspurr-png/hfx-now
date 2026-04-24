@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+
+# Generated v3 outputs
+output_v3/
+
+# Generated audit/comparison artifacts in project root
+audit_dashboard.html
+event_diff_report.html
+debug_page.html
+audit_future_only_in_site.csv
+matched_fuzzy.csv
+matched_fuzzy_v2.csv
+needs_review.csv
+needs_review_v2.csv
+only_in_master.csv
+only_in_master_v2.csv
+only_in_site_xml.csv
+only_in_site_xml_v2.csv
+possible_fuzzy_matches.csv
+possible_fuzzy_matches_v2.csv
+site_potential_duplicates.csv
+
+# Local ad-hoc export/import intermediates
+ready_to_import_*.csv
+
+# Local machine/editor metadata
+.DS_Store
+.specstory/

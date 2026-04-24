@@ -13,9 +13,7 @@ from cost_parsing import extract_event_cost
 
 BASE_URL = "https://agns.ca/events/"
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+from scraper_paths import OUTPUT_DIR
 
 CSV_FILE = os.path.join(OUTPUT_DIR, "art_gallery_ns_for_import.csv")
 
