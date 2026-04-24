@@ -75,13 +75,26 @@ function hfx_admin_event_column( $col, $post_id ) {
 			$moods     = is_array( $moods_raw ) ? $moods_raw
 				: ( is_string( $moods_raw ) && $moods_raw !== '' ? array_map( 'trim', explode( ',', $moods_raw ) ) : array() );
 
+			$start_raw = (string) get_post_meta( $post_id, '_EventStartDate', true );
+			$end_raw   = (string) get_post_meta( $post_id, '_EventEndDate', true );
+			$start_dt  = $start_raw ? date_create( $start_raw ) : false;
+			$end_dt    = $end_raw   ? date_create( $end_raw )   : false;
+			$start_date = $start_dt ? $start_dt->format( 'Y-m-d' ) : '';
+			$start_time = $start_dt ? $start_dt->format( 'H:i' )   : '';
+			$end_date   = $end_dt   ? $end_dt->format( 'Y-m-d' )   : '';
+			$end_time   = $end_dt   ? $end_dt->format( 'H:i' )     : '';
+
 			printf(
-				'<span class="hfx-row-data" style="display:none" data-venue-id="%s" data-price="%s" data-hood="%s" data-pick="%s" data-moods="%s"></span>',
+				'<span class="hfx-row-data" style="display:none" data-venue-id="%s" data-price="%s" data-hood="%s" data-pick="%s" data-moods="%s" data-start-date="%s" data-start-time="%s" data-end-date="%s" data-end-time="%s"></span>',
 				esc_attr( (string) $venue_id ),
 				esc_attr( $price ),
 				esc_attr( $hood ),
 				esc_attr( $is_pick ? '1' : '0' ),
-				esc_attr( (string) wp_json_encode( array_values( $moods ) ) )
+				esc_attr( (string) wp_json_encode( array_values( $moods ) ) ),
+				esc_attr( $start_date ),
+				esc_attr( $start_time ),
+				esc_attr( $end_date ),
+				esc_attr( $end_time )
 			);
 			break;
 	}
@@ -258,6 +271,26 @@ function hfx_admin_event_quick_edit( $col, $post_type ) {
 
 		</div>
 
+		<div class="hfx-qe-row" style="margin-top:8px;">
+
+			<div class="hfx-qe-field">
+				<span>Start date</span>
+				<div style="display:flex;gap:6px;">
+					<input type="date" name="hfx_qe_start_date" id="hfx-qe-start-date">
+					<input type="time" name="hfx_qe_start_time" id="hfx-qe-start-time">
+				</div>
+			</div>
+
+			<div class="hfx-qe-field">
+				<span>End date</span>
+				<div style="display:flex;gap:6px;">
+					<input type="date" name="hfx_qe_end_date" id="hfx-qe-end-date">
+					<input type="time" name="hfx_qe_end_time" id="hfx-qe-end-time">
+				</div>
+			</div>
+
+		</div>
+
 		<div class="hfx-qe-field" style="margin-top:10px;">
 			<span>Moods</span>
 			<div class="hfx-moods-grid">
@@ -297,6 +330,10 @@ function hfx_admin_event_quick_edit_js() {
 			$qe.find('#hfx-qe-price').val($data.data('price') || '');
 			$qe.find('#hfx-qe-hood').val($data.data('hood') || '');
 			$qe.find('#hfx-qe-pick').prop('checked', String($data.data('pick')) === '1');
+			$qe.find('#hfx-qe-start-date').val($data.data('startDate') || '');
+			$qe.find('#hfx-qe-start-time').val($data.data('startTime') || '');
+			$qe.find('#hfx-qe-end-date').val($data.data('endDate') || '');
+			$qe.find('#hfx-qe-end-time').val($data.data('endTime') || '');
 
 			var moods = $data.data('moods') || [];
 			$qe.find('.hfx-qe-mood').each(function () {
@@ -357,4 +394,27 @@ function hfx_save_quick_edit_event( $post_id ) {
 		$moods = array_map( 'sanitize_key', array_map( 'wp_unslash', $_POST['hfx_qe_moods'] ) );
 	}
 	update_post_meta( $post_id, 'hfx_moods', $moods );
+
+	// Dates: only save when both date and time are provided and valid.
+	if ( ! empty( $_POST['hfx_qe_start_date'] ) && ! empty( $_POST['hfx_qe_start_time'] ) ) {
+		$start_date = sanitize_text_field( wp_unslash( $_POST['hfx_qe_start_date'] ) );
+		$start_time = sanitize_text_field( wp_unslash( $_POST['hfx_qe_start_time'] ) );
+		$start_dt   = date_create_from_format( 'Y-m-d H:i', $start_date . ' ' . $start_time );
+		if ( $start_dt ) {
+			$formatted = $start_dt->format( 'Y-m-d H:i:s' );
+			update_post_meta( $post_id, '_EventStartDate', $formatted );
+			update_post_meta( $post_id, '_EventStartDateUTC', $formatted );
+		}
+	}
+
+	if ( ! empty( $_POST['hfx_qe_end_date'] ) && ! empty( $_POST['hfx_qe_end_time'] ) ) {
+		$end_date = sanitize_text_field( wp_unslash( $_POST['hfx_qe_end_date'] ) );
+		$end_time = sanitize_text_field( wp_unslash( $_POST['hfx_qe_end_time'] ) );
+		$end_dt   = date_create_from_format( 'Y-m-d H:i', $end_date . ' ' . $end_time );
+		if ( $end_dt ) {
+			$formatted = $end_dt->format( 'Y-m-d H:i:s' );
+			update_post_meta( $post_id, '_EventEndDate', $formatted );
+			update_post_meta( $post_id, '_EventEndDateUTC', $formatted );
+		}
+	}
 }
