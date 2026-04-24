@@ -59,6 +59,167 @@ PRIMARY_SOURCES = {
     "thecarleton",
 }
 
+# When merging two rows for the same event, prefer *more complete* data (e.g. TBA → real details)
+_LONG_FORM_UPGRADE_FIELDS = {
+    "Event Description",
+    "hfx_short_blurb",
+    "hfx_editor_blurb",
+    "Event Category",
+    "Event Tags",
+}
+_PLACEHOLDER_TOKENS = frozenset(
+    {
+        "tba",
+        "tbd",
+        "tbc",
+        "n/a",
+        "na",
+        "n/a.",
+        "none",
+        "null",
+        "unknown",
+        "coming soon",
+        "to be announced",
+        "to be determined",
+        "to be confirmed",
+        "various",
+    }
+)
+_PLACEHOLDER_LINE_RE = re.compile(
+    r"^[\s\-—–.…?:;!?,|]*$|^[\W_]+$"
+)
+
+
+def _norm_weak_token(s: str) -> str:
+    return re.sub(r"^[\s\"'“”\[\]().]+|[\s\"'“”\[\]().:]+$", "", (s or "").lower()).strip()
+
+
+def is_placeholder_value(s: str) -> bool:
+    t = (s or "").strip()
+    if not t:
+        return True
+    if _PLACEHOLDER_LINE_RE.match(t):
+        return True
+    tnorm = _norm_weak_token(t)
+    if tnorm in _PLACEHOLDER_TOKENS:
+        return True
+    if len(tnorm) <= 2 and tnorm not in {"am", "pm", "st"} and not tnorm.isdigit():
+        return True
+    if tnorm in {"untitled", "untitled event", "event", "tbc"}:
+        return True
+    return False
+
+
+def is_field_weak(field: str, s: str) -> bool:
+    t = (s or "").strip()
+    if is_placeholder_value(t):
+        return True
+    if field in ("Event Cost",):
+        low = t.lower()
+        if re.search(r"\$|cad|free\b|\d", low):
+            return is_placeholder_value(t) or t in ("?", "??")
+        return not t or t in ("?", "??", "-", "—")
+    if field in ("Event URL", "Event Featured Image"):
+        if not t or t in ("#", "http://", "https://", "n/a", "tba", "tbd"):
+            return True
+        if field == "Event URL" and not t.lower().startswith("http"):
+            return True
+        return False
+    if field in ("Event Category", "Event Tags"):
+        low = t.replace(" ", "")
+        if not t:
+            return True
+        if re.match(r"^other(,|$)", t.strip().lower().replace(" ", "")):
+            return len(t) < 12
+        if is_placeholder_value(t):
+            return True
+    if field in ("Event Start Time", "Event End Time", "Event End Date"):
+        return is_placeholder_value(t) or t.lower() in {"all day", "allday"}
+    if field == "Event Name":
+        return t.lower() in ("untitled event", "untitled", "tba", "tbd", "event")
+    return is_placeholder_value(t)
+
+
+def _looks_like_price(s: str) -> bool:
+    t = (s or "").lower()
+    if is_placeholder_value(s):
+        return False
+    return bool(re.search(r"(\$|cad\b|free\b|\d)", t))
+
+
+def substantially_richer(filler: str, base: str, field: str) -> bool:
+    """
+    Filler is clearly more complete than base (length + ratio) when both are
+    non-weak. For long-form fields (description, blurbs, tags, categories).
+    """
+    f, b = (filler or "").strip(), (base or "").strip()
+    if not f or f == b:
+        return False
+    if is_field_weak(field, f) or is_field_weak(field, b):
+        return False
+    ratio = 1.4 if field == "Event Description" else 1.35
+    delta = 40 if field == "Event Description" else 25
+    return len(f) >= len(b) + delta and len(f) >= len(b) * ratio
+
+
+def best_merged_value(field: str, base: str, filler: str) -> str:
+    """
+    Combine two field values: fill empties, replace TBA/weak with stronger,
+    and allow long-form fields to upgrade when the other row is clearly richer.
+    On ties, *base* wins to respect primary-source ordering.
+    """
+    b, f = (base or "").strip(), (filler or "").strip()
+    if not f:
+        return b
+    if not b:
+        return f
+    b_weak, f_weak = is_field_weak(field, b), is_field_weak(field, f)
+    if b_weak and not f_weak:
+        return f
+    if f_weak and not b_weak:
+        return b
+
+    if field == "Event URL":
+        if f.lower().startswith("http") and not b.lower().startswith("http"):
+            return f
+        return b
+
+    if field == "Event Cost":
+        b_price, f_price = _looks_like_price(b), _looks_like_price(f)
+        if f_price and (not b_price or b_weak):
+            return f
+        if b_price and not f_price and f_weak:
+            return b
+        return b
+
+    if field in _LONG_FORM_UPGRADE_FIELDS:
+        if substantially_richer(f, b, field):
+            return f
+        if substantially_richer(b, f, field):
+            return b
+        if field == "Event Description" and len(f) > len(b) * 1.5 and (len(f) - len(b)) > 20:
+            return f
+        if field == "Event Description" and len(b) > len(f) * 1.5 and (len(b) - len(f)) > 20:
+            return b
+        return b
+
+    if field in (
+        "Event Start Time",
+        "Event End Time",
+        "Event End Date",
+        "Event Venue Name",
+        "Event Name",
+        "Event Start Date",
+        *HFX_HEADERS,
+    ):
+        if b_weak and not f_weak:
+            return f
+        if f_weak and not b_weak:
+            return b
+        return b
+
+    return b
+
 
 def canonicalize_header(name: str) -> str:
     return re.sub(r"[^A-Z0-9]", "", (name or "").upper())
@@ -433,7 +594,14 @@ def choose_better_row_v3(existing: Dict[str, str], new: Dict[str, str]) -> Dict[
 
     result = base.copy()
 
-    for field in [
+    mergeable_fields = [
+        "Event Name",
+        "Event Start Date",
+        "Event Start Time",
+        "Event End Date",
+        "Event End Time",
+        "Event Venue Name",
+        "Event Description",
         "Event Featured Image",
         "Event Cost",
         "Event Category",
@@ -446,16 +614,13 @@ def choose_better_row_v3(existing: Dict[str, str], new: Dict[str, str]) -> Dict[
         "Event Venue Zip",
         "Source Event ID",
         *HFX_HEADERS,
-    ]:
-        if not (result.get(field) or "").strip() and (filler.get(field) or "").strip():
-            result[field] = (filler.get(field) or "").strip()
-
-    base_desc = (result.get("Event Description") or "").strip()
-    filler_desc = (filler.get("Event Description") or "").strip()
-    if not base_desc and filler_desc:
-        result["Event Description"] = filler_desc
-    elif len(filler_desc) > len(base_desc) * 1.5:
-        result["Event Description"] = filler_desc
+    ]
+    for field in mergeable_fields:
+        result[field] = best_merged_value(
+            field,
+            (base.get(field) or "").strip(),
+            (filler.get(field) or "").strip(),
+        )
 
     return enrich_hfx_fields(result)
 
