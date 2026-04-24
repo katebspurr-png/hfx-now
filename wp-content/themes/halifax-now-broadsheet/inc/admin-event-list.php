@@ -234,6 +234,7 @@ function hfx_admin_event_quick_edit( $col, $post_type ) {
 
 	wp_nonce_field( 'hfx_quick_edit', 'hfx_qe_nonce' );
 	?>
+	<input type="hidden" name="hfx_qe_initialized" id="hfx-qe-initialized" value="0">
 	<div id="hfx-quick-edit">
 		<h4>Halifax Now</h4>
 		<div class="hfx-qe-row">
@@ -339,6 +340,10 @@ function hfx_admin_event_quick_edit_js() {
 			$qe.find('.hfx-qe-mood').each(function () {
 				$(this).prop('checked', moods.indexOf($(this).val()) !== -1);
 			});
+
+			// Signal that JS pre-population succeeded — save handler uses this
+			// to know it can trust empty values as intentional clears.
+			$qe.find('#hfx-qe-initialized').val('1');
 		};
 	}(jQuery));
 	</script>
@@ -362,38 +367,47 @@ function hfx_save_quick_edit_event( $post_id ) {
 		return;
 	}
 
+	// Only trust empty/unchecked values when JS confirmed it pre-populated the form.
+	// If JS didn't run, skip overwriting existing data with defaults.
+	$initialized = isset( $_POST['hfx_qe_initialized'] ) && '1' === $_POST['hfx_qe_initialized'];
+
+	// Venue — always save (dropdown always sends a value).
 	if ( isset( $_POST['hfx_qe_venue_id'] ) ) {
 		$venue_id = absint( $_POST['hfx_qe_venue_id'] );
 		if ( $venue_id > 0 && get_post_type( $venue_id ) === 'tribe_venue' ) {
 			update_post_meta( $post_id, '_EventVenueID', $venue_id );
-		} elseif ( 0 === $venue_id ) {
+		} elseif ( 0 === $venue_id && $initialized ) {
 			delete_post_meta( $post_id, '_EventVenueID' );
 		}
 	}
 
+	// Price — always save (text field, user can see its value).
 	update_post_meta(
 		$post_id,
 		'_EventCost',
 		isset( $_POST['hfx_qe_price'] ) ? sanitize_text_field( wp_unslash( $_POST['hfx_qe_price'] ) ) : ''
 	);
 
-	update_post_meta(
-		$post_id,
-		'hfx_neighbourhood',
-		isset( $_POST['hfx_qe_hood'] ) ? sanitize_text_field( wp_unslash( $_POST['hfx_qe_hood'] ) ) : ''
-	);
-
-	update_post_meta(
-		$post_id,
-		'hfx_critic_pick',
-		isset( $_POST['hfx_qe_pick'] ) ? 1 : 0
-	);
-
-	$moods = array();
-	if ( isset( $_POST['hfx_qe_moods'] ) && is_array( $_POST['hfx_qe_moods'] ) ) {
-		$moods = array_map( 'sanitize_key', array_map( 'wp_unslash', $_POST['hfx_qe_moods'] ) );
+	// Neighbourhood — only clear if JS confirmed the form was pre-populated.
+	$new_hood = isset( $_POST['hfx_qe_hood'] ) ? sanitize_text_field( wp_unslash( $_POST['hfx_qe_hood'] ) ) : '';
+	if ( $new_hood !== '' || $initialized ) {
+		update_post_meta( $post_id, 'hfx_neighbourhood', $new_hood );
 	}
-	update_post_meta( $post_id, 'hfx_moods', $moods );
+
+	// Critic's pick — only save 0 (uncheck) if JS confirmed pre-population.
+	$new_pick = isset( $_POST['hfx_qe_pick'] ) ? 1 : 0;
+	if ( $new_pick === 1 || $initialized ) {
+		update_post_meta( $post_id, 'hfx_critic_pick', $new_pick );
+	}
+
+	// Moods — only overwrite with empty if JS confirmed pre-population.
+	$new_moods = array();
+	if ( isset( $_POST['hfx_qe_moods'] ) && is_array( $_POST['hfx_qe_moods'] ) ) {
+		$new_moods = array_map( 'sanitize_key', array_map( 'wp_unslash', $_POST['hfx_qe_moods'] ) );
+	}
+	if ( ! empty( $new_moods ) || $initialized ) {
+		update_post_meta( $post_id, 'hfx_moods', $new_moods );
+	}
 
 	// Dates: only save when both date and time are provided and valid.
 	if ( ! empty( $_POST['hfx_qe_start_date'] ) && ! empty( $_POST['hfx_qe_start_time'] ) ) {
