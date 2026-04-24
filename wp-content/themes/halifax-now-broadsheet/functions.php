@@ -9,6 +9,10 @@ if (!defined('ABSPATH')) {
 	exit;
 }
 
+if ( is_admin() ) {
+	require_once get_template_directory() . '/inc/admin-event-list.php';
+}
+
 /**
  * Theme setup.
  */
