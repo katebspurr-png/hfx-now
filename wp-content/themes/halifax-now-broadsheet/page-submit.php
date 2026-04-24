@@ -37,7 +37,7 @@ $mood_choices = array(
 	'kids' => '🧃 ' . __('Kid-friendly', 'halifax-now-broadsheet'),
 	'solo' => '👤 ' . __('Solo OK', 'halifax-now-broadsheet'),
 	'crew' => '👯 ' . __('Bring a crew', 'halifax-now-broadsheet'),
-	'free' => '🪙 ' . __('Broke-friendly', 'halifax-now-broadsheet'),
+	'free' => '💸 ' . __('Wallet-friendly', 'halifax-now-broadsheet'),
 	'rainy' => '☔ ' . __('Rainy-day', 'halifax-now-broadsheet'),
 );
 ?>
