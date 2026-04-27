@@ -88,6 +88,9 @@ foreach ($events as $event) {
 		}
 	}
 
+}
+
+foreach ($events as $event) {
 	if (
 		isset($event['lat'], $event['lng']) &&
 		is_numeric($event['lat']) &&
@@ -121,7 +124,7 @@ foreach ($heat_days as $day) {
 	$total_heat_count += (int) $day['count'];
 }
 $has_heat_data = $total_heat_count > 0;
-$right_now_time = strtolower( wp_date( 'g:i a', $now->getTimestamp(), $tz ) );
+$right_now_time = strtolower($now->format('g:i a'));
 $right_now_meta = wp_date( 'l · M j', $now->getTimestamp(), $tz );
 $map_preview_points = array_slice($map_points, 0, 28);
 $map_point_count = count($map_points);

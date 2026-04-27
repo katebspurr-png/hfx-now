@@ -217,14 +217,20 @@
     const mapRoot = document.querySelector("[data-hfx-map-canvas]");
     if (!mapRoot || typeof window.L === "undefined") return;
 
-    const withCoords = events.filter(
-      (event) =>
-        typeof event.lat === "number" &&
-        typeof event.lng === "number" &&
-        Number.isFinite(event.lat) &&
-        Number.isFinite(event.lng) &&
-        !(Math.abs(event.lat) < 0.0001 && Math.abs(event.lng) < 0.0001)
-    );
+    const withCoords = events
+      .map((event) => {
+        const lat = Number(event.lat);
+        const lng = Number(event.lng);
+        if (
+          !Number.isFinite(lat) ||
+          !Number.isFinite(lng) ||
+          (Math.abs(lat) < 0.0001 && Math.abs(lng) < 0.0001)
+        ) {
+          return null;
+        }
+        return { ...event, lat, lng };
+      })
+      .filter(Boolean);
 
     const map = window.L.map(mapRoot, {
       center: [44.649, -63.575],
