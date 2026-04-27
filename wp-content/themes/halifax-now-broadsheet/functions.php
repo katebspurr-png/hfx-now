@@ -134,10 +134,8 @@ function hfx_events_base_url() {
  * @return bool
  */
 function hfx_is_v3_sections_enabled() {
-	if ( defined( 'HFX_V3_SECTIONS_ENABLED' ) ) {
-		return (bool) HFX_V3_SECTIONS_ENABLED;
-	}
-	return '1' === (string) get_option( 'hfx_v3_sections_enabled', '0' );
+	// Emergency override: keep v3 sections hidden until rollout is explicitly re-enabled.
+	return false;
 }
 
 /**
@@ -168,7 +166,7 @@ function hfx_render_broadsheet_nav( $active = '' ) {
 	$submit_url = home_url( '/submit/' );
 	?>
 	<nav class="v4-nav hfx-topnav">
-		<a class="<?php echo 'home' === $active ? 'is-active' : ''; ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'The Week', 'halifax-now-broadsheet' ); ?></a>
+		<a class="<?php echo 'home' === $active ? 'is-active' : ''; ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'Home', 'halifax-now-broadsheet' ); ?></a>
 		<a class="<?php echo 'browse' === $active ? 'is-active' : ''; ?>" href="<?php echo esc_url( $browse_url ); ?>"><?php esc_html_e( 'All Listings', 'halifax-now-broadsheet' ); ?></a>
 		<a href="<?php echo esc_url( $browse_url . '?quick=tonight' ); ?>"><?php esc_html_e( 'Tonight', 'halifax-now-broadsheet' ); ?></a>
 		<a href="<?php echo esc_url( $browse_url . '?quick=weekend' ); ?>"><?php esc_html_e( 'Weekend', 'halifax-now-broadsheet' ); ?></a>
@@ -355,6 +353,42 @@ function hfx_register_rest_routes() {
 			),
 		)
 	);
+	register_rest_route(
+		'hfx/v1',
+		'/run-clubs',
+		array(
+			'methods'             => 'GET',
+			'callback'            => 'hfx_rest_serve_run_clubs',
+			'permission_callback' => '__return_true',
+		)
+	);
+	register_rest_route(
+		'hfx/v1',
+		'/happy-hours',
+		array(
+			'methods'             => 'GET',
+			'callback'            => 'hfx_rest_serve_happy_hours',
+			'permission_callback' => '__return_true',
+		)
+	);
+	register_rest_route(
+		'hfx/v1',
+		'/patios',
+		array(
+			'methods'             => 'GET',
+			'callback'            => 'hfx_rest_serve_patios',
+			'permission_callback' => '__return_true',
+		)
+	);
+	register_rest_route(
+		'hfx/v1',
+		'/v3-data',
+		array(
+			'methods'             => 'GET',
+			'callback'            => 'hfx_rest_serve_v3_data',
+			'permission_callback' => '__return_true',
+		)
+	);
 }
 add_action( 'rest_api_init', 'hfx_register_rest_routes' );
 
@@ -372,6 +406,155 @@ function hfx_rest_serve_events( $req ) {
 	$second = 60;
 	$resp->header( 'Cache-Control', 'public, max-age=' . (int) $second );
 	return $resp;
+}
+
+/**
+ * @return array<string, mixed>
+ */
+function hfx_v3_default_sections_data() {
+	return array(
+		'RUN_CLUBS' => array(
+			array(
+				'id'       => 'rc1',
+				'name'     => 'Point Pleasant Sunday Runners',
+				'day'      => 'Sunday',
+				'time'     => '09:00',
+				'distance' => '5K',
+				'pace'     => 'All paces',
+				'hood'     => 'South End',
+				'meetAt'   => 'Tower Road Gate',
+				'coffee'   => 'Glitter Bean',
+				'vibe'     => 'chill',
+				'members'  => 120,
+				'hue'      => 140,
+				'seed'     => 'runclub1',
+				'blurb'    => 'The OG Halifax run club. Established loop, all paces, no judgment.',
+				'route'    => '5K loop through Point Pleasant Park.',
+				'upcoming' => array( '2026-04-26', '2026-05-03', '2026-05-10' ),
+			),
+		),
+		'HAPPY_HOURS' => array(
+			array(
+				'id'      => 'hh1',
+				'venue'   => 'The Henry House',
+				'hood'    => 'South End',
+				'address' => '1222 Barrington St',
+				'deal'    => '$2 off pints · $5 house wine',
+				'starts'  => '16:00',
+				'ends'    => '18:00',
+				'days'    => array( 'Mon', 'Tue', 'Wed', 'Thu', 'Fri' ),
+				'note'    => 'Upstairs bar only. Stone building, actual fireplace.',
+				'tags'    => array( 'pints', 'wine' ),
+				'hue'     => 40,
+				'seed'    => 'henryhouse',
+			),
+		),
+		'PATIOS' => array(
+			array(
+				'id'           => 'pt1',
+				'venue'        => 'The Bicycle Thief',
+				'hood'         => 'Waterfront',
+				'address'      => '1475 Lower Water St',
+				'size'         => 'large',
+				'covered'      => false,
+				'dogs'         => false,
+				'view'         => true,
+				'heated'       => false,
+				'reservations' => true,
+				'vibe'         => 'Date night',
+				'note'         => 'Harbour view. Best at golden hour.',
+				'hue'          => 200,
+				'seed'         => 'bicyclethief',
+			),
+		),
+	);
+}
+
+/**
+ * @param string $option_name Option key.
+ * @param array  $fallback Fallback rows.
+ * @return array<int, array<string, mixed>>
+ */
+function hfx_v3_option_rows( $option_name, $fallback ) {
+	$value = get_option( $option_name, array() );
+	if ( ! is_array( $value ) || empty( $value ) ) {
+		return is_array( $fallback ) ? array_values( $fallback ) : array();
+	}
+	return array_values(
+		array_filter(
+			$value,
+			static function ( $row ) {
+				return is_array( $row );
+			}
+		)
+	);
+}
+
+/**
+ * @return array<string, mixed>
+ */
+function hfx_get_v3_sections_payload() {
+	$defaults  = hfx_v3_default_sections_data();
+	$run_clubs = hfx_v3_option_rows( 'hfx_v3_run_clubs', $defaults['RUN_CLUBS'] );
+	$happy     = hfx_v3_option_rows( 'hfx_v3_happy_hours', $defaults['HAPPY_HOURS'] );
+	$patios    = hfx_v3_option_rows( 'hfx_v3_patios', $defaults['PATIOS'] );
+	$now       = current_datetime();
+	$mins      = ((int) $now->format( 'H' ) * 60) + (int) $now->format( 'i' );
+	$dow       = $now->format( 'D' );
+
+	return array(
+		'RUN_CLUBS'   => $run_clubs,
+		'HAPPY_HOURS' => $happy,
+		'PATIOS'      => $patios,
+		'NOW_MINS'    => $mins,
+		'TODAY_DOW'   => $dow,
+	);
+}
+
+/**
+ * @return callable
+ */
+function hfx_rest_v3_payload_headers() {
+	return static function ( $data ) {
+		$resp = new WP_REST_Response( $data );
+		$resp->header( 'Cache-Control', 'public, max-age=60' );
+		return $resp;
+	};
+}
+
+/**
+ * @return WP_REST_Response
+ */
+function hfx_rest_serve_v3_data() {
+	$respond = hfx_rest_v3_payload_headers();
+	return $respond( hfx_get_v3_sections_payload() );
+}
+
+/**
+ * @return WP_REST_Response
+ */
+function hfx_rest_serve_run_clubs() {
+	$payload = hfx_get_v3_sections_payload();
+	$respond = hfx_rest_v3_payload_headers();
+	return $respond( $payload['RUN_CLUBS'] );
+}
+
+/**
+ * @return WP_REST_Response
+ */
+function hfx_rest_serve_happy_hours() {
+	$payload = hfx_get_v3_sections_payload();
+	$respond = hfx_rest_v3_payload_headers();
+	return $respond( $payload['HAPPY_HOURS'] );
+}
+
+/**
+ * @return WP_REST_Response
+ */
+function hfx_rest_serve_patios() {
+	$payload = hfx_get_v3_sections_payload();
+	$respond = hfx_rest_v3_payload_headers();
+	return $respond( $payload['PATIOS'] );
 }
 
 /**
@@ -884,6 +1067,10 @@ function hfx_event_lat_lng( $post_id, $venue_id = 0 ) {
 	if ($lat === null || $lng === null) {
 		return array('lat' => null, 'lng' => null);
 	}
+	// Treat zeroed coordinates as invalid (common placeholder when no venue geo exists).
+	if (abs((float) $lat) < 0.0001 && abs((float) $lng) < 0.0001) {
+		return array('lat' => null, 'lng' => null);
+	}
 	if ($lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) {
 		return array('lat' => null, 'lng' => null);
 	}
@@ -1378,6 +1565,8 @@ function hfx_register_acf_fields() {
 						'crew'   => '👯 Bring a crew',
 						'free'   => '🪙 Broke-friendly',
 						'rainy'  => '☔ Rainy-day',
+						'outdoorsy' => '🌲 Outdoorsy',
+						'active' => '🏃 Active',
 					),
 					'layout'       => 'horizontal',
 					'return_format'=> 'value',

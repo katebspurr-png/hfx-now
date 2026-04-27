@@ -56,6 +56,23 @@
 
 <!-- Keep script order strict: data/shared/sections/home before app bootstrap -->
 <script src="src/v3-data.js"></script>
+<script>
+  // Runtime data override from WP REST (fallback remains src/v3-data.js).
+  (function loadV3RuntimeData() {
+    if (window.location.protocol === "file:") return;
+    try {
+      var req = new XMLHttpRequest();
+      req.open("GET", "/wp-json/hfx/v1/v3-data", false);
+      req.send(null);
+      if (req.status < 200 || req.status >= 300) return;
+      var payload = JSON.parse(req.responseText);
+      if (!payload || typeof payload !== "object") return;
+      window.V3_DATA = Object.assign({}, window.V3_DATA || {}, payload);
+    } catch (err) {
+      // Keep static preview data if runtime fetch fails.
+    }
+  })();
+</script>
 <script type="text/babel" src="src/v3-shared.jsx"></script>
 <script type="text/babel" src="src/v3-sections.jsx"></script>
 <script type="text/babel" src="src/v3-home.jsx"></script>

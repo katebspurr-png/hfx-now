@@ -18,6 +18,8 @@ $hfx_blurb     = (string) get_option( 'hfx_weekly_blurb', '' );
 $upcoming      = array();
 $tonight      = array();
 $weekend      = array();
+$map_points   = array();
+$starting_soon_count = 0;
 $picks        = array_values(array_filter($events, static function ($event) {
 	return !empty($event['pick']);
 }));
@@ -69,6 +71,9 @@ foreach ($events as $event) {
 	$upcoming[] = $event;
 	if ($event_date === $today_ymd) {
 		$tonight[] = $event;
+		if ($event_dt >= $now && $event_dt <= $now->modify('+3 hours')) {
+			$starting_soon_count++;
+		}
 	}
 
 	$day_of_week = (int) $event_day->format('w');
@@ -81,6 +86,25 @@ foreach ($events as $event) {
 			$heat_days[$idx]['count']++;
 			break;
 		}
+	}
+
+}
+
+foreach ($events as $event) {
+	if (
+		isset($event['lat'], $event['lng']) &&
+		is_numeric($event['lat']) &&
+		is_numeric($event['lng']) &&
+		abs((float) $event['lat']) > 0.0001 &&
+		abs((float) $event['lng']) > 0.0001
+	) {
+		$map_points[] = array(
+			'lat'   => (float) $event['lat'],
+			'lng'   => (float) $event['lng'],
+			'title' => isset($event['title']) ? (string) $event['title'] : '',
+			'url'   => isset($event['url']) ? (string) $event['url'] : $browse_url,
+			'hood'  => isset($event['hood']) ? (string) $event['hood'] : '',
+		);
 	}
 }
 
@@ -100,6 +124,29 @@ foreach ($heat_days as $day) {
 	$total_heat_count += (int) $day['count'];
 }
 $has_heat_data = $total_heat_count > 0;
+$right_now_time = strtolower($now->format('g:i a'));
+$right_now_meta = wp_date( 'l · M j', $now->getTimestamp(), $tz );
+$map_preview_points = array_slice($map_points, 0, 28);
+$map_point_count = count($map_points);
+$map_active_hoods = count(array_unique(array_filter(array_map(static function ($point) {
+	return isset($point['hood']) ? (string) $point['hood'] : '';
+}, $map_points))));
+
+if (!empty($map_preview_points)) {
+	$lat_min = min(array_column($map_preview_points, 'lat'));
+	$lat_max = max(array_column($map_preview_points, 'lat'));
+	$lng_min = min(array_column($map_preview_points, 'lng'));
+	$lng_max = max(array_column($map_preview_points, 'lng'));
+	$lat_range = max(0.01, $lat_max - $lat_min);
+	$lng_range = max(0.01, $lng_max - $lng_min);
+
+	foreach ($map_preview_points as $idx => $point) {
+		$x = (($point['lng'] - $lng_min) / $lng_range) * 100;
+		$y = ((1 - (($point['lat'] - $lat_min) / $lat_range)) * 100);
+		$map_preview_points[$idx]['x'] = max(8, min(92, $x));
+		$map_preview_points[$idx]['y'] = max(10, min(90, $y));
+	}
+}
 ?>
 <div class="v4-root">
 	<header class="v4-mast">
@@ -115,7 +162,7 @@ $has_heat_data = $total_heat_count > 0;
 	</header>
 
 	<nav class="v4-nav">
-		<a href="<?php echo esc_url(home_url('/')); ?>"><?php esc_html_e('The Week', 'halifax-now-broadsheet'); ?></a>
+		<a href="<?php echo esc_url(home_url('/')); ?>"><?php esc_html_e('Home', 'halifax-now-broadsheet'); ?></a>
 		<a href="<?php echo esc_url($browse_url); ?>"><?php esc_html_e('All Listings', 'halifax-now-broadsheet'); ?></a>
 		<a href="<?php echo esc_url($browse_url . '?quick=tonight'); ?>"><?php esc_html_e('Tonight', 'halifax-now-broadsheet'); ?></a>
 		<a href="<?php echo esc_url($browse_url . '?quick=weekend'); ?>"><?php esc_html_e('Weekend', 'halifax-now-broadsheet'); ?></a>
@@ -237,9 +284,17 @@ $has_heat_data = $total_heat_count > 0;
 			<aside class="hfx-home-aside">
 				<div class="hfx-rightnow-box">
 					<div class="hfx-rightnow-hd"><?php esc_html_e('Right now', 'halifax-now-broadsheet'); ?></div>
-					<div class="hfx-rightnow-time">4:42 pm</div>
-					<div class="hfx-rightnow-meta"><?php esc_html_e('Friday · 9°C · Clear', 'halifax-now-broadsheet'); ?></div>
-					<div class="hfx-rightnow-copy"><strong><?php echo esc_html(count($tonight)); ?> <?php esc_html_e('events', 'halifax-now-broadsheet'); ?></strong> <?php esc_html_e('tonight. Sunset 8:07pm. Bring a layer.', 'halifax-now-broadsheet'); ?></div>
+					<div class="hfx-rightnow-time"><?php echo esc_html($right_now_time); ?></div>
+					<div class="hfx-rightnow-meta"><?php echo esc_html($right_now_meta); ?></div>
+					<div class="hfx-rightnow-copy">
+						<strong><?php echo esc_html(count($tonight)); ?> <?php esc_html_e('events', 'halifax-now-broadsheet'); ?></strong>
+						<?php esc_html_e('tonight.', 'halifax-now-broadsheet'); ?>
+						<?php if ($starting_soon_count > 0) : ?>
+							<?php echo esc_html($starting_soon_count); ?> <?php esc_html_e('starting in the next 3 hours.', 'halifax-now-broadsheet'); ?>
+						<?php else : ?>
+							<?php esc_html_e('Nothing starts in the next 3 hours.', 'halifax-now-broadsheet'); ?>
+						<?php endif; ?>
+					</div>
 				</div>
 
 				<button class="hfx-surprise-btn" data-hfx-surprise><span class="hfx-dice-icon" aria-hidden="true"></span><?php esc_html_e('Surprise me', 'halifax-now-broadsheet'); ?> →</button>
@@ -281,7 +336,27 @@ $has_heat_data = $total_heat_count > 0;
 				<div class="hfx-map-card">
 					<div class="hfx-home-card-hd"><?php esc_html_e('The map', 'halifax-now-broadsheet'); ?></div>
 					<div class="hfx-mini-map-preview">
+						<?php if (!empty($map_preview_points)) : ?>
+							<?php foreach ($map_preview_points as $point) : ?>
+								<a
+									class="hfx-mini-map-dot"
+									href="<?php echo esc_url($point['url']); ?>"
+									style="left: <?php echo esc_attr(number_format((float) $point['x'], 2, '.', '')); ?>%; top: <?php echo esc_attr(number_format((float) $point['y'], 2, '.', '')); ?>%;"
+									aria-label="<?php echo esc_attr($point['title']); ?>"
+									title="<?php echo esc_attr($point['title']); ?>"
+								></a>
+							<?php endforeach; ?>
+						<?php endif; ?>
 						<div class="hfx-mini-map-label">HALIFAX</div>
+						<div class="hfx-mini-map-stats">
+							<?php
+							printf(
+								esc_html__('%1$d events · %2$d neighbourhoods', 'halifax-now-broadsheet'),
+								(int) $map_point_count,
+								(int) $map_active_hoods
+							);
+							?>
+						</div>
 					</div>
 					<a class="hfx-map-open-btn" href="<?php echo esc_url($map_url); ?>"><?php esc_html_e('Open full map', 'halifax-now-broadsheet'); ?> →</a>
 				</div>
