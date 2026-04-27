@@ -134,10 +134,8 @@ function hfx_events_base_url() {
  * @return bool
  */
 function hfx_is_v3_sections_enabled() {
-	if ( defined( 'HFX_V3_SECTIONS_ENABLED' ) ) {
-		return (bool) HFX_V3_SECTIONS_ENABLED;
-	}
-	return '1' === (string) get_option( 'hfx_v3_sections_enabled', '0' );
+	// Emergency override: keep v3 sections hidden until rollout is explicitly re-enabled.
+	return false;
 }
 
 /**
@@ -1382,6 +1380,8 @@ function hfx_register_acf_fields() {
 						'crew'   => '👯 Bring a crew',
 						'free'   => '🪙 Broke-friendly',
 						'rainy'  => '☔ Rainy-day',
+						'outdoorsy' => '🌲 Outdoorsy',
+						'active' => '🏃 Active',
 					),
 					'layout'       => 'horizontal',
 					'return_format'=> 'value',

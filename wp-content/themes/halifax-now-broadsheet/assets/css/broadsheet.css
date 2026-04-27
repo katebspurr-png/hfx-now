@@ -865,13 +865,50 @@ a {
 .hfx-mini-map-label {
   position: absolute;
   left: 50%;
-  top: 52%;
+  top: 46%;
   transform: translate(-50%, -50%);
   font-family: "Space Grotesk", sans-serif;
-  font-size: 40px;
+  font-size: 34px;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: #7990a0;
+  color: rgba(52, 74, 92, 0.52);
+  pointer-events: none;
+}
+
+.hfx-mini-map-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid #0d0d10;
+  background: var(--acid);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.72);
+  transition: transform 120ms ease, background-color 120ms ease;
+  z-index: 2;
+}
+
+.hfx-mini-map-dot:hover {
+  transform: translate(-50%, -50%) scale(1.18);
+  background: var(--red);
+}
+
+.hfx-mini-map-stats {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  border: 2px solid rgba(13, 13, 16, 0.55);
+  background: rgba(255, 255, 255, 0.84);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #1b1b1f;
+  text-align: center;
+  padding: 5px 6px;
+  z-index: 3;
 }
 
 .hfx-map-open-btn {
@@ -2158,5 +2195,10 @@ input:focus-visible {
 
   .hfx-mini-map-label {
     font-size: 30px;
+  }
+
+  .hfx-mini-map-dot {
+    width: 9px;
+    height: 9px;
   }
 }
