@@ -156,6 +156,12 @@
         searchTerm = searchInput.value.trim().toLowerCase();
         render();
       });
+      searchInput.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+        searchTerm = searchInput.value.trim().toLowerCase();
+        render();
+      });
     }
 
     filterButtons.forEach((button) => {
