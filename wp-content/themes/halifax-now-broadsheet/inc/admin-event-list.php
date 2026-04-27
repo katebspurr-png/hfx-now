@@ -221,6 +221,8 @@ function hfx_admin_event_quick_edit( $col, $post_type ) {
 		'crew'  => '👯 Bring a crew',
 		'free'  => '🪙 Broke-friendly',
 		'rainy' => '☔ Rainy-day',
+		'outdoorsy' => '🌲 Outdoorsy',
+		'active' => '🏃 Active',
 	);
 
 	$venues = get_posts( array(
