@@ -1343,12 +1343,12 @@ a {
 .bbr-filterband {
   background: var(--ink);
   color: var(--paper);
-  padding: 0 32px;
+  padding: 8px 20px;
   border-bottom: 2px solid var(--rule);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 8px 14px;
   position: sticky;
   top: 0;
   z-index: 20;
@@ -1359,7 +1359,7 @@ a {
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-  padding: 10px 0;
+  padding: 6px 0;
   padding-right: 14px;
   border-right: 1px solid rgba(255, 255, 255, 0.12);
 }

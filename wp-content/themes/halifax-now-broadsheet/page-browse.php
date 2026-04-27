@@ -213,12 +213,6 @@ if ( $search_qs !== '' ) {
 			<span class="bbr-filter-label"><?php esc_html_e('Search', 'halifax-now-broadsheet'); ?></span>
 			<input type="search" class="hfx-inline-search bbr-search" placeholder="<?php esc_attr_e('Search title or venue', 'halifax-now-broadsheet'); ?>" value="<?php echo esc_attr($search_qs); ?>" data-hfx-live-search>
 		</div>
-		<div class="bbr-filter-section">
-			<a class="bbr-chip" href="<?php echo esc_url(home_url('/')); ?>"><?php esc_html_e('Home', 'halifax-now-broadsheet'); ?></a>
-			<a class="bbr-chip" href="<?php echo esc_url(home_url('/map/')); ?>"><?php esc_html_e('Map', 'halifax-now-broadsheet'); ?></a>
-			<a class="bbr-chip" href="<?php echo esc_url(home_url('/venues/')); ?>"><?php esc_html_e('Venues', 'halifax-now-broadsheet'); ?></a>
-			<a class="bbr-chip bbr-chip-acid" href="<?php echo esc_url(home_url('/submit/')); ?>"><?php esc_html_e('Submit', 'halifax-now-broadsheet'); ?></a>
-		</div>
 	</div>
 
 	<section class="v4-sec bbr-wrap">
