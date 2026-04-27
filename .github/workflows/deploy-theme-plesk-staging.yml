@@ -1,10 +1,10 @@
-name: Deploy Theme to Plesk (Staging)
+name: Deploy WordPress Files to Plesk (Staging)
 
 on:
   push:
     branches: [staging]
     paths:
-      - "wp-content/themes/halifax-now-broadsheet/**"
+      - "wp-content/**"
       - "v3-preview/**"
       - ".github/workflows/deploy-theme-plesk-staging.yml"
   workflow_dispatch:
@@ -97,12 +97,12 @@ jobs:
           echo "root=$ROOT" >> "$GITHUB_OUTPUT"
           echo "Derived staging web root: $ROOT"
 
-      - name: Deploy theme to staging via rsync over SSH
+      - name: Deploy wp-content to staging via rsync over SSH
         uses: burnett01/rsync-deployments@7.0.2
         with:
           switches: ${{ steps.rsync_flags.outputs.flags }}
-          path: wp-content/themes/halifax-now-broadsheet/
-          remote_path: ${{ secrets.PLESK_STAGING_THEME_PATH }}/
+          path: wp-content/
+          remote_path: ${{ steps.web_root.outputs.root }}/wp-content/
           remote_host: ${{ secrets.PLESK_STAGING_SSH_HOST }}
           remote_user: ${{ secrets.PLESK_STAGING_SSH_USER }}
           remote_key: ${{ secrets.PLESK_STAGING_SSH_KEY }}

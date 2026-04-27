@@ -1,6 +1,6 @@
 # Staging Setup (New Design)
 
-This project deploys both the WordPress theme and v3 preview assets to Plesk via GitHub Actions.
+This project deploys WordPress files (`wp-content`) plus v3 preview assets to Plesk via GitHub Actions.
 
 For staging, use the dedicated workflow:
 
@@ -26,7 +26,7 @@ Push your new-design changes to the `staging` branch.
 
 The staging workflow syncs:
 
-- `wp-content/themes/halifax-now-broadsheet/`
+- `wp-content/` to `/wp-content/` on staging web root (theme + mu-plugins in this repo)
 - `v3-preview/` to `/v3-preview/` on staging (derived from `PLESK_STAGING_THEME_PATH`)
 
 You can also run manual `dry_run` deploys before a full transfer.
