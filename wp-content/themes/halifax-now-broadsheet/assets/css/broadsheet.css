@@ -1404,6 +1404,20 @@ a {
   border-color: var(--acid);
 }
 
+.bbr-chip-clear {
+  background: var(--acid);
+  border-color: var(--acid);
+  color: var(--ink);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45);
+}
+
+.bbr-chip-clear:hover,
+.bbr-chip-clear.on {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
 a:focus-visible,
 button:focus-visible,
 input:focus-visible {

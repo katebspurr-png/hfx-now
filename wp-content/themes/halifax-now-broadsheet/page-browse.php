@@ -189,7 +189,7 @@ if ( $search_qs !== '' ) {
 			<button class="bbr-chip" data-hfx-quick="tomorrow"><?php esc_html_e('Tomorrow', 'halifax-now-broadsheet'); ?></button>
 			<button class="bbr-chip" data-hfx-quick="weekend"><?php esc_html_e('Weekend', 'halifax-now-broadsheet'); ?></button>
 			<button class="bbr-chip" data-hfx-quick="free"><?php esc_html_e('Free', 'halifax-now-broadsheet'); ?></button>
-			<button class="bbr-chip" data-hfx-clear><?php esc_html_e('Clear', 'halifax-now-broadsheet'); ?></button>
+			<button class="bbr-chip bbr-chip-clear" data-hfx-clear><?php esc_html_e('Clear', 'halifax-now-broadsheet'); ?></button>
 		</div>
 		<div class="bbr-filter-section" data-hfx-filter-group="category">
 			<span class="bbr-filter-label"><?php esc_html_e('Category', 'halifax-now-broadsheet'); ?></span>
