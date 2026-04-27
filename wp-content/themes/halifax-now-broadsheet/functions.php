@@ -884,6 +884,10 @@ function hfx_event_lat_lng( $post_id, $venue_id = 0 ) {
 	if ($lat === null || $lng === null) {
 		return array('lat' => null, 'lng' => null);
 	}
+	// Treat zeroed coordinates as invalid (common placeholder when no venue geo exists).
+	if (abs((float) $lat) < 0.0001 && abs((float) $lng) < 0.0001) {
+		return array('lat' => null, 'lng' => null);
+	}
 	if ($lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) {
 		return array('lat' => null, 'lng' => null);
 	}

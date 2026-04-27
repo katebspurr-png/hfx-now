@@ -222,7 +222,8 @@
         typeof event.lat === "number" &&
         typeof event.lng === "number" &&
         Number.isFinite(event.lat) &&
-        Number.isFinite(event.lng)
+        Number.isFinite(event.lng) &&
+        !(Math.abs(event.lat) < 0.0001 && Math.abs(event.lng) < 0.0001)
     );
 
     const map = window.L.map(mapRoot, {
