@@ -255,6 +255,38 @@ function hfx_redirect_legacy_browse_route() {
 add_action('template_redirect', 'hfx_redirect_legacy_browse_route', 1);
 
 /**
+ * Force TEC archive requests through our browse template.
+ *
+ * Some The Events Calendar setups bypass archive-tribe_events.php and render
+ * plugin default views directly. This keeps /events/ on the broadsheet UI.
+ *
+ * @param string $template Resolved template path.
+ * @return string
+ */
+function hfx_force_browse_template_for_events_archive( $template ) {
+	if ( is_admin() ) {
+		return $template;
+	}
+
+	$is_events_archive = is_post_type_archive( 'tribe_events' );
+	if ( ! $is_events_archive && function_exists( 'tribe_is_event_query' ) ) {
+		$is_events_archive = tribe_is_event_query() && ! is_singular( 'tribe_events' ) && ! is_tax();
+	}
+
+	if ( ! $is_events_archive ) {
+		return $template;
+	}
+
+	$browse_template = locate_template( 'page-browse.php' );
+	if ( '' === $browse_template ) {
+		return $template;
+	}
+
+	return $browse_template;
+}
+add_filter( 'template_include', 'hfx_force_browse_template_for_events_archive', 99 );
+
+/**
  * Serve event/venue canonical routes without requiring rewrite flush.
  */
 function hfx_maybe_render_virtual_entity_pages() {
