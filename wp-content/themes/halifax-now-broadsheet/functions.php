@@ -134,10 +134,8 @@ function hfx_events_base_url() {
  * @return bool
  */
 function hfx_is_v3_sections_enabled() {
-	if ( defined( 'HFX_V3_SECTIONS_ENABLED' ) ) {
-		return (bool) HFX_V3_SECTIONS_ENABLED;
-	}
-	return '1' === (string) get_option( 'hfx_v3_sections_enabled', '0' );
+	// Emergency override: keep v3 sections hidden until rollout is explicitly re-enabled.
+	return false;
 }
 
 /**
@@ -168,7 +166,7 @@ function hfx_render_broadsheet_nav( $active = '' ) {
 	$submit_url = home_url( '/submit/' );
 	?>
 	<nav class="v4-nav hfx-topnav">
-		<a class="<?php echo 'home' === $active ? 'is-active' : ''; ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'The Week', 'halifax-now-broadsheet' ); ?></a>
+		<a class="<?php echo 'home' === $active ? 'is-active' : ''; ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'Home', 'halifax-now-broadsheet' ); ?></a>
 		<a class="<?php echo 'browse' === $active ? 'is-active' : ''; ?>" href="<?php echo esc_url( $browse_url ); ?>"><?php esc_html_e( 'All Listings', 'halifax-now-broadsheet' ); ?></a>
 		<a href="<?php echo esc_url( $browse_url . '?quick=tonight' ); ?>"><?php esc_html_e( 'Tonight', 'halifax-now-broadsheet' ); ?></a>
 		<a href="<?php echo esc_url( $browse_url . '?quick=weekend' ); ?>"><?php esc_html_e( 'Weekend', 'halifax-now-broadsheet' ); ?></a>
@@ -1067,6 +1065,10 @@ function hfx_event_lat_lng( $post_id, $venue_id = 0 ) {
 		}
 	}
 	if ($lat === null || $lng === null) {
+		return array('lat' => null, 'lng' => null);
+	}
+	// Treat zeroed coordinates as invalid (common placeholder when no venue geo exists).
+	if (abs((float) $lat) < 0.0001 && abs((float) $lng) < 0.0001) {
 		return array('lat' => null, 'lng' => null);
 	}
 	if ($lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) {

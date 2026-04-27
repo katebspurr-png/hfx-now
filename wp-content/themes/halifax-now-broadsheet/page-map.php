@@ -9,7 +9,15 @@ get_header();
 
 $events = hfx_get_events_payload(200);
 $events_with_coords = array_values(array_filter($events, static function ($event) {
-	return isset($event['lat'], $event['lng']) && is_numeric($event['lat']) && is_numeric($event['lng']);
+	if (!isset($event['lat'], $event['lng']) || !is_numeric($event['lat']) || !is_numeric($event['lng'])) {
+		return false;
+	}
+	$lat = (float) $event['lat'];
+	$lng = (float) $event['lng'];
+	if (abs($lat) < 0.0001 && abs($lng) < 0.0001) {
+		return false;
+	}
+	return true;
 }));
 ?>
 <div class="v4-root hfx-map-page bmap-root" data-hfx-map-page>
