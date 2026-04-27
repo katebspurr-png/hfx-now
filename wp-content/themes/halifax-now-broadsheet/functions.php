@@ -168,7 +168,7 @@ function hfx_render_broadsheet_nav( $active = '' ) {
 	$submit_url = home_url( '/submit/' );
 	?>
 	<nav class="v4-nav hfx-topnav">
-		<a class="<?php echo 'home' === $active ? 'is-active' : ''; ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'The Week', 'halifax-now-broadsheet' ); ?></a>
+		<a class="<?php echo 'home' === $active ? 'is-active' : ''; ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'Home', 'halifax-now-broadsheet' ); ?></a>
 		<a class="<?php echo 'browse' === $active ? 'is-active' : ''; ?>" href="<?php echo esc_url( $browse_url ); ?>"><?php esc_html_e( 'All Listings', 'halifax-now-broadsheet' ); ?></a>
 		<a href="<?php echo esc_url( $browse_url . '?quick=tonight' ); ?>"><?php esc_html_e( 'Tonight', 'halifax-now-broadsheet' ); ?></a>
 		<a href="<?php echo esc_url( $browse_url . '?quick=weekend' ); ?>"><?php esc_html_e( 'Weekend', 'halifax-now-broadsheet' ); ?></a>

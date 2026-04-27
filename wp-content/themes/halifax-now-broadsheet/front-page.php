@@ -115,7 +115,7 @@ $has_heat_data = $total_heat_count > 0;
 	</header>
 
 	<nav class="v4-nav">
-		<a href="<?php echo esc_url(home_url('/')); ?>"><?php esc_html_e('The Week', 'halifax-now-broadsheet'); ?></a>
+		<a href="<?php echo esc_url(home_url('/')); ?>"><?php esc_html_e('Home', 'halifax-now-broadsheet'); ?></a>
 		<a href="<?php echo esc_url($browse_url); ?>"><?php esc_html_e('All Listings', 'halifax-now-broadsheet'); ?></a>
 		<a href="<?php echo esc_url($browse_url . '?quick=tonight'); ?>"><?php esc_html_e('Tonight', 'halifax-now-broadsheet'); ?></a>
 		<a href="<?php echo esc_url($browse_url . '?quick=weekend'); ?>"><?php esc_html_e('Weekend', 'halifax-now-broadsheet'); ?></a>
