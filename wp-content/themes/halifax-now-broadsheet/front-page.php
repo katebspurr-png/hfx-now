@@ -26,6 +26,10 @@ $browse_url   = hfx_events_base_url();
 $map_url      = home_url('/map/');
 $venues_url   = home_url('/venues/');
 $submit_url   = home_url('/submit/');
+$v3_enabled   = function_exists( 'hfx_is_v3_sections_enabled' ) ? hfx_is_v3_sections_enabled() : false;
+$v3_runclubs  = function_exists( 'hfx_v3_preview_url' ) ? hfx_v3_preview_url( 'runclubs' ) : home_url( '/v3-preview/?v3=1&page=runclubs' );
+$v3_happyhour = function_exists( 'hfx_v3_preview_url' ) ? hfx_v3_preview_url( 'happyhours' ) : home_url( '/v3-preview/?v3=1&page=happyhours' );
+$v3_patios    = function_exists( 'hfx_v3_preview_url' ) ? hfx_v3_preview_url( 'patios' ) : home_url( '/v3-preview/?v3=1&page=patios' );
 $hoods        = array_values(array_unique(array_filter(array_map(static function ($event) {
 	return isset($event['hood']) ? $event['hood'] : '';
 }, $events))));
@@ -117,6 +121,13 @@ $has_heat_data = $total_heat_count > 0;
 		<a href="<?php echo esc_url($browse_url . '?quick=weekend'); ?>"><?php esc_html_e('Weekend', 'halifax-now-broadsheet'); ?></a>
 		<a href="<?php echo esc_url($map_url); ?>"><?php esc_html_e('Map', 'halifax-now-broadsheet'); ?></a>
 		<a href="<?php echo esc_url($venues_url); ?>"><?php esc_html_e('Venues', 'halifax-now-broadsheet'); ?></a>
+		<?php if ( $v3_enabled ) : ?>
+			<div class="v4-nav-v3">
+				<a href="<?php echo esc_url( $v3_runclubs ); ?>"><?php esc_html_e( 'Run Clubs', 'halifax-now-broadsheet' ); ?></a>
+				<a href="<?php echo esc_url( $v3_happyhour ); ?>"><?php esc_html_e( 'Happy Hour', 'halifax-now-broadsheet' ); ?></a>
+				<a href="<?php echo esc_url( $v3_patios ); ?>"><?php esc_html_e( 'Patios', 'halifax-now-broadsheet' ); ?></a>
+			</div>
+		<?php endif; ?>
 		<a class="cta" href="<?php echo esc_url($submit_url); ?>"><?php esc_html_e('+ Submit', 'halifax-now-broadsheet'); ?></a>
 	</nav>
 
@@ -138,10 +149,10 @@ $has_heat_data = $total_heat_count > 0;
 				<a class="v4-qchip" href="<?php echo esc_url($browse_url . '?quick=free'); ?>"><?php esc_html_e('FREE / $0', 'halifax-now-broadsheet'); ?></a>
 				<button class="v4-qchip surprise" data-hfx-surprise><?php esc_html_e('Surprise me', 'halifax-now-broadsheet'); ?></button>
 			</div>
-			<div class="v4-search">
-				<input type="search" placeholder="<?php esc_attr_e('Search venues, artists, things to do...', 'halifax-now-broadsheet'); ?>" data-hfx-search>
-				<button type="button" data-hfx-search-submit><?php esc_html_e('Go', 'halifax-now-broadsheet'); ?></button>
-			</div>
+			<form class="v4-search" method="get" action="<?php echo esc_url($browse_url); ?>">
+				<input type="search" name="s" placeholder="<?php esc_attr_e('Search venues, artists, things to do...', 'halifax-now-broadsheet'); ?>" data-hfx-search>
+				<button type="submit" data-hfx-search-submit><?php esc_html_e('Go', 'halifax-now-broadsheet'); ?></button>
+			</form>
 		</div>
 		<div class="v4-picks">
 			<div class="v4-picks-hd"><span class="t"><?php esc_html_e("Critics' Picks", 'halifax-now-broadsheet'); ?></span><span class="s"><?php esc_html_e('This Week', 'halifax-now-broadsheet'); ?></span></div>

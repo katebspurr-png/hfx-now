@@ -11,6 +11,7 @@ the_post();
 $event = hfx_event_to_payload(get_the_ID());
 ?>
 <div class="v4-root bed-root">
+	<?php hfx_render_broadsheet_nav('browse'); ?>
 	<section class="v4-sec bed-wrap">
 		<a class="bed-back" href="<?php echo esc_url(hfx_events_base_url()); ?>"><?php esc_html_e('← Back to the week', 'halifax-now-broadsheet'); ?></a>
 		<div class="bed-kicker <?php echo !empty($event['pick']) ? 'pick' : ''; ?>">

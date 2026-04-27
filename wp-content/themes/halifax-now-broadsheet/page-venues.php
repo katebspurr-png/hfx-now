@@ -19,6 +19,7 @@ foreach ($events as $event) {
 ksort($grouped_venues);
 ?>
 <div class="v4-root bvn-root">
+	<?php hfx_render_broadsheet_nav('venues'); ?>
 	<section class="v4-sec bvn-wrap">
 		<a class="bvn-back" href="<?php echo esc_url(home_url('/')); ?>"><?php esc_html_e('← Back', 'halifax-now-broadsheet'); ?></a>
 		<div class="bvn-hero">

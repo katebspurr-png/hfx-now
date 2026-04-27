@@ -122,6 +122,17 @@ a {
   transition: background-color 140ms ease, color 140ms ease;
 }
 
+.v4-nav-v3 {
+  display: flex;
+  align-items: center;
+  border-left: 3px solid var(--acid);
+  margin-left: 8px;
+}
+
+.v4-nav-v3 a {
+  color: var(--acid);
+}
+
 .v4-nav a.cta {
   margin-left: auto;
   background: var(--acid);
@@ -131,6 +142,11 @@ a {
 .v4-nav a:hover {
   background: var(--red);
   color: #fff;
+}
+
+.v4-nav a.is-active {
+  background: var(--paper);
+  color: var(--ink);
 }
 
 .v4-hero {

@@ -31,6 +31,7 @@ if (!empty($events[0]['hood'])) {
 }
 ?>
 <div class="v4-root bvn-root">
+	<?php hfx_render_broadsheet_nav('venues'); ?>
 	<section class="v4-sec bvn-wrap">
 		<a class="bvn-back" href="<?php echo esc_url(home_url('/venues/')); ?>"><?php esc_html_e('← Back', 'halifax-now-broadsheet'); ?></a>
 		<div class="bvn-hero">

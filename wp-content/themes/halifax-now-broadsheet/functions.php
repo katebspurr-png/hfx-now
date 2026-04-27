@@ -124,6 +124,62 @@ function hfx_events_base_url() {
 }
 
 /**
+ * Feature flag for additive v3 sections/nav rollout.
+ *
+ * OFF by default for production safety.
+ * Enable with either:
+ * - define('HFX_V3_SECTIONS_ENABLED', true); in wp-config.php, or
+ * - WP option `hfx_v3_sections_enabled` set to 1.
+ *
+ * @return bool
+ */
+function hfx_is_v3_sections_enabled() {
+	if ( defined( 'HFX_V3_SECTIONS_ENABLED' ) ) {
+		return (bool) HFX_V3_SECTIONS_ENABLED;
+	}
+	return '1' === (string) get_option( 'hfx_v3_sections_enabled', '0' );
+}
+
+/**
+ * Preview entrypoint for v3 pages.
+ *
+ * @param string $page Optional v3 page id.
+ * @return string
+ */
+function hfx_v3_preview_url( $page = '' ) {
+	$args = array( 'v3' => '1' );
+	$page = sanitize_key( (string) $page );
+	if ( '' !== $page ) {
+		$args['page'] = $page;
+	}
+	return add_query_arg( $args, home_url( '/v3-preview/' ) );
+}
+
+/**
+ * Shared broadsheet top nav.
+ *
+ * @param string $active Active section key.
+ */
+function hfx_render_broadsheet_nav( $active = '' ) {
+	$active     = sanitize_key( (string) $active );
+	$browse_url = hfx_events_base_url();
+	$map_url    = home_url( '/map/' );
+	$venues_url = home_url( '/venues/' );
+	$submit_url = home_url( '/submit/' );
+	?>
+	<nav class="v4-nav hfx-topnav">
+		<a class="<?php echo 'home' === $active ? 'is-active' : ''; ?>" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'The Week', 'halifax-now-broadsheet' ); ?></a>
+		<a class="<?php echo 'browse' === $active ? 'is-active' : ''; ?>" href="<?php echo esc_url( $browse_url ); ?>"><?php esc_html_e( 'All Listings', 'halifax-now-broadsheet' ); ?></a>
+		<a href="<?php echo esc_url( $browse_url . '?quick=tonight' ); ?>"><?php esc_html_e( 'Tonight', 'halifax-now-broadsheet' ); ?></a>
+		<a href="<?php echo esc_url( $browse_url . '?quick=weekend' ); ?>"><?php esc_html_e( 'Weekend', 'halifax-now-broadsheet' ); ?></a>
+		<a class="<?php echo 'map' === $active ? 'is-active' : ''; ?>" href="<?php echo esc_url( $map_url ); ?>"><?php esc_html_e( 'Map', 'halifax-now-broadsheet' ); ?></a>
+		<a class="<?php echo 'venues' === $active ? 'is-active' : ''; ?>" href="<?php echo esc_url( $venues_url ); ?>"><?php esc_html_e( 'Venues', 'halifax-now-broadsheet' ); ?></a>
+		<a class="cta <?php echo 'submit' === $active ? 'is-active' : ''; ?>" href="<?php echo esc_url( $submit_url ); ?>"><?php esc_html_e( '+ Submit', 'halifax-now-broadsheet' ); ?></a>
+	</nav>
+	<?php
+}
+
+/**
  * Canonicalize event URL to /events/{slug}.
  *
  * @param string $url Raw permalink.

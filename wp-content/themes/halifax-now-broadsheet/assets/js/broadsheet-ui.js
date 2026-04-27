@@ -64,7 +64,7 @@
 
     let activeQuick = browseRoot.dataset.quick || "";
     let activeDate = browseRoot.dataset.dateFilter || "";
-    let searchTerm = "";
+    let searchTerm = (browseRoot.dataset.search || "").trim().toLowerCase();
     const selected = {
       category: new Set(
         filterButtons
@@ -92,7 +92,7 @@
         const searchable = `${title} ${venue}`;
         const quickMatch = matchesQuickFilter(row, activeQuick, now);
         const dateMatch = !activeDate || row.dataset.date === activeDate;
-        const searchMatch = !searchTerm || searchable.includes(searchTerm);
+      const searchMatch = !searchTerm || searchable.includes(searchTerm);
         const cat = (row.dataset.category || "").toLowerCase();
         const hood = row.dataset.hood || "";
         const rowMoods = (row.dataset.moods || "")
@@ -149,6 +149,9 @@
     }
 
     if (searchInput) {
+      if (searchTerm && !searchInput.value) {
+        searchInput.value = browseRoot.dataset.search || "";
+      }
       searchInput.addEventListener("input", () => {
         searchTerm = searchInput.value.trim().toLowerCase();
         render();

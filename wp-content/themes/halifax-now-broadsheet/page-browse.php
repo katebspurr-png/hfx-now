@@ -13,6 +13,7 @@ $date_qs    = hfx_qs('date');
 $hood_qs    = hfx_qs('hood');
 $mood_qs    = hfx_qs('mood');
 $cat_qs     = hfx_qs('cat');
+$search_qs  = hfx_qs('s');
 $browse_url = hfx_events_base_url();
 $tz         = wp_timezone();
 $now        = current_datetime();
@@ -128,6 +129,31 @@ $events = array_values(
 	)
 );
 
+if ($search_qs !== '') {
+	$search_term = strtolower(trim($search_qs));
+	$events = array_values(
+		array_filter(
+			$events,
+			static function ($event) use ($search_term) {
+				$haystack = implode(
+					' ',
+					array_filter(
+						array(
+							isset($event['title']) ? (string) $event['title'] : '',
+							isset($event['venue']) ? (string) $event['venue'] : '',
+							isset($event['hood']) ? (string) $event['hood'] : '',
+							isset($event['categoryLabel']) ? (string) $event['categoryLabel'] : '',
+							isset($event['blurb']) ? (string) $event['blurb'] : '',
+							isset($event['short']) ? (string) $event['short'] : '',
+						)
+					)
+				);
+				return false !== strpos(strtolower($haystack), $search_term);
+			}
+		)
+	);
+}
+
 $active_filters = array();
 if ( $date_qs !== '' && hfx_is_valid_event_date( $date_qs ) ) {
 	$active_filters[] = sprintf( __( 'Date: %s', 'halifax-now-broadsheet' ), $date_qs );
@@ -144,13 +170,17 @@ if ( ! empty( $active_hoods ) ) {
 if ( ! empty( $active_moods ) ) {
 	$active_filters[] = sprintf( __( 'Mood: %s', 'halifax-now-broadsheet' ), implode( ', ', $active_moods ) );
 }
+if ( $search_qs !== '' ) {
+	$active_filters[] = sprintf( __( 'Search: %s', 'halifax-now-broadsheet' ), $search_qs );
+}
 ?>
-<div class="v4-root bbr-root hfx-browse" data-hfx-browse data-quick="<?php echo esc_attr($quick); ?>" data-date-filter="<?php echo esc_attr($date_qs); ?>">
+<div class="v4-root bbr-root hfx-browse" data-hfx-browse data-quick="<?php echo esc_attr($quick); ?>" data-date-filter="<?php echo esc_attr($date_qs); ?>" data-search="<?php echo esc_attr($search_qs); ?>">
 	<header class="v4-mast">
 		<div class="v4-datestamp"><?php esc_html_e('All Listings', 'halifax-now-broadsheet'); ?></div>
 		<div class="v4-logo">Halifax<span class="amp">,</span> Now</div>
 		<div class="v4-tag"><?php esc_html_e('Browse events', 'halifax-now-broadsheet'); ?></div>
 	</header>
+	<?php hfx_render_broadsheet_nav('browse'); ?>
 
 	<div class="bbr-filterband">
 		<div class="bbr-filter-section">
@@ -181,7 +211,7 @@ if ( ! empty( $active_moods ) ) {
 		</div>
 		<div class="bbr-filter-section">
 			<span class="bbr-filter-label"><?php esc_html_e('Search', 'halifax-now-broadsheet'); ?></span>
-			<input type="search" class="hfx-inline-search bbr-search" placeholder="<?php esc_attr_e('Search title or venue', 'halifax-now-broadsheet'); ?>" data-hfx-live-search>
+			<input type="search" class="hfx-inline-search bbr-search" placeholder="<?php esc_attr_e('Search title or venue', 'halifax-now-broadsheet'); ?>" value="<?php echo esc_attr($search_qs); ?>" data-hfx-live-search>
 		</div>
 		<div class="bbr-filter-section">
 			<a class="bbr-chip" href="<?php echo esc_url(home_url('/')); ?>"><?php esc_html_e('Home', 'halifax-now-broadsheet'); ?></a>
