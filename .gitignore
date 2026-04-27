@@ -28,3 +28,7 @@ ready_to_import_*.csv
 # macOS noise
 .DS_Store
 **/.DS_Store
+
+# Local nested repos (keep unmanaged by parent)
+halifax-now-broadsheet/
+hfx-now-repo/
