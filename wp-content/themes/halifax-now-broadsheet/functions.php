@@ -1563,6 +1563,8 @@ function hfx_register_acf_fields() {
 						'crew'   => '👯 Bring a crew',
 						'free'   => '🪙 Broke-friendly',
 						'rainy'  => '☔ Rainy-day',
+						'outdoorsy' => '🌲 Outdoorsy',
+						'active' => '🏃 Active',
 					),
 					'layout'       => 'horizontal',
 					'return_format'=> 'value',

@@ -39,6 +39,8 @@ $mood_choices = array(
 	'crew' => '👯 ' . __('Bring a crew', 'halifax-now-broadsheet'),
 	'free' => '💸 ' . __('Wallet-friendly', 'halifax-now-broadsheet'),
 	'rainy' => '☔ ' . __('Rainy-day', 'halifax-now-broadsheet'),
+	'outdoorsy' => '🌲 ' . __('Outdoorsy', 'halifax-now-broadsheet'),
+	'active' => '🏃 ' . __('Active', 'halifax-now-broadsheet'),
 );
 ?>
 <div class="v4-root bsub-root">
