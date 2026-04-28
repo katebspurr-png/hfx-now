@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+
+if [[ -z "${branch}" ]]; then
+  exit 0
+fi
+
+if [[ "${branch}" == "main" || "${branch}" == "master" ]]; then
+  cat <<'EOF'
+[pre-push] Push to main/master is blocked by local safety policy.
+Create a feature branch/worktree and push that branch instead.
+If you really need to push main, bypass with:
+  git push --no-verify
+EOF
+  exit 1
+fi
+
+exit 0

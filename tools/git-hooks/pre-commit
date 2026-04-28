@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+
+if [[ -z "${branch}" ]]; then
+  exit 0
+fi
+
+if [[ "${branch}" == "main" || "${branch}" == "master" ]]; then
+  cat <<'EOF'
+[pre-commit] Commit on main/master is blocked by local safety policy.
+Create a feature branch/worktree first, then commit there.
+If you really need to commit on main/master, bypass once with:
+  git commit --no-verify
+EOF
+  exit 1
+fi
+
+exit 0
