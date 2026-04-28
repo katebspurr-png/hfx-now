@@ -1,0 +1,13 @@
+---
+description: Enforce feature branch workflow and protect main/master
+alwaysApply: true
+---
+
+# Feature Branch Workflow
+
+- Never commit directly on `main` or `master`.
+- Never push directly to `main` or `master`.
+- If currently on `main` or `master`, create a feature branch first:
+  - `git switch -c <type>/<short-name>`
+- Push feature branches and merge through pull requests.
+- If a user explicitly asks to bypass this policy, warn about risk and require explicit confirmation before proceeding.
