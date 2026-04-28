@@ -3,34 +3,20 @@
 
   const data = window.HFXThemeData || {};
   const events = Array.isArray(data.events) ? data.events : [];
-  const HALIFAX_TZ = "America/Halifax";
 
-  function ymdInTimeZone(date, timeZone) {
-    const parts = new Intl.DateTimeFormat("en-US", {
-      timeZone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).formatToParts(date);
-    const year = parts.find((p) => p.type === "year")?.value || "1970";
-    const month = parts.find((p) => p.type === "month")?.value || "01";
-    const day = parts.find((p) => p.type === "day")?.value || "01";
-    return `${year}-${month}-${day}`;
+  function parseDateTime(dateStr, timeStr) {
+    if (!dateStr) return null;
+    const t = timeStr || "00:00";
+    const d = new Date(`${dateStr}T${t}:00`);
+    return Number.isNaN(d.getTime()) ? null : d;
   }
 
-  function addDaysYmd(ymd, days) {
-    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd);
-    if (!m) return ymd;
-    const dt = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
-    dt.setUTCDate(dt.getUTCDate() + days);
-    return dt.toISOString().slice(0, 10);
-  }
-
-  function weekdayFromYmd(ymd) {
-    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd);
-    if (!m) return NaN;
-    const noonUtc = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12, 0, 0));
-    return noonUtc.getUTCDay();
+  function isSameDay(a, b) {
+    return (
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate()
+    );
   }
 
   function nowDate() {
@@ -41,15 +27,18 @@
   function matchesQuickFilter(row, quick, now) {
     if (!quick) return true;
     const rowDate = row.dataset.date || "";
-    if (!rowDate) return false;
+    const rowTime = row.dataset.time || "00:00";
+    const d = parseDateTime(rowDate, rowTime);
+    if (!d) return false;
 
-    const todayYmdHalifax = ymdInTimeZone(now, HALIFAX_TZ);
-    if (quick === "tonight") return rowDate === todayYmdHalifax;
+    if (quick === "tonight") return isSameDay(d, now);
     if (quick === "tomorrow") {
-      return rowDate === addDaysYmd(todayYmdHalifax, 1);
+      const tomorrow = new Date(now);
+      tomorrow.setDate(now.getDate() + 1);
+      return isSameDay(d, tomorrow);
     }
     if (quick === "weekend") {
-      const day = weekdayFromYmd(rowDate);
+      const day = d.getDay();
       return day === 5 || day === 6 || day === 0;
     }
     if (quick === "free") return row.dataset.price === "free";

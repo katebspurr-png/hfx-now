@@ -583,7 +583,6 @@ function hfx_event_recurring_label( $post_id, $is_recurring ) {
  */
 function hfx_event_meta_timestamp( $post_id, $meta_keys ) {
 	$post_id = (int) $post_id;
-	$site_tz = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( 'UTC' );
 	foreach ( $meta_keys as $key ) {
 		$raw = (string) get_post_meta( $post_id, (string) $key, true );
 		if ( '' === trim( $raw ) ) {
@@ -595,28 +594,23 @@ function hfx_event_meta_timestamp( $post_id, $meta_keys ) {
 			continue;
 		}
 
-		$candidates = array( $raw );
+		$ts = strtotime( $raw );
+		if ( false !== $ts ) {
+			return (int) $ts;
+		}
 
 		if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $raw ) ) {
-			$candidates[] = $raw . ' 00:00:00';
+			$ts = strtotime( $raw . ' 00:00:00' );
+			if ( false !== $ts ) {
+				return (int) $ts;
+			}
 		}
 
 		if ( preg_match( '/^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})(:\d{2})?$/', $raw, $m ) ) {
-			$candidates[] = $m[1] . ' ' . $m[2] . ( isset( $m[3] ) ? $m[3] : ':00' );
-		}
-
-		foreach ( array_unique( $candidates ) as $candidate ) {
-			try {
-				$dt = new DateTimeImmutable( (string) $candidate, $site_tz );
-				return (int) $dt->getTimestamp();
-			} catch ( Exception $e ) {
-				// Try strict known formats below.
-			}
-			foreach ( array( 'Y-m-d H:i:s', 'Y-m-d H:i', 'Y-m-d\TH:i:s', 'Y-m-d\TH:i', 'Y-m-d' ) as $fmt ) {
-				$dt = DateTimeImmutable::createFromFormat( $fmt, (string) $candidate, $site_tz );
-				if ( $dt instanceof DateTimeImmutable ) {
-					return (int) $dt->getTimestamp();
-				}
+			$norm = $m[1] . ' ' . $m[2] . ( isset( $m[3] ) ? $m[3] : ':00' );
+			$ts   = strtotime( $norm );
+			if ( false !== $ts ) {
+				return (int) $ts;
 			}
 		}
 	}
