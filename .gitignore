@@ -28,3 +28,6 @@ ready_to_import_*.csv
 # Local tool and IDE metadata
 .specstory/
 .vscode/
+
+# Run clubs pipeline runtime artifacts
+data/run_clubs/
