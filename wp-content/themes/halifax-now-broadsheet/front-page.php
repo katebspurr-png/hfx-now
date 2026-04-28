@@ -245,7 +245,9 @@ if (!empty($map_preview_points)) {
 								hfx_event_category_label( $lead_tonight ) ?: ( $lead_tonight['category'] ?? '' ),
 								$lead_tonight['title'] ?? '',
 								'v4-feat-img',
-								array_key_exists('hue', $lead_tonight) ? (int) $lead_tonight['hue'] : null
+								array_key_exists('hue', $lead_tonight) ? (int) $lead_tonight['hue'] : null,
+								'eager',
+								'high'
 							);
 							?>
 						</div>
@@ -394,7 +396,9 @@ if (!empty($map_preview_points)) {
 						hfx_event_category_label( $event ) ?: ( $event['category'] ?? '' ),
 						$event['title'] ?? '',
 						'v4-card-img',
-						array_key_exists('hue', $event) ? (int) $event['hue'] : null
+						array_key_exists('hue', $event) ? (int) $event['hue'] : null,
+						'lazy',
+						0 === $index ? 'high' : ''
 					);
 					?>
 					<div class="v4-card-body">

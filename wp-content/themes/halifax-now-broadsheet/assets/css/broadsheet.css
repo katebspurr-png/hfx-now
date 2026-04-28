@@ -1019,6 +1019,14 @@ a {
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
+}
+
+.hfx-event-img__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   filter: grayscale(1) contrast(1.35) brightness(0.95);
 }
 
@@ -2042,6 +2050,9 @@ input:focus-visible {
   }
   .v4-hero h1 {
     font-size: clamp(56px, 16vw, 88px);
+    /* Reserve space to reduce font-swap layout shift (Anton + webkit-text-stroke). */
+    min-height: 6.5rem;
+    min-height: 2.5lh;
   }
   .v4-hero-lede {
     font-size: 16px;

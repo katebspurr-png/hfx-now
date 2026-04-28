@@ -32,7 +32,9 @@ $event = hfx_event_to_payload(get_the_ID());
 				hfx_event_category_label( $event ) ?: ( $event['category'] ?? '' ),
 				$event['title'] ?? '',
 				'bed-hero-img',
-				array_key_exists( 'hue', $event ) ? (int) $event['hue'] : null
+				array_key_exists( 'hue', $event ) ? (int) $event['hue'] : null,
+				'eager',
+				'high'
 			);
 		}
 		?>

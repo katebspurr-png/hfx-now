@@ -78,24 +78,7 @@ function hfx_broadsheet_enqueue_assets() {
 		wp_get_theme()->get('Version')
 	);
 
-	wp_enqueue_script(
-		'hfx-broadsheet-ui',
-		get_template_directory_uri() . '/assets/js/broadsheet-ui.js',
-		array(),
-		wp_get_theme()->get('Version'),
-		true
-	);
-
-	wp_localize_script(
-		'hfx-broadsheet-ui',
-		'HFXThemeData',
-		array(
-			'events'    => hfx_get_events_payload(120),
-			'now'       => current_time('mysql'),
-			'browseUrl' => hfx_events_base_url(),
-		)
-	);
-
+	$ui_deps = array();
 	if ( is_page_template( 'page-map.php' ) || is_page( 'map' ) ) {
 		wp_enqueue_style(
 			'hfx-leaflet-css',
@@ -110,9 +93,65 @@ function hfx_broadsheet_enqueue_assets() {
 			'1.9.4',
 			true
 		);
+		$ui_deps[] = 'hfx-leaflet-js';
 	}
+
+	wp_enqueue_script(
+		'hfx-broadsheet-ui',
+		get_template_directory_uri() . '/assets/js/broadsheet-ui.js',
+		$ui_deps,
+		wp_get_theme()->get('Version'),
+		true
+	);
+
+	wp_localize_script(
+		'hfx-broadsheet-ui',
+		'HFXThemeData',
+		array(
+			'events'    => hfx_broadsheet_script_events_payload(),
+			'now'       => current_time('mysql'),
+			'browseUrl' => hfx_events_base_url(),
+		)
+	);
 }
 add_action('wp_enqueue_scripts', 'hfx_broadsheet_enqueue_assets');
+
+/**
+ * Events payload for localized theme script — avoid loading 120 full records on every template.
+ *
+ * Map needs coordinates; home needs enough rows for “Surprise me”; other templates need none.
+ *
+ * @return array<int, array<string, mixed>>
+ */
+function hfx_broadsheet_script_events_payload() {
+	if ( is_page_template( 'page-map.php' ) || is_page( 'map' ) ) {
+		return hfx_get_events_payload( 200 );
+	}
+	if ( is_front_page() ) {
+		return hfx_get_events_payload( 80 );
+	}
+	return array();
+}
+
+/**
+ * Load theme UI script without blocking parse (footer enqueue + defer).
+ *
+ * @param string $tag    Script tag HTML.
+ * @param string $handle Registered handle.
+ * @param string $src    Script src URL.
+ * @return string
+ */
+function hfx_broadsheet_defer_scripts( $tag, $handle, $src ) {
+	unset( $src );
+	if ( 'hfx-broadsheet-ui' === $handle && false === strpos( $tag, ' defer' ) ) {
+		return str_replace( ' src', ' defer src', $tag );
+	}
+	if ( 'hfx-leaflet-js' === $handle && false === strpos( $tag, ' defer' ) ) {
+		return str_replace( ' src', ' defer src', $tag );
+	}
+	return $tag;
+}
+add_filter( 'script_loader_tag', 'hfx_broadsheet_defer_scripts', 10, 3 );
 
 /**
  * Canonical listing route.
@@ -1322,16 +1361,18 @@ function hfx_event_category_hue($slug, $label = '', $seed = '') {
 }
 
 /**
- * Markup: background image, grayscale/ contrast / brightness, category tint, dot screen.
+ * Markup: img or fallback, grayscale/contrast/brightness, category tint, dot screen.
  *
- * @param string   $image_url   Featured image URL or empty.
- * @param string   $category    Primary category label (fallback for hue if $hue is null).
- * @param string   $alt         Accessible name (e.g. event title).
- * @param string   $classes     Extra container classes.
- * @param int|null $hue_degrees If set, overrides category hue (0–359).
+ * @param string   $image_url    Featured image URL or empty.
+ * @param string   $category     Primary category label (fallback for hue if $hue is null).
+ * @param string   $alt          Accessible name (e.g. event title).
+ * @param string   $classes      Extra container classes.
+ * @param int|null $hue_degrees  If set, overrides category hue (0–359).
+ * @param string   $loading      img loading attribute: lazy|eager.
+ * @param string   $fetchpriority Optional fetchpriority value (e.g. high for LCP).
  * @return string
  */
-function hfx_event_image_html( $image_url, $category, $alt, $classes = '', $hue_degrees = null ) {
+function hfx_event_image_html( $image_url, $category, $alt, $classes = '', $hue_degrees = null, $loading = 'lazy', $fetchpriority = '' ) {
 	$hue   = ( null === $hue_degrees ) ? hfx_event_category_hue( '', (string) $category ) : ( (int) $hue_degrees );
 	$extra = $classes;
 	$has_image = is_string($image_url) && $image_url !== '';
@@ -1342,6 +1383,14 @@ function hfx_event_image_html( $image_url, $category, $alt, $classes = '', $hue_
 	$label = $alt;
 	$style = '--hfx-cat-hue: ' . (int) $hue . 'deg;';
 
+	$dims = hfx_event_image_intrinsic_dims_from_classes( $classes );
+
+	$loading = in_array( $loading, array( 'lazy', 'eager' ), true ) ? $loading : 'lazy';
+	$fetch_attr = '';
+	if ( is_string( $fetchpriority ) && in_array( $fetchpriority, array( 'high', 'low', 'auto' ), true ) ) {
+		$fetch_attr = ' fetchpriority="' . esc_attr( $fetchpriority ) . '"';
+	}
+
 	ob_start();
 	?>
 	<div
@@ -1351,7 +1400,17 @@ function hfx_event_image_html( $image_url, $category, $alt, $classes = '', $hue_
 		aria-label="<?php echo esc_attr($label); ?>"
 	>
 		<?php if ($has_image) : ?>
-			<div class="hfx-event-img__bg" style="background-image: url(<?php echo esc_url($image_url); ?>);"></div>
+			<div class="hfx-event-img__bg">
+				<img
+					class="hfx-event-img__photo"
+					src="<?php echo esc_url($image_url); ?>"
+					alt=""
+					width="<?php echo (int) $dims[0]; ?>"
+					height="<?php echo (int) $dims[1]; ?>"
+					loading="<?php echo esc_attr( $loading ); ?>"
+					decoding="async"<?php echo $fetch_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>
+				/>
+			</div>
 		<?php else : ?>
 			<div class="hfx-event-img__bg" aria-hidden="true"></div>
 		<?php endif; ?>
@@ -1368,11 +1427,30 @@ function hfx_event_image_html( $image_url, $category, $alt, $classes = '', $hue_
  * @param string $image_url URL.
  * @param string $category  Category.
  * @param string $alt       Label.
- * @param string $classes   Classes.
+ * @param string $classes         Classes.
+ * @param string $loading         img loading: lazy|eager.
+ * @param string $fetchpriority   Optional fetchpriority (e.g. high).
  */
-function hfx_event_image_e($image_url, $category, $alt, $classes = '', $hue_degrees = null) {
+function hfx_event_image_e($image_url, $category, $alt, $classes = '', $hue_degrees = null, $loading = 'lazy', $fetchpriority = '') {
 	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in helper.
-	echo hfx_event_image_html($image_url, $category, $alt, $classes, $hue_degrees);
+	echo hfx_event_image_html($image_url, $category, $alt, $classes, $hue_degrees, $loading, $fetchpriority);
+}
+
+/**
+ * Hint intrinsic dimensions for CLS (matches aspect ratios on .v4-feat-img / .v4-card-img).
+ *
+ * @param string $classes Extra classes on the image container.
+ * @return array{0: int, 1: int}
+ */
+function hfx_event_image_intrinsic_dims_from_classes( $classes ) {
+	$c = (string) $classes;
+	if ( false !== strpos( $c, 'v4-feat-img' ) ) {
+		return array( 1600, 1000 );
+	}
+	if ( false !== strpos( $c, 'bed-hero-img' ) ) {
+		return array( 1600, 800 );
+	}
+	return array( 1200, 900 );
 }
 
 /**
