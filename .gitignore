@@ -32,3 +32,6 @@ ready_to_import_*.csv
 # Local nested repos (keep unmanaged by parent)
 halifax-now-broadsheet/
 hfx-now-repo/
+
+# Local agent/session artifacts
+.specstory/
