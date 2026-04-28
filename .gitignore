@@ -35,3 +35,8 @@ hfx-now-repo/
 
 # Local agent/session artifacts
 .specstory/
+.vscode/
+.venv/
+
+# Run clubs pipeline runtime artifacts
+data/run_clubs/

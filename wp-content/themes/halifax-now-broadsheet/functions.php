@@ -41,6 +41,15 @@ function hfx_broadsheet_setup() {
 add_action('after_setup_theme', 'hfx_broadsheet_setup');
 
 /**
+ * Favicon.
+ */
+function hfx_broadsheet_favicon() {
+	$uri = get_template_directory_uri() . '/assets/favicon.svg';
+	echo '<link rel="icon" type="image/svg+xml" href="' . esc_url( $uri ) . '">' . "\n";
+}
+add_action( 'wp_head', 'hfx_broadsheet_favicon', 1 );
+
+/**
  * Display name for event category (Handoff: `category` = slug, `categoryLabel` = title case).
  *
  * @param array<string, mixed> $e Event payload.

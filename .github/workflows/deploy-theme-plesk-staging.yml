@@ -118,3 +118,38 @@ jobs:
           remote_user: ${{ secrets.PLESK_STAGING_SSH_USER }}
           remote_key: ${{ secrets.PLESK_STAGING_SSH_KEY }}
           remote_port: ${{ secrets.PLESK_STAGING_SSH_PORT }}
+
+      - name: Detect optional v3 preview deploy inputs
+        id: v3_preview
+        shell: bash
+        env:
+          V3_REMOTE_PATH: ${{ secrets.PLESK_STAGING_V3_PREVIEW_PATH }}
+        run: |
+          set -euo pipefail
+          HAS_LOCAL="false"
+          HAS_REMOTE="false"
+          if [[ -d "v3-preview" ]]; then
+            HAS_LOCAL="true"
+          fi
+          if [[ -n "${V3_REMOTE_PATH}" ]]; then
+            HAS_REMOTE="true"
+          fi
+          if [[ "${HAS_LOCAL}" == "true" && "${HAS_REMOTE}" == "true" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "Optional v3-preview deploy enabled."
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping optional v3-preview deploy (missing local dir or secret PLESK_STAGING_V3_PREVIEW_PATH)."
+          fi
+
+      - name: Deploy v3 preview to staging (optional)
+        if: steps.v3_preview.outputs.enabled == 'true'
+        uses: burnett01/rsync-deployments@7.0.2
+        with:
+          switches: ${{ steps.rsync_flags.outputs.flags }}
+          path: v3-preview/
+          remote_path: ${{ secrets.PLESK_STAGING_V3_PREVIEW_PATH }}/
+          remote_host: ${{ secrets.PLESK_STAGING_SSH_HOST }}
+          remote_user: ${{ secrets.PLESK_STAGING_SSH_USER }}
+          remote_key: ${{ secrets.PLESK_STAGING_SSH_KEY }}
+          remote_port: ${{ secrets.PLESK_STAGING_SSH_PORT }}

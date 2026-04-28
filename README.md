@@ -29,3 +29,21 @@ This directory contains the Halifax event scraping pipeline and import tooling.
 - `tools/cleanup_artifacts.py --apply` to archive generated artifacts
 
 See `V3_RUNBOOK.md` for full operations details.
+
+## Run clubs pipeline (new MVP)
+
+For local run club monitoring (automated websites + manual social review), see:
+
+- `RUN_CLUBS_PIPELINE.md`
+- `pipelines/run_clubs/main.py`
+- `pipelines/run_clubs/import_from_xlsx.py`
+- `pipelines/run_clubs/import_from_csv.py`
+- `pipelines/run_clubs/validate_xlsx.py`
+
+## Pipeline folders
+
+Feature pipelines are organized under:
+
+- `pipelines/run_clubs/` (active)
+- `pipelines/happy_hours/` (pending)
+- `pipelines/patios/` (pending)
