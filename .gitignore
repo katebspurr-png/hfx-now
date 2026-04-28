@@ -24,3 +24,7 @@ site_potential_duplicates.csv
 
 # Local ad-hoc export/import intermediates
 ready_to_import_*.csv
+
+# Local tool and IDE metadata
+.specstory/
+.vscode/
