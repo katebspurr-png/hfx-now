@@ -10,13 +10,13 @@ This pipeline is designed for your hybrid workflow:
 From the repo root:
 
 ```bash
-python3 run_clubs_pipeline/pipeline.py --seed
+python3 pipelines/run_clubs/main.py --seed
 ```
 
 Use `--seed` once to create starter data if your registry is empty. After that, run:
 
 ```bash
-python3 run_clubs_pipeline/pipeline.py
+python3 pipelines/run_clubs/main.py
 ```
 
 ## Import from your spreadsheet
@@ -24,7 +24,7 @@ python3 run_clubs_pipeline/pipeline.py
 To import your workbook directly into the registry:
 
 ```bash
-.venv/bin/python run_clubs_pipeline/import_from_xlsx.py \
+.venv/bin/python pipelines/run_clubs/import_from_xlsx.py \
   --xlsx "/Users/katespurr/Desktop/Halifax Now/Data Files/Halifax_Running_Clubs_v5.xlsx" \
   --sheet "Halifax Running Clubs" \
   --replace-all
@@ -41,7 +41,7 @@ Notes:
 If you are iterating in CSV after validation/autofix:
 
 ```bash
-.venv/bin/python run_clubs_pipeline/import_from_csv.py \
+.venv/bin/python pipelines/run_clubs/import_from_csv.py \
   --csv "data/run_clubs/cleaned_workbook_rows.csv" \
   --replace-all
 ```
@@ -49,7 +49,7 @@ If you are iterating in CSV after validation/autofix:
 ## Validate workbook first (recommended)
 
 ```bash
-.venv/bin/python run_clubs_pipeline/validate_xlsx.py \
+.venv/bin/python pipelines/run_clubs/validate_xlsx.py \
   --xlsx "/Users/katespurr/Desktop/Halifax Now/Data Files/Halifax_Running_Clubs_v5.xlsx" \
   --sheet "Halifax Running Clubs" \
   --report-csv "data/run_clubs/validation_report.csv" \

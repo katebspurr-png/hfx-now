@@ -35,7 +35,15 @@ See `V3_RUNBOOK.md` for full operations details.
 For local run club monitoring (automated websites + manual social review), see:
 
 - `RUN_CLUBS_PIPELINE.md`
-- `run_clubs_pipeline/pipeline.py`
-- `run_clubs_pipeline/import_from_xlsx.py`
-- `run_clubs_pipeline/import_from_csv.py`
-- `run_clubs_pipeline/validate_xlsx.py`
+- `pipelines/run_clubs/main.py`
+- `pipelines/run_clubs/import_from_xlsx.py`
+- `pipelines/run_clubs/import_from_csv.py`
+- `pipelines/run_clubs/validate_xlsx.py`
+
+## Pipeline folders
+
+Feature pipelines are organized under:
+
+- `pipelines/run_clubs/` (active)
+- `pipelines/happy_hours/` (pending)
+- `pipelines/patios/` (pending)
