@@ -1,6 +1,6 @@
 # Staging Setup (New Design)
 
-This project deploys the WordPress theme directly to Plesk via GitHub Actions.
+This project deploys WordPress files (`wp-content`) plus v3 preview assets to Plesk via GitHub Actions.
 
 For staging, use the dedicated workflow:
 
@@ -22,13 +22,16 @@ These should point at your staging server/site, not production.
 
 ## 2) Deploy the new design to staging
 
-Push your new-design theme changes to the `staging` branch.
+Push your new-design changes to the `staging` branch.
 
 The staging workflow syncs:
 
-- `wp-content/themes/halifax-now-broadsheet/`
+- `wp-content/` to `/wp-content/` on staging web root (theme + mu-plugins in this repo)
+- `v3-preview/` to `/v3-preview/` on staging (derived from `PLESK_STAGING_THEME_PATH`)
 
 You can also run manual `dry_run` deploys before a full transfer.
+
+Important: make sure `v3-preview/` files are committed to git. Untracked local files are not deployed by GitHub Actions.
 
 ## 3) Enable v3 sections in staging
 
@@ -47,3 +50,4 @@ Without this, staging will still show the base broadsheet nav without v3 section
 - `/v3-preview/?v3=1` loads.
 - If flag enabled: top nav includes `Run Clubs`, `Happy Hour`, `Patios`.
 - `/events/`, `/map/`, `/venues/`, and `/submit/` still load.
+

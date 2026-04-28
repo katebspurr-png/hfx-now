@@ -1,0 +1,117 @@
+/* Broadsheet shell styles — shared by all Broadsheet pages (home + sub-pages).
+   Loaded globally so BroadsheetEventDetail, BroadsheetBrowse etc. don't need
+   to re-declare these rules in their own <style> blocks. */
+
+.v4-root {
+  --paper: #f4efe6;
+  --ink: #0f0f0f;
+  --rule: #0f0f0f;
+  --red: #c23a1e;
+  --acid: #e8ff00;
+  --soft: #e8d8cc;
+  --muted: #6b6459;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Source Serif 4', Georgia, serif;
+  min-height: 100vh;
+  position: relative;
+  container-type: inline-size;
+  container-name: v4;
+}
+.v4-root * { box-sizing: border-box; }
+.v4-root::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 1;
+  background: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.045) 1px, transparent 1.2px) 0 0 / 5px 5px;
+}
+
+/* MASTHEAD */
+.v4-mast {
+  border-bottom: 3px double var(--rule);
+  padding: 14px 32px 12px;
+  display: grid;
+  grid-template-columns: 240px 1fr 240px;
+  align-items: center;
+  gap: 24px;
+  position: relative; z-index: 2;
+}
+.v4-datestamp {
+  background: var(--ink); color: var(--paper);
+  padding: 8px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  line-height: 1.4;
+  transform: rotate(-1deg);
+  display: inline-block;
+}
+.v4-datestamp .hot { color: var(--acid); }
+.v4-logo {
+  text-align: center;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 900;
+  font-size: 52px;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  font-style: italic;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.v4-logo .amp { color: var(--red); font-style: normal; }
+.v4-tag {
+  text-align: right;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--muted);
+}
+.v4-tag .red { color: var(--red); }
+
+/* NAV */
+.v4-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  padding: 0 32px;
+  border-bottom: 2px solid var(--rule);
+  background: var(--ink);
+  color: var(--paper);
+  position: relative; z-index: 2;
+}
+.v4-nav a {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--paper); text-decoration: none; cursor: pointer;
+  padding: 12px 18px;
+  border-right: 1px solid rgba(255,255,255,0.12);
+}
+.v4-nav a:first-child { border-left: 1px solid rgba(255,255,255,0.12); }
+.v4-nav a:hover { background: var(--red); }
+.v4-nav a.cta {
+  background: var(--acid);
+  color: var(--ink);
+  margin-left: auto;
+}
+.v4-nav a.cta:hover { background: var(--red); color: var(--paper); }
+
+/* Mobile shell */
+@container v4 (max-width: 720px) {
+  .v4-mast {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 14px 18px 12px;
+    text-align: center;
+  }
+  .v4-datestamp { justify-self: center; font-size: 10px; }
+  .v4-logo { font-size: 42px; }
+  .v4-tag { text-align: center; font-size: 10px; }
+  .v4-nav {
+    overflow-x: auto; overflow-y: hidden;
+    justify-content: flex-start;
+    padding: 0 14px;
+    scrollbar-width: none;
+  }
+  .v4-nav::-webkit-scrollbar { display: none; }
+  .v4-nav a { flex-shrink: 0; padding: 12px 10px; font-size: 12px; }
+}

@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Halifax Now v3 Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Source+Serif+4:ital,wght@0,400;0,700;1,400&family=Anton&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #0f0f0f; }
+  body { font-family: "Source Serif 4", Georgia, serif; }
+  #root { min-height: 100vh; }
+  button { font-family: inherit; }
+  .v3-banner {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 9999;
+    background: #0f0f0f;
+    color: #f4efe6;
+    border: 2px solid #e8ff00;
+    padding: 8px 10px;
+    font: 700 10px/1.4 "JetBrains Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div class="v3-banner">v3 preview only</div>
+<div id="boot-error" style="display:none;max-width:760px;margin:48px auto;padding:16px 18px;border:2px solid #0f0f0f;background:#f4efe6;color:#0f0f0f;font:500 14px/1.5 'Space Grotesk',sans-serif;">
+  Preview failed to boot. Open this via a local server instead of double-clicking the file.
+  Run <code style="font-family:'JetBrains Mono',monospace;">python3 -m http.server 8000</code> in <code style="font-family:'JetBrains Mono',monospace;">hfx-now-repo</code>,
+  then visit <code style="font-family:'JetBrains Mono',monospace;">http://localhost:8000/v3-preview/?v3=1</code>.
+</div>
+
+<script>
+  // file:// can break Babel script loading in some setups.
+  if (window.location.protocol === "file:") {
+    document.documentElement.style.background = "#f4efe6";
+    document.body.style.background = "#f4efe6";
+    document.getElementById("boot-error").style.display = "block";
+  }
+  window.addEventListener("error", function () {
+    const n = document.getElementById("boot-error");
+    if (n) n.style.display = "block";
+  });
+</script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+<!-- Keep script order strict: data/shared/sections/home before app bootstrap -->
+<script src="src/v3-data.js"></script>
+<script>
+  // Runtime data override from WP REST (fallback remains src/v3-data.js).
+  (function loadV3RuntimeData() {
+    if (window.location.protocol === "file:") return;
+    try {
+      var req = new XMLHttpRequest();
+      req.open("GET", "/wp-json/hfx/v1/v3-data", false);
+      req.send(null);
+      if (req.status < 200 || req.status >= 300) return;
+      var payload = JSON.parse(req.responseText);
+      if (!payload || typeof payload !== "object") return;
+      window.V3_DATA = Object.assign({}, window.V3_DATA || {}, payload);
+    } catch (err) {
+      // Keep static preview data if runtime fetch fails.
+    }
+  })();
+</script>
+<script type="text/babel" src="src/v3-shared.jsx"></script>
+<script type="text/babel" src="src/v3-sections.jsx"></script>
+<script type="text/babel" src="src/v3-home.jsx"></script>
+
+<script type="text/babel" data-presets="env,react">
+const { useEffect, useMemo, useState } = React;
+
+// Safety default: OFF unless explicitly enabled for QA.
+function getInitialFlag() {
+  const qs = new URLSearchParams(window.location.search);
+  if (qs.get("v3") === "1") return true;
+  const saved = localStorage.getItem("hfx-v3-flag");
+  return saved === "true";
+}
+
+function getInitialPage() {
+  const qs = new URLSearchParams(window.location.search);
+  const qPage = qs.get("page");
+  const valid = new Set(["home", "browse", "tonight", "runclubs", "happyhours", "patios", "submit"]);
+  if (qPage && valid.has(qPage)) return qPage;
+  return localStorage.getItem("hfx-v3-page") || "home";
+}
+
+function App() {
+  const [page, setPage] = useState(getInitialPage);
+  const [flagOn, setFlagOn] = useState(getInitialFlag);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => { localStorage.setItem("hfx-v3-page", page); }, [page]);
+  useEffect(() => { localStorage.setItem("hfx-v3-flag", String(flagOn)); }, [flagOn]);
+
+  const nav = (pg) => setPage(pg);
+
+  const guardedPage = useMemo(() => {
+    if (!flagOn && (page === "runclubs" || page === "happyhours" || page === "patios")) {
+      return "home";
+    }
+    return page;
+  }, [flagOn, page]);
+
+  function renderPage() {
+    if (guardedPage === "browse") return <BrowseV3 setPage={nav} searchQuery={searchQuery}/>;
+    if (guardedPage === "tonight") return <TonightPage setPage={nav}/>;
+    if (guardedPage === "runclubs") return <RunClubs/>;
+    if (guardedPage === "happyhours") return <HappyHours/>;
+    if (guardedPage === "patios") return <PatioFinder/>;
+    if (guardedPage === "submit") return <SubmitFlow/>;
+    return <HomeV3 setPage={nav} flagOn={flagOn} searchQuery={searchQuery} setSearchQuery={setSearchQuery}/>;
+  }
+
+  return (
+    <div style={{ background: "#f4efe6", minHeight: "100vh" }}>
+      <Shell page={guardedPage} setPage={nav} flagOn={flagOn}/>
+      <div style={{ maxWidth: 1300, margin: "0 auto" }}>
+        {renderPage()}
+      </div>
+      <div style={{ position: "fixed", left: 12, bottom: 12, zIndex: 9999 }}>
+        <button
+          onClick={() => setFlagOn((v) => !v)}
+          style={{
+            border: "2px solid #0f0f0f",
+            background: flagOn ? "#e8ff00" : "#f4efe6",
+            color: "#0f0f0f",
+            padding: "8px 10px",
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            cursor: "pointer",
+          }}
+        >
+          v3 flag: {flagOn ? "on" : "off"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

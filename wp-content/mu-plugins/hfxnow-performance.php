@@ -2,7 +2,7 @@
 /**
  * Plugin Name: HFX Now — Performance Optimizations
  * Description: Must-use plugin for mobile page speed improvements. Deployed via git.
- * Version: 1.0
+ * Version: 1.1
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -84,4 +84,20 @@ add_action( 'wp_head', 'hfxnow_font_display_swap_self_hosted', 1 );
 
 function hfxnow_font_display_swap_self_hosted() {
 	echo '<style>@font-face { font-family: "Manrope"; font-display: swap; }</style>' . "\n";
+}
+
+// =============================================================================
+// 4. Dequeue Gutenberg block library on the static home template
+//    Cuts ~14 KiB unused CSS on the broadsheet front page (Lighthouse).
+//    Front page is rendered by front-page.php, not the block editor.
+// =============================================================================
+
+add_action( 'wp_enqueue_scripts', 'hfxnow_dequeue_block_library_on_broadsheet_home', 100 );
+
+function hfxnow_dequeue_block_library_on_broadsheet_home() {
+	if ( is_admin() || ! is_front_page() || is_customize_preview() ) {
+		return;
+	}
+	wp_dequeue_style( 'wp-block-library' );
+	wp_dequeue_style( 'wp-block-library-theme' );
 }

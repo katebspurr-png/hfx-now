@@ -87,24 +87,7 @@ function hfx_broadsheet_enqueue_assets() {
 		wp_get_theme()->get('Version')
 	);
 
-	wp_enqueue_script(
-		'hfx-broadsheet-ui',
-		get_template_directory_uri() . '/assets/js/broadsheet-ui.js',
-		array(),
-		wp_get_theme()->get('Version'),
-		true
-	);
-
-	wp_localize_script(
-		'hfx-broadsheet-ui',
-		'HFXThemeData',
-		array(
-			'events'    => hfx_get_events_payload(120),
-			'now'       => current_time('mysql'),
-			'browseUrl' => hfx_events_base_url(),
-		)
-	);
-
+	$ui_deps = array();
 	if ( is_page_template( 'page-map.php' ) || is_page( 'map' ) ) {
 		wp_enqueue_style(
 			'hfx-leaflet-css',
@@ -119,9 +102,65 @@ function hfx_broadsheet_enqueue_assets() {
 			'1.9.4',
 			true
 		);
+		$ui_deps[] = 'hfx-leaflet-js';
 	}
+
+	wp_enqueue_script(
+		'hfx-broadsheet-ui',
+		get_template_directory_uri() . '/assets/js/broadsheet-ui.js',
+		$ui_deps,
+		wp_get_theme()->get('Version'),
+		true
+	);
+
+	wp_localize_script(
+		'hfx-broadsheet-ui',
+		'HFXThemeData',
+		array(
+			'events'    => hfx_broadsheet_script_events_payload(),
+			'now'       => current_time('mysql'),
+			'browseUrl' => hfx_events_base_url(),
+		)
+	);
 }
 add_action('wp_enqueue_scripts', 'hfx_broadsheet_enqueue_assets');
+
+/**
+ * Events payload for localized theme script — avoid loading 120 full records on every template.
+ *
+ * Map needs coordinates; home needs enough rows for “Surprise me”; other templates need none.
+ *
+ * @return array<int, array<string, mixed>>
+ */
+function hfx_broadsheet_script_events_payload() {
+	if ( is_page_template( 'page-map.php' ) || is_page( 'map' ) ) {
+		return hfx_get_events_payload( 200 );
+	}
+	if ( is_front_page() ) {
+		return hfx_get_events_payload( 80 );
+	}
+	return array();
+}
+
+/**
+ * Load theme UI script without blocking parse (footer enqueue + defer).
+ *
+ * @param string $tag    Script tag HTML.
+ * @param string $handle Registered handle.
+ * @param string $src    Script src URL.
+ * @return string
+ */
+function hfx_broadsheet_defer_scripts( $tag, $handle, $src ) {
+	unset( $src );
+	if ( 'hfx-broadsheet-ui' === $handle && false === strpos( $tag, ' defer' ) ) {
+		return str_replace( ' src', ' defer src', $tag );
+	}
+	if ( 'hfx-leaflet-js' === $handle && false === strpos( $tag, ' defer' ) ) {
+		return str_replace( ' src', ' defer src', $tag );
+	}
+	return $tag;
+}
+add_filter( 'script_loader_tag', 'hfx_broadsheet_defer_scripts', 10, 3 );
 
 /**
  * Canonical listing route.
@@ -362,6 +401,42 @@ function hfx_register_rest_routes() {
 			),
 		)
 	);
+	register_rest_route(
+		'hfx/v1',
+		'/run-clubs',
+		array(
+			'methods'             => 'GET',
+			'callback'            => 'hfx_rest_serve_run_clubs',
+			'permission_callback' => '__return_true',
+		)
+	);
+	register_rest_route(
+		'hfx/v1',
+		'/happy-hours',
+		array(
+			'methods'             => 'GET',
+			'callback'            => 'hfx_rest_serve_happy_hours',
+			'permission_callback' => '__return_true',
+		)
+	);
+	register_rest_route(
+		'hfx/v1',
+		'/patios',
+		array(
+			'methods'             => 'GET',
+			'callback'            => 'hfx_rest_serve_patios',
+			'permission_callback' => '__return_true',
+		)
+	);
+	register_rest_route(
+		'hfx/v1',
+		'/v3-data',
+		array(
+			'methods'             => 'GET',
+			'callback'            => 'hfx_rest_serve_v3_data',
+			'permission_callback' => '__return_true',
+		)
+	);
 }
 add_action( 'rest_api_init', 'hfx_register_rest_routes' );
 
@@ -379,6 +454,155 @@ function hfx_rest_serve_events( $req ) {
 	$second = 60;
 	$resp->header( 'Cache-Control', 'public, max-age=' . (int) $second );
 	return $resp;
+}
+
+/**
+ * @return array<string, mixed>
+ */
+function hfx_v3_default_sections_data() {
+	return array(
+		'RUN_CLUBS' => array(
+			array(
+				'id'       => 'rc1',
+				'name'     => 'Point Pleasant Sunday Runners',
+				'day'      => 'Sunday',
+				'time'     => '09:00',
+				'distance' => '5K',
+				'pace'     => 'All paces',
+				'hood'     => 'South End',
+				'meetAt'   => 'Tower Road Gate',
+				'coffee'   => 'Glitter Bean',
+				'vibe'     => 'chill',
+				'members'  => 120,
+				'hue'      => 140,
+				'seed'     => 'runclub1',
+				'blurb'    => 'The OG Halifax run club. Established loop, all paces, no judgment.',
+				'route'    => '5K loop through Point Pleasant Park.',
+				'upcoming' => array( '2026-04-26', '2026-05-03', '2026-05-10' ),
+			),
+		),
+		'HAPPY_HOURS' => array(
+			array(
+				'id'      => 'hh1',
+				'venue'   => 'The Henry House',
+				'hood'    => 'South End',
+				'address' => '1222 Barrington St',
+				'deal'    => '$2 off pints · $5 house wine',
+				'starts'  => '16:00',
+				'ends'    => '18:00',
+				'days'    => array( 'Mon', 'Tue', 'Wed', 'Thu', 'Fri' ),
+				'note'    => 'Upstairs bar only. Stone building, actual fireplace.',
+				'tags'    => array( 'pints', 'wine' ),
+				'hue'     => 40,
+				'seed'    => 'henryhouse',
+			),
+		),
+		'PATIOS' => array(
+			array(
+				'id'           => 'pt1',
+				'venue'        => 'The Bicycle Thief',
+				'hood'         => 'Waterfront',
+				'address'      => '1475 Lower Water St',
+				'size'         => 'large',
+				'covered'      => false,
+				'dogs'         => false,
+				'view'         => true,
+				'heated'       => false,
+				'reservations' => true,
+				'vibe'         => 'Date night',
+				'note'         => 'Harbour view. Best at golden hour.',
+				'hue'          => 200,
+				'seed'         => 'bicyclethief',
+			),
+		),
+	);
+}
+
+/**
+ * @param string $option_name Option key.
+ * @param array  $fallback Fallback rows.
+ * @return array<int, array<string, mixed>>
+ */
+function hfx_v3_option_rows( $option_name, $fallback ) {
+	$value = get_option( $option_name, array() );
+	if ( ! is_array( $value ) || empty( $value ) ) {
+		return is_array( $fallback ) ? array_values( $fallback ) : array();
+	}
+	return array_values(
+		array_filter(
+			$value,
+			static function ( $row ) {
+				return is_array( $row );
+			}
+		)
+	);
+}
+
+/**
+ * @return array<string, mixed>
+ */
+function hfx_get_v3_sections_payload() {
+	$defaults  = hfx_v3_default_sections_data();
+	$run_clubs = hfx_v3_option_rows( 'hfx_v3_run_clubs', $defaults['RUN_CLUBS'] );
+	$happy     = hfx_v3_option_rows( 'hfx_v3_happy_hours', $defaults['HAPPY_HOURS'] );
+	$patios    = hfx_v3_option_rows( 'hfx_v3_patios', $defaults['PATIOS'] );
+	$now       = current_datetime();
+	$mins      = ((int) $now->format( 'H' ) * 60) + (int) $now->format( 'i' );
+	$dow       = $now->format( 'D' );
+
+	return array(
+		'RUN_CLUBS'   => $run_clubs,
+		'HAPPY_HOURS' => $happy,
+		'PATIOS'      => $patios,
+		'NOW_MINS'    => $mins,
+		'TODAY_DOW'   => $dow,
+	);
+}
+
+/**
+ * @return callable
+ */
+function hfx_rest_v3_payload_headers() {
+	return static function ( $data ) {
+		$resp = new WP_REST_Response( $data );
+		$resp->header( 'Cache-Control', 'public, max-age=60' );
+		return $resp;
+	};
+}
+
+/**
+ * @return WP_REST_Response
+ */
+function hfx_rest_serve_v3_data() {
+	$respond = hfx_rest_v3_payload_headers();
+	return $respond( hfx_get_v3_sections_payload() );
+}
+
+/**
+ * @return WP_REST_Response
+ */
+function hfx_rest_serve_run_clubs() {
+	$payload = hfx_get_v3_sections_payload();
+	$respond = hfx_rest_v3_payload_headers();
+	return $respond( $payload['RUN_CLUBS'] );
+}
+
+/**
+ * @return WP_REST_Response
+ */
+function hfx_rest_serve_happy_hours() {
+	$payload = hfx_get_v3_sections_payload();
+	$respond = hfx_rest_v3_payload_headers();
+	return $respond( $payload['HAPPY_HOURS'] );
+}
+
+/**
+ * @return WP_REST_Response
+ */
+function hfx_rest_serve_patios() {
+	$payload = hfx_get_v3_sections_payload();
+	$respond = hfx_rest_v3_payload_headers();
+	return $respond( $payload['PATIOS'] );
 }
 
 /**
@@ -1146,16 +1370,18 @@ function hfx_event_category_hue($slug, $label = '', $seed = '') {
 }
 
 /**
- * Markup: background image, grayscale/ contrast / brightness, category tint, dot screen.
+ * Markup: img or fallback, grayscale/contrast/brightness, category tint, dot screen.
  *
- * @param string   $image_url   Featured image URL or empty.
- * @param string   $category    Primary category label (fallback for hue if $hue is null).
- * @param string   $alt         Accessible name (e.g. event title).
- * @param string   $classes     Extra container classes.
- * @param int|null $hue_degrees If set, overrides category hue (0–359).
+ * @param string   $image_url    Featured image URL or empty.
+ * @param string   $category     Primary category label (fallback for hue if $hue is null).
+ * @param string   $alt          Accessible name (e.g. event title).
+ * @param string   $classes      Extra container classes.
+ * @param int|null $hue_degrees  If set, overrides category hue (0–359).
+ * @param string   $loading      img loading attribute: lazy|eager.
+ * @param string   $fetchpriority Optional fetchpriority value (e.g. high for LCP).
  * @return string
  */
-function hfx_event_image_html( $image_url, $category, $alt, $classes = '', $hue_degrees = null ) {
+function hfx_event_image_html( $image_url, $category, $alt, $classes = '', $hue_degrees = null, $loading = 'lazy', $fetchpriority = '' ) {
 	$hue   = ( null === $hue_degrees ) ? hfx_event_category_hue( '', (string) $category ) : ( (int) $hue_degrees );
 	$extra = $classes;
 	$has_image = is_string($image_url) && $image_url !== '';
@@ -1166,6 +1392,14 @@ function hfx_event_image_html( $image_url, $category, $alt, $classes = '', $hue_
 	$label = $alt;
 	$style = '--hfx-cat-hue: ' . (int) $hue . 'deg;';
 
+	$dims = hfx_event_image_intrinsic_dims_from_classes( $classes );
+
+	$loading = in_array( $loading, array( 'lazy', 'eager' ), true ) ? $loading : 'lazy';
+	$fetch_attr = '';
+	if ( is_string( $fetchpriority ) && in_array( $fetchpriority, array( 'high', 'low', 'auto' ), true ) ) {
+		$fetch_attr = ' fetchpriority="' . esc_attr( $fetchpriority ) . '"';
+	}
+
 	ob_start();
 	?>
 	<div
@@ -1175,7 +1409,17 @@ function hfx_event_image_html( $image_url, $category, $alt, $classes = '', $hue_
 		aria-label="<?php echo esc_attr($label); ?>"
 	>
 		<?php if ($has_image) : ?>
-			<div class="hfx-event-img__bg" style="background-image: url(<?php echo esc_url($image_url); ?>);"></div>
+			<div class="hfx-event-img__bg">
+				<img
+					class="hfx-event-img__photo"
+					src="<?php echo esc_url($image_url); ?>"
+					alt=""
+					width="<?php echo (int) $dims[0]; ?>"
+					height="<?php echo (int) $dims[1]; ?>"
+					loading="<?php echo esc_attr( $loading ); ?>"
+					decoding="async"<?php echo $fetch_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above. ?>
+				/>
+			</div>
 		<?php else : ?>
 			<div class="hfx-event-img__bg" aria-hidden="true"></div>
 		<?php endif; ?>
@@ -1192,11 +1436,30 @@ function hfx_event_image_html( $image_url, $category, $alt, $classes = '', $hue_
  * @param string $image_url URL.
  * @param string $category  Category.
  * @param string $alt       Label.
- * @param string $classes   Classes.
+ * @param string $classes         Classes.
+ * @param string $loading         img loading: lazy|eager.
+ * @param string $fetchpriority   Optional fetchpriority (e.g. high).
  */
-function hfx_event_image_e($image_url, $category, $alt, $classes = '', $hue_degrees = null) {
+function hfx_event_image_e($image_url, $category, $alt, $classes = '', $hue_degrees = null, $loading = 'lazy', $fetchpriority = '') {
 	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in helper.
-	echo hfx_event_image_html($image_url, $category, $alt, $classes, $hue_degrees);
+	echo hfx_event_image_html($image_url, $category, $alt, $classes, $hue_degrees, $loading, $fetchpriority);
+}
+
+/**
+ * Hint intrinsic dimensions for CLS (matches aspect ratios on .v4-feat-img / .v4-card-img).
+ *
+ * @param string $classes Extra classes on the image container.
+ * @return array{0: int, 1: int}
+ */
+function hfx_event_image_intrinsic_dims_from_classes( $classes ) {
+	$c = (string) $classes;
+	if ( false !== strpos( $c, 'v4-feat-img' ) ) {
+		return array( 1600, 1000 );
+	}
+	if ( false !== strpos( $c, 'bed-hero-img' ) ) {
+		return array( 1600, 800 );
+	}
+	return array( 1200, 900 );
 }
 
 /**
